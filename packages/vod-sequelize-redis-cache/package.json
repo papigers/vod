@@ -1,0 +1,30 @@
+{
+  "name": "vod-sequelize-redis-cache",
+  "version": "2.0.1",
+  "description": "Caching module for sequelize queries",
+  "main": "lib/index.js",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rfink/sequelize-redis-cache.git"
+  },
+  "keywords": [
+    "sequelize",
+    "mysql",
+    "redis",
+    "cache",
+    "postgres",
+    "sqlite"
+  ],
+  "devDependencies": {
+    "mocha": "2.5.3",
+    "redis": "~2.6.0",
+    "sequelize": "~3.23.0",
+    "should": "10.0.0",
+    "sqlite3": "~3.1.0"
+  },
+  "dependencies": {
+    "circular-json": "0.3.0",
+    "vod-api": "^0.0.0"
+  }
+}

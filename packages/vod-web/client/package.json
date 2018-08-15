@@ -1,0 +1,37 @@
+{
+  "name": "vod",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "dashjs": "^2.9.0",
+    "grid-styled": "^5.0.2",
+    "history": "^4.7.2",
+    "immutable": "^3.8.2",
+    "office-ui-fabric-react": "^6.39.1",
+    "polished": "^1.9.3",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-dropzone": "^4.2.13",
+    "react-plyr": "^2.1.1",
+    "react-redux": "^5.0.7",
+    "react-router-dom": "^4.3.1",
+    "react-router-redux": "^5.0.0-alpha.9",
+    "react-scripts": "1.1.4",
+    "redux": "^4.0.0",
+    "redux-immutable": "^4.0.0",
+    "reselect": "^3.0.1",
+    "socket.io-client": "^2.1.1",
+    "styled-components": "^3.3.3",
+    "styled-sanitize": "^1.0.2",
+    "video.js": "^7.1.0",
+    "videojs-contrib-dash": "^2.10.0",
+    "videojs-hlsjs-plugin": "^0.3.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:8080"
+}

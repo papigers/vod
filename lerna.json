@@ -1,0 +1,20 @@
+{
+  "packages": [
+    "packages/*"
+  ],
+  "command": {
+    "run": {
+      "npmClient": "yarn"
+    },
+    "publish": {
+      "npmClient": "yarn"
+    },
+    "bootstrap": {
+      "npmClient": "yarn"
+    },
+    "add": {
+      "npmClient": "yarn"
+    }
+  },
+  "version": "0.0.0"
+}

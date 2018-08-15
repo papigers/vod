@@ -1,0 +1,26 @@
+{
+  "name": "vod-api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "dev": "cross-env DEBUG=vod:api nodemon ./bin/www"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.291.0",
+    "config": "^2.0.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "dotenv": "^6.0.0",
+    "express": "~4.16.0",
+    "morgan": "~1.9.0",
+    "nanoid": "^1.2.0",
+    "pg": "^7.4.3",
+    "redis": "^2.8.0",
+    "sequelize": "^4.38.0"
+  },
+  "devDependencies": {
+    "cross-env": "^5.2.0",
+    "nodemon": "^1.18.3"
+  }
+}

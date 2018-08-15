@@ -1,0 +1,11 @@
+{
+  "name": "vod",
+  "private": true,
+  "scripts": {
+    "start": "lerna run start --stream",
+    "dev": "lerna run dev --parallel"
+  },
+  "devDependencies": {
+    "lerna": "^3.0.5"
+  }
+}

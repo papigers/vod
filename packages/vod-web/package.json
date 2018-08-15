@@ -1,0 +1,25 @@
+{
+  "name": "vod-web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "server": "node ./bin/www",
+    "dev:client": "cd client && yarn start",
+    "dev:server": "cross-env DEBUG=vod:server nodemon ./bin/www",
+    "dev": "concurrently --kill-others-on-fail \"yarn dev:server\" \"yarn dev:client\"",
+    "start": "cross-env-shell NODE_ENV=production \"cd client && yarn build && cd .. && yarn server\"",
+    "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
+  },
+  "dependencies": {
+    "config": "^2.0.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "morgan": "~1.9.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.6.1",
+    "cross-env": "^5.2.0",
+    "nodemon": "^1.18.3"
+  }
+}

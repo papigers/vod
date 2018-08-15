@@ -1,0 +1,22 @@
+{
+  "name": "vod-s3-client",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Gershon Papi <papigers93@gmail.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "lib/vod-s3-client.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.293.0"
+  }
+}
