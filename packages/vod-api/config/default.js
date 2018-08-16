@@ -18,11 +18,6 @@ module.exports = {
       logging: false,
     },
   },
-  cache: {
-    host: process.env.CACHE_HOSTNAME,
-    port: process.env.CACHE_PORT || '6379',
-    ttl: 5,
-  },
   admin: {
     id: 's7591665',
     type: 'USER',

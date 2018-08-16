@@ -8,7 +8,6 @@ function getStepSubState(step) {
     default:
       return keys.concat(['progress', 'file', 'metadata', 'video']);
   }
-  return keys;
 }
 
 const selectUpload = state => state.get('upload');

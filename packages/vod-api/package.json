@@ -16,8 +16,9 @@
     "morgan": "~1.9.0",
     "nanoid": "^1.2.0",
     "pg": "^7.4.3",
-    "redis": "^2.8.0",
-    "sequelize": "^4.38.0"
+    "sequelize": "^4.38.0",
+    "sequelize-redis-cache": "^2.0.1",
+    "vod-redis-client": "^0.0.0"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",

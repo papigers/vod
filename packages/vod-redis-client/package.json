@@ -1,0 +1,29 @@
+{
+  "name": "vod-redis-client",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Gershon Papi <papigers93@gmail.com>",
+  "homepage": "https://github.com/papigers/vod#readme",
+  "license": "ISC",
+  "main": "lib/vod-redis-client.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/papigers/vod.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/papigers/vod/issues"
+  },
+  "dependencies": {
+    "redis": "^2.8.0"
+  }
+}
