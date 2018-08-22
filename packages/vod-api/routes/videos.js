@@ -1,5 +1,6 @@
 var express = require('express');
 var Video = require('../models').Video;
+var Channel = require('../models').Channel;
 var router = express.Router();
 
 // create new video - initial request.
@@ -22,6 +23,31 @@ router.post('/', function(req, res, next) {
       error: 'Video creation failed',
     });
   });
+});
+
+router.get('/:id', function(req, res) {
+  Video.findById(req.params.id, {
+    attributes: ['id', 'createdAt', 'name', 'description'],
+    include: [{
+      model: Channel,
+      as: 'channel',
+      attributes: ['id', 'picture', 'name'],
+    }],
+  })
+    .then(function(result) {
+      if (result) {
+        return res.json(result.get({ plain: true }));
+      }
+      return res.status(404).json({
+        error: 'No such video',
+      });
+    })
+    .catch(function (err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Video edit failed',
+      });
+    })
 });
 
 router.put('/:id', function(req, res) {

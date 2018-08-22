@@ -17,6 +17,11 @@ const CardContainer = styled.div`
     margin-left: 12px;
     flex-basis: 212px;
   `}
+  
+  .ms-DocumentCardPreview {
+      width: 210px;
+      height: 118px;
+    }
 `;
 
 const StyledVideoCard = styled(DocumentCard)`
@@ -41,7 +46,7 @@ export default function VideoCard(props) {
 
   return (
     <CardContainer type={compact ? DocumentCardType.compact : DocumentCardType.normal}>
-      <Link to="/watch">
+      <Link to="/watch?v=9lUnK5wfdFIL">
         <div>
         <StyledVideoCard onClick={() => null} type={compact ? DocumentCardType.compact : DocumentCardType.normal}>
           <DocumentCardPreview previewImages={[
