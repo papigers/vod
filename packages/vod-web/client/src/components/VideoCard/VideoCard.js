@@ -47,7 +47,7 @@ export default function VideoCard(props) {
           <DocumentCardPreview previewImages={[
             {
               // previewImageSrc: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg?sqp=-oaymwEZCNACELwBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLCALyvNJwgrtG1GpHFugkV0e3jqdg',
-              previewImageSrc: `${process.env.REACT_APP_STREAMER_HOSTNAME}/FR5Ymgyk7yIG/thumbnail.png`,
+              previewImageSrc: `${process.env.REACT_APP_STREAMER_HOSTNAME}/b0PCWLt690M9/thumbnail.png`,
               // width: compact ? 240 : 215,
               width: compact ? null : 210,
               height: compact ? 118 : null,

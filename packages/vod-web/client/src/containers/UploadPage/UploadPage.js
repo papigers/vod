@@ -3,7 +3,9 @@ import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { Box } from 'grid-styled';
 import io from 'socket.io-client';
+import axios from 'axios';
 import { bindActionCreators } from 'redux';
+import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -13,6 +15,7 @@ import UploadForm from 'components/UploadForm';
 import { makeSelectStepState } from './selectors';
 
 import * as actions from './actions';
+import { push } from 'react-router-redux';
 
 const Container = styled(Box).attrs({
   mx: 'auto',
@@ -26,11 +29,30 @@ const Container = styled(Box).attrs({
   border-color: ${({theme}) => theme.palette.neutralLight};
 `;
 
+const ErrorBox = styled(MessageBar)`
+  width: calc(100% + 40px);
+  margin-top: -30px;
+  margin-right: -20px;
+  margin-bottom: 30px;
+`;
+
 const CHUNK_SIZE = 1048576;
 
 class UploadPage extends Component {
 
   componentWillMount() {
+    // this.reader.onabort = () => console.log('file reading was aborted');
+    // this.reader.onerror = () => console.log('file reading has failed');
+  }
+
+  componentWillUnmount() {
+    if (this.uploadSocket) {
+      this.uploadSocket.disconnect();
+    }
+    this.uploadSocket = null;
+  }
+
+  initSocket = () => {
     this.uploadSocket = io.connect(`${process.env.REACT_APP_ENCODER_HOSTNAME}/upload`);
     this.uploadSocket.on('setUploadId', this.setUploadId);
     this.uploadSocket.on('uploadProgress', this.updateProgress);
@@ -41,6 +63,10 @@ class UploadPage extends Component {
     this.uploadSocket.on('s3Finish', this.finishS3Step);
     this.uploadSocket.on('uploadMetadata', this.setUploadMetadata);
     this.uploadSocket.on('screenshots', this.setUploadVideoThumbnails);
+    this.uploadSocket.on('error', this.props.setUploadError);
+    this.uploadSocket.on('disconnect', this.onDisconnect);
+
+    
     this.reader = new FileReader();
     this.reader.onload = (event) => {
       const name = this.props.upload.file.name;
@@ -50,13 +76,13 @@ class UploadPage extends Component {
         data: event.target.result,
       });
     };
-    // this.reader.onabort = () => console.log('file reading was aborted');
-    // this.reader.onerror = () => console.log('file reading has failed');
   }
 
-  componentWillUnmount() {
-    this.uploadSocket.disconnect();
-    this.uploadSocket = null;
+  onDisconnect = () => {
+    const { step } = this.props.upload;
+    if (step !== 'form_waiting') {
+      this.props.setUploadError('אין תקשורת');
+    }
   }
 
   setUploadId = ({ id }) => {
@@ -101,6 +127,7 @@ class UploadPage extends Component {
   uploadFile = acceptedFiles => {
     acceptedFiles.forEach(file => {
       this.props.setUploadFile(file);
+      this.initSocket();
       this.uploadSocket.emit('uploadStart', {
         name: file.name,
         size: file.size,
@@ -130,6 +157,9 @@ class UploadPage extends Component {
       return;
     }
     this.props.setUploadStep('form_waiting');
+    // if (this.uploadSocket) {
+    //   this.uploadSocket.disconnect();
+    // }
   }
 
   setUploadMetadata = ({ id, metadata }) => {
@@ -146,10 +176,45 @@ class UploadPage extends Component {
     this.props.setUploadVideoThumbnails(thumbnails);
   }
 
+  onSubmit = () => {
+    const {
+      name,
+      privacy,
+      description,
+      acl,
+      selectedThumbnail,
+    } = this.props.upload.video;
+    this.props.setUploadStep('form_submit');
+    this.uploadSocket.emit('uploadScreenshot', selectedThumbnail);
+    axios.put(`${process.env.REACT_APP_API_HOSTNAME}/api/videos/publish/${this.id}`, {
+      name,
+      privacy,
+      description,
+      acl,
+    }).then(({ data }) => {
+      if (!data.error) {
+        return this.props.push(`/watch?v=${this.id}`);
+      }
+      this.props.setUploadError('לא ניתן היה לשמור את הסרטון');
+    }).catch((err) => {
+      console.error(err);
+      this.props.setUploadError('לא ניתן היה לשמור את הסרטון');
+    });
+  }
+
   render() {
-    const { step } = this.props.upload;
+    const { step, error } = this.props.upload;
     return (
       <Container>
+        {error ? (
+          <ErrorBox
+            messageBarType={MessageBarType.error}
+            onDismiss={() => this.props.setUploadError(null)}
+            dismissButtonAriaLabel="סגור"
+          >
+            ההעלאה נכשלה: {error}
+          </ErrorBox>
+        ) : null}
         {step === 'upload' ? (
           <UploadButton
             progress={this.props.upload.progress}
@@ -167,6 +232,8 @@ class UploadPage extends Component {
             onChangeACL={this.props.setUploadVideoACL}
             onChangePrivacy={this.setVideoPrivacy}
             onChangeThumbnail={this.props.selectUploadVideoThumbnail}
+            setUploadError={this.props.setUploadError}
+            onSubmit={this.onSubmit}
           />
         )}
       </Container>
@@ -179,7 +246,10 @@ const mapStateToProps = createStructuredSelector({
 });
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators(actions, dispatch);
+  return bindActionCreators({
+    ...actions,
+    push,
+  }, dispatch);
 };
 
 export default createReduxContainer(UploadPage, mapStateToProps, mapDispatchToProps);

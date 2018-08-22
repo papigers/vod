@@ -10,6 +10,7 @@ import {
   SET_UPLOAD_VIDEO_DESCRIPTION,
   SET_UPLOAD_VIDEO_PRIVACY,
   SET_UPLOAD_VIDEO_ACL,
+  SET_UPLOAD_ERROR,
 } from 'constants/actionTypes';
 
 export function setUploadProgress(progress) {
@@ -87,4 +88,11 @@ export function setUploadVideoACL(acl) {
     type: SET_UPLOAD_VIDEO_ACL,
     acl,
   };
+}
+
+export function setUploadError(error) {
+  return {
+    type: SET_UPLOAD_ERROR,
+    error,
+  }
 }

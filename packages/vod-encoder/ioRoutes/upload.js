@@ -2,15 +2,15 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var exec = require('child_process').exec;
-var request = require('request-promise');
+var axios = require('axios');
 var config = require('config');
 var ffmpeg = require('fluent-ffmpeg');
 var base64 = require('base64-img').base64;
+var rimraf = require('rimraf');
 
 var S3Client = require('vod-s3-client')();
 
 var CHUNK_SIZE = 1048576;
-var files = {};
 var MOCK_USER = 's7591665';
 
 function getRootUploadFolder() {
@@ -35,40 +35,57 @@ function UploadData(user, socket) {
 
   var self = this;
 
-  this.cleanup = function() {
+  this.onDisconnect = function() {
+    if (self.step === 'upload') {
+      self.uploadErrorHandler();
+    }
+  }
+
+  this.callback = function() {
     if (self.upload) {
       fs.close(self.upload.handler, function() {});
     }
+    // self.socket.disconnect();
   };
 
-  this.callback = function(err) {
+  this.uploadErrorHandler = function(err) {
     if (err) {
       console.error(err);
     }
-    self.cleanup();
-  };
+    try {
+      self.socket.emit('error', {
+        status: 500,
+        message: 'שגיאה בשרת',
+      });
+      self.socket.disconnect();
+    }
+    catch (e) {}
+
+    try {
+      rimraf(getUploadFileFolder(self.id));
+    }
+    catch (e) {}
+    return;
+  }
 
   this.startUpload = function(data) {
     self.createUpload(data)
     .then(self.initUpload.bind(self, data))
-    .catch(self.callback);
+    .catch(self.uploadErrorHandler);
   }
 
   this.createUpload = function(data) {
-    return request.post({
-      url: `${config.api}/videos`,
-      json: true,
-      body: {
-        creator: MOCK_USER,
-        channel: MOCK_USER,
-        name: data.name,
-      },
+    return axios.post(`${config.api}/videos`, {
+      creator: MOCK_USER,
+      channel: MOCK_USER,
+      name: data.name.replace(/\.[^/.]+$/, ''),
     });
   };
 
-  this.initUpload = function(data, { id }) {
+  this.initUpload = function(data, { data: { id } }) {
     self.socket.emit('setUploadId', { id });
     self.id = id;
+    self.step = 'upload';
     self.upload = {
       size: data.size,
       data: '',
@@ -94,8 +111,8 @@ function UploadData(user, socket) {
     catch (err) {}
     fs.open(getUploadFilePath(self.id), "a", 0755, function (err, fd) {
       if (err) {
-        console.error(err);
-        self.callback(self.id, err);
+        // self.callback(err);
+        return self.uploadErrorHandler(err);
       }
       else {
         self.upload.handler = fd;
@@ -116,7 +133,8 @@ function UploadData(user, socket) {
     if (self.upload.downloaded === self.upload.size) {
       fs.write(self.upload.handler, self.upload.data, null, 'Binary', function(err) {
         if (err) {
-          self.callback(err);
+          // self.callback(err);
+          return self.uploadErrorHandler(err);
         }
         self.encodeVideo();
       });
@@ -124,6 +142,10 @@ function UploadData(user, socket) {
     // write from buffer to file
     else if (self.upload.data.length > 10485760) {
       fs.write(self.upload.handler, self.upload.data, null, 'Binary', function (err, written) {
+        if (err) {
+          // self.callback(err);
+          return self.uploadErrorHandler(err);
+        }
         self.upload.data = '';
         var chunk = self.upload.downloaded / CHUNK_SIZE;
         var progress = (self.upload.downloaded / self.upload.size) * 100;
@@ -151,19 +173,23 @@ function UploadData(user, socket) {
     }
   };
 
-  this.takeVideoScreenshots = function(fileName, dir) {
+  this.takeVideoScreenshots = function(fileName, dir, callback, tryCount) {
     var screenshots = [];
     var posters = [];
+    var tryCnt = tryCount || 0;
     var b64shots = [null, null, null, null];
     var finishedThumbnails = false;
     var finishedPosters = false;
     
     function checkCallback(err) {
       if (err) {
-        self.callback(err);
+        if (tryCnt < 3) {
+          return takeVideoScreenshots(fileName, dir, callback, tryCnt + 1);
+        }
+        return callback(err);
       }
       if (finishedPosters && finishedThumbnails) {
-        self.callback(null, {
+        callback(null, {
           posters,
           thumbnails: screenshots,
         });
@@ -186,10 +212,7 @@ function UploadData(user, socket) {
         );
 
         screenshots.forEach(function(shot, index) {
-          base64(shot, function(err, data) {
-            if (err) {
-              return self.callback(err);
-            }          
+          base64(shot, function(err, data) { 
             b64shots[index] = data;
             if (b64shots.length === screenshots.length) {
               console.log(b64shots);
@@ -205,7 +228,7 @@ function UploadData(user, socket) {
       .outputOptions('-preset veryfast')
       .screenshots({
         count: 4,
-        size: '?x120',
+        size: '212x120',
         folder: dir,
         filename: `${self.id}-thumb%0i.png`,
       });
@@ -229,7 +252,7 @@ function UploadData(user, socket) {
       .outputOptions('-preset veryfast')
       .screenshots({
         count: 4,
-        size: '?x480',
+        size: '852x480',
         folder: dir,
         filename: `${self.id}-poster%0i.png`,
       });
@@ -237,6 +260,7 @@ function UploadData(user, socket) {
 
   this.uploadVideoToS3 = function() {
     var count = 0;
+    self.step = 's3';
     var files = self.s3Files;
     Object.keys(files).forEach(function(file) {
       files[file].progress = 0;
@@ -275,41 +299,113 @@ function UploadData(user, socket) {
       }, 0);
       avgProgress /= total;
       self.socket.emit('s3Progress', { progress: avgProgress, id: self.id });
+      return avgProgress;
     }
   
-    Object.keys(files).forEach(function(fileType) {
+    var fileTypes = Object.keys(files).sort(function(type1, type2) {
+      if (!weights[type2]) {
+        return -1;
+      }
+      if (!weights[type1]) {
+        return 1;
+      }
+      return weights[type1] - weights[type2];
+    });
+    // var uploadIndex = 0;
+    // var fileType = fileTypes[uploadIndex];
+    // var tryCount = 0;
+
+    // function progressHandler(progress) {
+    //   files[fileType].progress = ((progress.loaded / progress.total) * 40);
+    //   sendTotalProgress();
+    // }
+
+    // function s3Callback(err, data) {
+    //   if (err) {
+    //     if (tryCount < 3) {
+    //       tryCount++;
+    //       uploadVideoFile(
+    //         self.id,
+    //         `${fileType}.${getFileExtension(fileType)}`,
+    //         files[fileType].path,
+    //         progressHandler,
+    //         s3Callback,
+    //       );
+    //     }
+    //     return self.uploadErrorHandler(err);
+    //   }
+    //   files[fileType].link = data.Location;
+    //   files[fileType].progress = 100;
+    //   var totalProgress  = sendTotalProgress();
+    //   console.log('uploaded', fileType);
+      
+    //   tryCount = 0;
+    //   uploadIndex++;
+    //   fileType = fileTypes[uploadIndex];
+    //   if (uploadIndex < fileTypes.length) {
+    //     uploadVideoFile(
+    //       self.id,
+    //       `${fileType}.${getFileExtension(fileType)}`,
+    //       files[fileType].path,
+    //       progressHandler,
+    //       s3Callback,
+    //     );
+    //   }
+
+    //   if (totalProgress >= 100 && self.step !== 'draft') {
+    //     uploaded = {};
+    //     Object.keys(files).map(function(fileType) {
+    //       return uploaded[fileType] = files[fileType].link;
+    //     });
+    //     self.postUpload(uploaded);
+    //   }
+    // }
+
+    // uploadVideoFile(
+    //   self.id,
+    //   `${fileType}.${getFileExtension(fileType)}`,
+    //   files[fileType].path,
+    //   progressHandler,
+    //   s3Callback,
+    // );
+
+    // console.log(fileTypes, files);
+    fileTypes.forEach(function(fileType) {
       var file = files[fileType].path;
-      uploadVideoFile(
-        self.id,
-        `${fileType}.${getFileExtension(fileType)}`,
-        file,
-        function progressHandler(progress) {
-          files[fileType].progress = ((progress.loaded / progress.total) * 40);
-          sendTotalProgress();
-        },
-        function s3Callback(err, data) {
-          if (err) {
-            return self.callback(err);
-          }
-          files[fileType].link = data.Location;
-          files[fileType].progress = 100;
-          sendTotalProgress();
-          console.log('uploaded', fileType);
-          count++;
-          if (count === Object.keys(files).length) {
-            uploaded = {};
-            Object.keys(files).map(function(fileType) {
-              return uploaded[fileType] = files[fileType].link;
-            });
-            self.postUpload(uploaded);
-          }
-        },
-      );
+      setTimeout(function() {
+        uploadVideoFile(
+          self.id,
+          `${fileType}.${getFileExtension(fileType)}`,
+          file,
+          function progressHandler(progress) {
+            files[fileType].progress = ((progress.loaded / progress.total) * 40);
+            sendTotalProgress();
+          },
+          function s3Callback(err, data) {
+            if (err) {
+              return self.uploadErrorHandler(err);
+            }
+            files[fileType].link = data.Location;
+            files[fileType].progress = 100;
+            sendTotalProgress();
+            console.log('uploaded', fileType);
+            count++;
+            if (count === fileTypes.length) {
+              uploaded = {};
+              Object.keys(files).map(function(fileType) {
+                return uploaded[fileType] = files[fileType].link;
+              });
+              self.postUpload(uploaded);
+            }
+          },
+        );
+      }, weights[fileType] * 750);
     });
   }
 
   this.postUpload = function (links) {
     console.log(links);
+    self.step = 'draft';
     self.socket.emit('s3Finish', { id: self.id });
     self.callback();
   }
@@ -318,6 +414,7 @@ function UploadData(user, socket) {
     self.inputFile = getUploadFilePath(self.id);
     self.outputFile = getEncodedFilePath(self.id);
   
+    self.step = 'encode';
     self.socket.emit('uploadFinish', { id: self.id });
   
     self.encodedFiles = {
@@ -331,7 +428,7 @@ function UploadData(user, socket) {
     
     ffmpeg.ffprobe(self.inputFile, function (err, metadata) {
       if (err) {
-        self.callback(err);
+        return self.uploadErrorHandler(err);
       }
       else {
         var dims = metadata.streams
@@ -458,19 +555,18 @@ function UploadData(user, socket) {
   
         encoding
           .on('progress', function (progress) {
-            console.log('Processing: ' + progress.percent + '% done');
+            // console.log('Processing: ' + progress.percent + '% done');
             self.socket.emit('encodingProgress', {
               progress,
               id: self.id,
             });
           })
           .on('error', function (err, stdout, stderr) {
-            console.log('Cannot process video: ' + err.message);
-            self.callback(err);
+            // console.log('Cannot process video: ' + err.message);
+            return self.uploadErrorHandler(err);
           })
           .on('end', function (stdout, stderr) {
-            console.log('Transcoding succeeded!');
-            
+            // console.log('Transcoding succeeded!');
             var mp4boxInputs = [];
             var mp4boxOutputs = {};
             Object.keys(self.encodedFiles).forEach(function(repId) {
@@ -500,7 +596,7 @@ function UploadData(user, socket) {
   
             exec(mp4boxCommand, { cwd: getUploadFileFolder(self.id) }, function(err, stdout, stderr) {
               if (err) {
-                return self.callback(err);
+                return self.uploadErrorHandler(err);
               }
               self.socket.emit('encodingFinish', { id: self.id });
               self.uploadVideoToS3();
@@ -512,9 +608,7 @@ function UploadData(user, socket) {
             self.inputFile,
             getUploadFileFolder(self.id),
             function(err, res) {
-              if (err) {
-                self.callback(err);
-              }
+              console.error(err);
               self.thumbnails = res.thumbnails;
               self.posters = res.posters;
             },
@@ -522,9 +616,28 @@ function UploadData(user, socket) {
       }
     });
   };
+
+  this.uploadScreenshot = function(index) {
+    console.log(index);
+    self.selectedThumbnail = index;
+    console.log(self.thumbnails[self.selectedThumbnail]);
+    if (self.thumbnails) {
+      self.s3Files.thumbnail = {
+        path: self.thumbnails[self.selectedThumbnail],
+      };
+      uploadVideoFile(self.id, 'thumbnail.png', self.posters[self.selectedThumbnail], null, console.log);
+    }
+    if (self.posters) {
+      self.s3Files.poster = {
+        path: self.posters[self.selectedThumbnail],
+      };
+      uploadVideoFile(self.id, 'poster.png', self.posters[self.selectedThumbnail]);
+    }
+  };
 }
 
 function uploadVideoFile(id, filename, path, progressHandler, callback) {
+  // console.log(path);
   var stream = fs.createReadStream(path);
   var noop = function() {};
   S3Client.uploadVideo(
@@ -546,6 +659,10 @@ function ioUpload(io) {
     socket.on('uploadStart', uploadData.startUpload);
 
     socket.on('uploadStep', uploadData.uploadProgress);
+
+    socket.on('uploadScreenshot', uploadData.uploadScreenshot);
+
+    socket.on('disconnect', uploadData.onDisconnect);
   });
 }
 
