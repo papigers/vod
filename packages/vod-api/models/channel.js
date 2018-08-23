@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
       },
     });
     Channel.belongsToMany(models.Video, { through: models.Comment });
-    Channel.hasMany(models.ChannelAccess, { as: 'acl' });
+    Channel.hasMany(models.ChannelAccess, { as: 'channelACL' });
   };
 
   return Channel;

@@ -26,14 +26,7 @@ router.post('/', function(req, res, next) {
 });
 
 router.get('/:id', function(req, res) {
-  Video.findById(req.params.id, {
-    attributes: ['id', 'createdAt', 'name', 'description'],
-    include: [{
-      model: Channel,
-      as: 'channel',
-      attributes: ['id', 'picture', 'name'],
-    }],
-  })
+  Video.viewGetVideo(req.params.id)
     .then(function(result) {
       if (result) {
         return res.json(result.get({ plain: true }));
@@ -45,7 +38,7 @@ router.get('/:id', function(req, res) {
     .catch(function (err) {
       console.error(err);
       return res.status(500).json({
-        error: 'Video edit failed',
+        error: 'Couldn\'t get video',
       });
     })
 });
@@ -87,9 +80,9 @@ router.put('/publish/:id', function(req, res, next) {
 
 router.get('/:videoId/auth-check/:userId', function(req, res) {
   Video.checkAuth(req.params.videoId, req.params.userId)
-    .then(function(video) {
+    .then(function(count) {
       res.json({
-        authorized: !!video,
+        authorized: count > 0,
       });
     })
     .catch(function(err) {
