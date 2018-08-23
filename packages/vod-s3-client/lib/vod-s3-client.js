@@ -43,7 +43,7 @@ S3Client.prototype.getObject = function(req, callback) {
       callback(err, null);
       });
   }
-  return get.createReadStream();
+  return get;
 }
 
 S3Client.prototype.uploadVideo = function(videoId, fileName, stream, progressHandler, callback) {

@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 
 function getStepSubState(step) {
-  const keys = ['step'];
+  const keys = ['step', 'error'];
   switch (step) {
     case 'upload':
       return keys;

@@ -17,6 +17,11 @@ const CardContainer = styled.div`
     margin-left: 12px;
     flex-basis: 212px;
   `}
+  
+  .ms-DocumentCardPreview {
+      width: 210px;
+      height: 118px;
+    }
 `;
 
 const StyledVideoCard = styled(DocumentCard)`
@@ -41,13 +46,13 @@ export default function VideoCard(props) {
 
   return (
     <CardContainer type={compact ? DocumentCardType.compact : DocumentCardType.normal}>
-      <Link to="/watch">
+      <Link to="/watch?v=9lUnK5wfdFIL">
         <div>
         <StyledVideoCard onClick={() => null} type={compact ? DocumentCardType.compact : DocumentCardType.normal}>
           <DocumentCardPreview previewImages={[
             {
               // previewImageSrc: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg?sqp=-oaymwEZCNACELwBSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLCALyvNJwgrtG1GpHFugkV0e3jqdg',
-              previewImageSrc: `${process.env.REACT_APP_STREAMER_HOSTNAME}/FR5Ymgyk7yIG/thumbnail.png`,
+              previewImageSrc: `${process.env.REACT_APP_STREAMER_HOSTNAME}/b0PCWLt690M9/thumbnail.png`,
               // width: compact ? 240 : 215,
               width: compact ? null : 210,
               height: compact ? 118 : null,

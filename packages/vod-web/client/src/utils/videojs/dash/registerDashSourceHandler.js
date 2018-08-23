@@ -297,14 +297,6 @@ class Html5DashJS {
     const trackList = [];
     const bitrateInfo = this.mediaPlayer_.getBitrateInfoListFor('video');
 
-    console.log(this.mediaPlayer_.getBitrateInfoListFor('video'));
-    console.log(this.mediaPlayer_.getBitrateInfoListFor('audio'));
-
-    setTimeout(() => {
-      console.log(this.mediaPlayer_.getBitrateInfoListFor('video'));
-      console.log(this.mediaPlayer_.getBitrateInfoListFor('audio'));
-    }, 10000)
-
     if (bitrateInfo) {
       if (bitrateInfo.length > 1) {
         trackList.push({
