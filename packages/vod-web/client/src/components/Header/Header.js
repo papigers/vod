@@ -173,7 +173,7 @@ function ButtonLink(props) {
 
 function SubMenuLink(props, dismiss) {
   const { to, channel, onRender, ...other } = props;
-  if (to.indexOf('/channel') !== -1) {
+  if (to.indexOf('/channel') !== -1 && to !== '/channel/new') {
     return (
       <StyledSubMenuButton {...other}>
         <Link to={to}>
@@ -242,7 +242,7 @@ export default function Header(props) {
                   },
                   {
                     key: 'createChannel',
-                    to: '/create-channel',
+                    to: '/channel/new',
                     text: 'צור ערוץ',
                     iconProps: {
                       iconName: 'AddGroup'
