@@ -7,6 +7,7 @@ import { bindActionCreators } from 'redux';
 import Header from 'components/Header';
 import Sidebar from 'components/Sidebar';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
+import NewChannelForm from 'components/NewChannelForm';
 
 import VideoPage from 'containers/VideoPage';
 import UploadPage from 'containers/UploadPage';
@@ -52,6 +53,7 @@ class App extends Component {
             <Switch>
               <Route exact path="/" component={Videos} />
               <Route exact path="/channel" component={ChannelPage} />
+              <Route exact path="/channel/new" component={NewChannelForm} />
               <Route exact path="/channel/:channelId" component={ChannelPage} />
               <Route exact path="/watch" component={VideoPage} />
               <Route exact path="/upload" component={UploadPage} />
