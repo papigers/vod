@@ -24,7 +24,13 @@ module.exports = function(sequelize, DataTypes) {
   });
 
   Video.associate = function(models) {
-    Video.hasMany(models.VideoAccess, { as: 'videoACL' });
+    Video.VideoACL = Video.hasMany(models.VideoAccess, {
+      as: 'videoACL',
+      onDelete: "CASCADE",
+      foreignKey: {
+        allowNull: false,
+      },
+    });
     // Video.belongsToMany(models.Channel, { as: 'likes' });
     // Video.belongsToMany(models.Channel, { as: 'views' });
     Video.belongsToMany(models.Channel, { through: models.Comment });
@@ -199,14 +205,26 @@ module.exports = function(sequelize, DataTypes) {
      * @param {Video} video Missing video's attributes
      */
     Video.publish = function(id, video) {
-      video.published = true;
-      return Video.update(video, {
-        fields: ['name', 'description', 'published', 'privacy', 'acl'],
+      var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
+      video.videoACL = video.acl;
+      return Video.find({
         where: {
-          id,
+          id: id,
           published: false,
         },
-      });
+      }).then(function(found) {
+        if (!found) {
+          return null;
+        }
+        return models.embed.update(Video, {
+          id: id,
+          videoACL: video.acl,
+          name: video.name,
+          description: video.description,
+          privacy: video.privacy,
+          published: true,
+        }, [Acls]);
+      })
     }
 
     Video.checkAuth = function(videoId, userId, groups) {

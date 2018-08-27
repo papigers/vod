@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser('cookie-secret'));
 
-var apiRoute = require('./routes/index');
-app.use('/api', apiRoute);
+var routes = require('./routes/index');
+app.use('/', routes);
 
 module.exports = app;

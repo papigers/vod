@@ -1,12 +1,10 @@
 var express = require('express');
 var router = express.Router();
 
-var videos = require('./videos');
-router.use('/videos', videos);
+var api = require('./api');
+router.use('/api', api);
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+var ldap = require('./ldap');
+router.use('/ldap', ldap);
 
 module.exports = router;

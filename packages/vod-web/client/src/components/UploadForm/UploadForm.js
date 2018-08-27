@@ -139,6 +139,13 @@ class UploadForm extends Component {
     }
   }
 
+  onChangeACL = (acls) => {
+    this.props.onChangeACL(acls.map(acl => ({
+      id: acl.secondaryText,
+      type: acl.type,
+    })));
+  }
+
   onSubmit = () => {
     const {
       step,
@@ -173,7 +180,7 @@ class UploadForm extends Component {
       metadata,
       onChangeName,
       onChangeDescription,
-      onChangePrivacy
+      onChangePrivacy,
     } = this.props;
 
     const intermidiateProgress = step === 'upload_submit' && progress >= 100;
@@ -263,7 +270,7 @@ class UploadForm extends Component {
                 />
               </DropdownContainer>
               {privacy !== 'public' ? (
-                <PeoplePicker label="הסרטון משותף עם:" />
+                <PeoplePicker label="הסרטון משותף עם:" onChange={this.onChangeACL} />
               ) :  null}
               {metadata ? (
                 <Metadata>

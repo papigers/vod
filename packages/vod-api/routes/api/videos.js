@@ -1,6 +1,6 @@
 var express = require('express');
-var Video = require('../models').Video;
-var Channel = require('../models').Channel;
+var Video = require('../../models').Video;
+var Channel = require('../../models').Channel;
 var router = express.Router();
 
 // create new video - initial request.
@@ -64,7 +64,7 @@ router.put('/:id', function(req, res) {
 router.put('/publish/:id', function(req, res, next) {
   Video.publish(req.params.id, req.body)
     .then(function(result) {
-      if (result[0] > 0) {
+      if (!!result) {
         return res.json({});
       }
       return res.status(404).json({
@@ -72,6 +72,7 @@ router.put('/publish/:id', function(req, res, next) {
       });
     })
     .catch(function (err) {
+      console.error(err);
       res.status(500).json({
         error: 'Video publish failed',
       });
