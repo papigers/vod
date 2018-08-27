@@ -1,3 +1,5 @@
+var Op = require('sequelize').Op;
+
 module.exports = function(sequelize, DataTypes) {
   var Channel = sequelize.define('Channel', {
     id: {
@@ -89,20 +91,47 @@ module.exports = function(sequelize, DataTypes) {
       return filter;
     };
 
-    Channel.getChannel = function(videoId) {
+    Channel.getChannelVideos = function(videoId, limit, offset, sort) {
       return Channel.findOne(Channel.addAuthorizedFilter({
-        attributes: ['id', 'picture', 'cover', 'personal'],
+        attributes: ['id'],
         where: {
           id: videoId,
         },
         include: [{
           model: models.Video,
           as: 'videos',
-          where: {
-            published: true,
-          },
-          attributes: ['id', 'name'],
-        }],
+          duplicating: false,
+        }]
+      })).then(function(channel) {
+        return channel.getVideos(models.Video.addAuthorizedFilter({
+          attributes: ['id', 'createdAt', 'name', 'description'],
+          limit,
+          offset,
+          order: models.Video.getFilterOrder(sort),
+          include: [{
+            model: Channel,
+            as: 'channel',
+            attributes: ['id', 'picture', 'name'],
+          }],
+        }));
+      });
+    }
+
+    Channel.getChannel = function(videoId) {
+      return Channel.findOne(Channel.addAuthorizedFilter({
+        attributes: ['id', 'picture', 'cover', 'personal', 'name', 'description'],
+        where: {
+          id: videoId,
+        },
+        // include: [{
+        //   model: models.Video,
+        //   as: 'videos',
+        //   where: {
+        //     published: true,
+        //   },
+        //   duplicating: false,
+        //   attributes: ['id', 'name'],
+        // }],
       }));
     }
 

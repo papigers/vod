@@ -1,7 +1,28 @@
 var express = require('express');
 var Video = require('../../models').Video;
-var Channel = require('../../models').Channel;
 var router = express.Router();
+
+
+function getVideos(req, res) {
+  var limit = req.query.limit || 12;
+  var offset = req.query.offset || 0;
+  var sort = req.params && req.params.sort;
+  limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
+
+  Video.getVideos(limit, offset, sort)
+    .then(function(videos) {
+      res.json(videos);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Couldn\'t fetch videos',
+      });
+    });
+};
+
+router.get('/', getVideos);
+router.get('/:sort', getVideos);
 
 // create new video - initial request.
 /**

@@ -271,6 +271,39 @@ module.exports = function(sequelize, DataTypes) {
         }],
       }));
     }
+
+    Video.getFilterOrder = function(sort) {
+      switch(sort) {
+        // by create/publish date
+        case 'new':
+          return [
+            ['createdAt', 'DESC'],
+          ];
+        // by most recent view
+        case 'trending':
+          // TODO
+        // by views
+        case 'top':
+          // TODO
+        case 'random':
+        default:
+          return sequelize.random();
+      }
+    };
+
+    Video.getVideos =  function(limit, offset, sort) {
+      return Video.findAll(Video.addAuthorizedFilter({
+        attributes: ['id', 'createdAt', 'name', 'description'],
+        limit: limit,
+        offset: offset,
+        order: Video.getFilterOrder(sort),
+        include: [{
+          model: models.Channel,
+          as: 'channel',
+          attributes: ['id', 'picture', 'name'],
+        }],
+      }));
+    };
   }
 
   return Video;

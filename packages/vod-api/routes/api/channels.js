@@ -39,7 +39,7 @@ router.put('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-  Channel.createChannel(req.body.params)
+  Channel.createChannel(req.body)
     .then(function(result) {
       return res.json({ id: result.get('id') });
     })
@@ -50,5 +50,26 @@ router.post('/', function(req, res) {
       });
     });
 });
+
+function getChannelVideos(req, res) {
+  var limit = req.query.limit || 12;
+  var offset = req.query.offset || 0;
+  var sort = req.params && req.params.sort;
+  limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
+
+  Channel.getChannelVideos(req.params.id, limit, offset, sort)
+    .then(function(results) {
+      return res.json(results);
+    })
+    .catch(function (err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Failed to get channel videos',
+      });
+    });
+};
+
+router.get('/:id/videos', getChannelVideos);
+router.get('/:id/videos/:sort', getChannelVideos);
 
 module.exports = router;
