@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 import qs from 'query-string';
@@ -76,7 +77,7 @@ class VideoPage extends Component {
   }
 
   fetchVideo() {
-    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/videos/${this.state.videoId}`)
+    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/videos/view/${this.state.videoId}`)
       .then(({ data }) => {
         this.setState({
           video: data,
@@ -112,6 +113,8 @@ class VideoPage extends Component {
 
   render() {
     const { video, error } = this.state;
+
+    const LinkOnLoad = video ? Link : 'div';
 
     return (
       <Box px={20} pt={24}>
@@ -205,12 +208,14 @@ class VideoPage extends Component {
                       isDataLoaded={!!video}
                     >
                       <SpreadItems>
-                        <Persona
-                          imageUrl={video && video.channel && video.channel.picture}
-                          text={video && video.channel && video.channel.name}
-                          secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
-                          size={PersonaSize.size100}
-                        />
+                        <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
+                          <Persona
+                            imageUrl={video && video.channel && video.channel.picture}
+                            text={video && video.channel && video.channel.name}
+                            secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
+                            size={PersonaSize.size100}
+                          />
+                        </LinkOnLoad>
                         <DefaultButton
                           text="עקוב"
                           iconProps={{ iconName: 'FollowUser' }}

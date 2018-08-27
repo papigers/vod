@@ -51,7 +51,12 @@ router.post('/', function(req, res) {
     });
 });
 
-function getChannelVideos(req, res) {
+// default redirect to new uploads
+router.get('/:id/videos', function(req, res) {
+  res.redirect(`${req.baseUrl}/${req.params.id}/videos/new`);
+});
+
+router.get('/:id/videos/:sort', function(req, res) {
   var limit = req.query.limit || 12;
   var offset = req.query.offset || 0;
   var sort = req.params && req.params.sort;
@@ -67,9 +72,6 @@ function getChannelVideos(req, res) {
         error: 'Failed to get channel videos',
       });
     });
-};
-
-router.get('/:id/videos', getChannelVideos);
-router.get('/:id/videos/:sort', getChannelVideos);
+});
 
 module.exports = router;

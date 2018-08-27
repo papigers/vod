@@ -21,8 +21,28 @@ function getVideos(req, res) {
     });
 };
 
-router.get('/', getVideos);
-router.get('/:sort', getVideos);
+// default redirect to random
+router.get('/', function(req, res) {
+  res.redirect(`${req.baseUrl}/random`);
+});
+
+router.get('/:sort', function(req, res) {
+  var limit = req.query.limit || 12;
+  var offset = req.query.offset || 0;
+  var sort = req.params && req.params.sort;
+  limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
+
+  Video.getVideos(limit, offset, sort)
+    .then(function(videos) {
+      res.json(videos);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Couldn\'t fetch videos',
+      });
+    });
+});
 
 // create new video - initial request.
 /**
@@ -46,7 +66,7 @@ router.post('/', function(req, res, next) {
   });
 });
 
-router.get('/:id', function(req, res) {
+router.get('/view/:id', function(req, res) {
   Video.viewGetVideo(req.params.id)
     .then(function(result) {
       if (result) {

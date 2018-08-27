@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Box } from 'grid-styled';
 import VideoCard from '../VideoCard';
 import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 
@@ -19,15 +20,19 @@ const CategoryHeader = styled.h2`
 `;
 
 export default function VideoList(props) {
-  const { category, type } = props;
+  const { category, type, videos } = props;
   return (
-    <div>
+    <Box pb={16}>
       {category ? <CategoryHeader>{category}</CategoryHeader> : null}
       <ThumbnailList type={type}>
-        {[1,2,3,4,5,6,7,8,9,10].map(k => <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} key={k} />)}
+        {videos && videos.length ? (
+          videos.map(video => <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} video={video} key={video.id} />)
+        ) : (
+          [1,2,3,4,5,6,7,8,9,10].map(k => <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} loading key={k} />)
+        )}
       </ThumbnailList>
       <PrimaryButton text="עוד" />
-    </div>
+    </Box>
   );
 }
 

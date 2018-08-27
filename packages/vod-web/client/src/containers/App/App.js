@@ -6,8 +6,7 @@ import { bindActionCreators } from 'redux';
 
 import Header from 'components/Header';
 import Sidebar from 'components/Sidebar';
-import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
-
+import HomePage from 'containers/HomePage';
 import VideoPage from 'containers/VideoPage';
 import UploadPage from 'containers/UploadPage';
 import ChannelPage from 'containers/ChannelPage';
@@ -31,8 +30,6 @@ const Content = styled.div`
   margin-top: 64px;
 `;
 
-const Videos = () => <VideoList category="מומלצים" type={VIDEO_LIST_TYPE.GRID} />;
-
 class App extends Component {
   render() {
     const {
@@ -50,7 +47,7 @@ class App extends Component {
           <Sidebar isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} onDismissed={toggleSidebarOpen} />
           <Content addSidebarMargin={isSidebarOpen && isSidebarTrapped}>
             <Switch>
-              <Route exact path="/" component={Videos} />
+              <Route exact path="/" component={HomePage} />
               <Route exact path="/channel" component={ChannelPage} />
               <Route exact path="/channel/:channelId" component={ChannelPage} />
               <Route exact path="/watch" component={VideoPage} />
