@@ -182,6 +182,10 @@ module.exports = function(sequelize, DataTypes) {
           creatorId: video.creator,
           name: video.name,
         },
+      }).spread(function(video) {
+        video.setChannel(video.channel);
+        video.setCreator(video.creator);
+        return video;
       });
     }
 
@@ -191,12 +195,26 @@ module.exports = function(sequelize, DataTypes) {
      * @param {Video} video video's attributes
      */
     Video.edit = function(id, video) {
-      return Video.update(video, {
-        fields: ['name', 'description', 'privacy', 'acl'],
-        where: {
-          id,
-        },
-      });
+      if (video.privacy === 'public') {
+        video.acl = [];
+      }
+
+      var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
+      video.videoACL = video.acl;
+      return Video.findById(id)
+        .then(function(found) {
+          if (!found) {
+            return null;
+          }
+          return models.embed.update(Video, {
+            id: id,
+            videoACL: video.acl,
+            name: video.name,
+            description: video.description,
+            privacy: video.privacy,
+            channelId: video.channel,
+          }, [Acls]);
+        });
     }
 
     /**
@@ -205,6 +223,10 @@ module.exports = function(sequelize, DataTypes) {
      * @param {Video} video Missing video's attributes
      */
     Video.publish = function(id, video) {
+      if (video.privacy === 'public') {
+        video.acl = [];
+      }
+      
       var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
       video.videoACL = video.acl;
       return Video.find({
@@ -222,6 +244,7 @@ module.exports = function(sequelize, DataTypes) {
           name: video.name,
           description: video.description,
           privacy: video.privacy,
+          channelId: video.channel,
           published: true,
         }, [Acls]);
       })
