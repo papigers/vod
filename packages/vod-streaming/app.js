@@ -4,6 +4,7 @@ var logger = require('morgan');
 var config = require('config');
 var axios = require('axios');
 var cors = require('cors');
+var compression = require('compression');
 
 var S3Client = require('vod-s3-client')();
 var authCache = require('vod-redis-client')(config.cache.auth);
@@ -15,10 +16,21 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser('cookie-secret'));
+app.use(compression());
 
 function getUser(req) {
   return 's7591665';
 }
+
+var provisionHeaders = [
+  'content-length',
+  'content-type',
+  'content-range',
+  'content-encoding',
+  'accept-ranges',
+  'etag',
+  'last-modified',
+];
 
 app.get('/:videoId/:object',
   function checkAuthorized(req, res, next) {
@@ -49,18 +61,15 @@ app.get('/:videoId/:object',
     S3Client.getObject(req)
       .on('httpHeaders', function (statusCode, headers) {
         res.status(statusCode);
-        res.set('Content-Length', headers['content-length']);
-        res.set('Content-Range', headers['content-range']);
-        res.set('Content-Type', headers['content-type']);
-        res.set('Last-Modified', headers['last-modified']);
-        res.set('ETag', headers['etag']);
+        provisionHeaders.forEach(function(header) {
+          if (headers[header]) {
+            res.set(header, headers[header])
+          }
+        });
         this.response.httpResponse.createUnbufferedStream().pipe(res);
       })
       .send();
-    // S3Client.getObject(req).createReadStream().pipe(res);
   }
 );
-
-var x =  1;
 
 module.exports = app;

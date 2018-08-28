@@ -9,6 +9,7 @@
   "dependencies": {
     "activedirectory": "^0.7.2",
     "aws-sdk": "^2.291.0",
+    "compression": "^1.7.3",
     "config": "^2.0.1",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
