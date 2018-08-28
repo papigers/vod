@@ -262,7 +262,6 @@ export default class ThemedPlyr extends Component {
     if (this.props.videoId) {
       this.loadVideoSources();
     }
-    this.player.qualityPickerPlugin();
   }
 
   componentWillUnmount() {
@@ -281,6 +280,7 @@ export default class ThemedPlyr extends Component {
       });
       this.player.load();
       this.player.play();
+      this.player.qualityPickerPlugin();
     }
   }
 
