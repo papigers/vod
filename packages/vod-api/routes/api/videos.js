@@ -55,11 +55,12 @@ router.post('/', function(req, res, next) {
     creator: req.body.creator,
     channel: req.body.channel,
     name: req.body.name,
-  }).then(function([video, created]) {
+  }).then(function(video) {
     res.json({
       id: video.get('id'),
     });
   }).catch(function(err) {
+    console.error(err);
     res.status(500).json({
       error: 'Video creation failed',
     });

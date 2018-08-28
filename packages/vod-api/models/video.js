@@ -182,10 +182,10 @@ module.exports = function(sequelize, DataTypes) {
           creatorId: video.creator,
           name: video.name,
         },
-      }).spread(function(video) {
-        video.setChannel(video.channel);
-        video.setCreator(video.creator);
-        return video;
+      }).spread(function(videoDb) {
+        videoDb.setChannel(video.channel);
+        videoDb.setCreator(video.creator);
+        return Promise.resolve(videoDb);
       });
     }
 
@@ -235,6 +235,7 @@ module.exports = function(sequelize, DataTypes) {
           published: false,
         },
       }).then(function(found) {
+        console.log(video);
         if (!found) {
           return null;
         }
@@ -244,7 +245,7 @@ module.exports = function(sequelize, DataTypes) {
           name: video.name,
           description: video.description,
           privacy: video.privacy,
-          channelId: video.channel,
+          channelId: video.channel || found.get('channelId'),
           published: true,
         }, [Acls]);
       })
