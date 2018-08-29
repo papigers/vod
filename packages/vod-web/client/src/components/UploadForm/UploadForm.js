@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
+import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
@@ -212,7 +212,8 @@ class UploadForm extends Component {
                     data: {
                       img: 'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
                     },
-                  }, {
+                  },{ key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
+                  {
                     key: 'channel11',
                     text: 'ערוץ 11',
                     data: {
@@ -231,8 +232,9 @@ class UploadForm extends Component {
                   onRenderOption={this.onRenderPrivacyOption}
                   placeHolder="בחר/י גישה לסרטון"
                   options={[
-                    { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
                     { key: 'private', text: 'פרטי', data: { icon: 'Contact' } },
+                    { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
+                    { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
                     { key: 'channel', text: 'יורש מהערוץ', data: { icon: 'MSNVideos' } },
                   ]}
                 />
