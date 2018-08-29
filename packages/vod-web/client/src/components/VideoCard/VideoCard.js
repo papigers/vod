@@ -21,14 +21,17 @@ const CardContainer = styled.div`
   `}
   
   .ms-DocumentCardPreview {
-      width: 208px;
-      height: 118px;
-    }
+    width: 208px;
+    height: 118px;
+  }
 `;
 
 const StyledVideoCard = styled(DocumentCard)`
   && {
     min-width: ${({ type }) => type === DocumentCardType.compact ? '360px' : 'inherit'};
+  }
+  .ms-DocumentCardTitle {
+    box-sizing: content-box;
   }
   &.ms-DocumentCard:not(.ms-DocumentCard--compact) {
     width: 210px;

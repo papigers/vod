@@ -15,11 +15,22 @@ module.exports = function(sequelize, DataTypes) {
     },
     name: DataTypes.STRING,
     description: DataTypes.STRING,
-    // thumbnail: DataTypes.STRING,
-    // poster: DataTypes.STRING,
     privacy: {
       type: DataTypes.ENUM(['public', 'private', 'channel']),
       defaultValue: 'private',
+    },
+  }, {
+    defaultScope: {
+      where: {
+        published: true,
+      },
+    },
+    scopes: {
+      unpublished: {
+        where: {
+          published: false,
+        },
+      },
     },
   });
 
