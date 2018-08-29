@@ -11,12 +11,14 @@ import {
   SET_UPLOAD_VIDEO_DESCRIPTION,
   SET_UPLOAD_VIDEO_PRIVACY,
   SET_UPLOAD_VIDEO_ACL,
+  SET_UPLOAD_ERROR,
 } from 'constants/actionTypes';
+import { LOCATION_CHANGE } from 'react-router-redux';
 
 const uploadInitialState = fromJS({
   progress: 0,
-  demoProgress: 0,
   file: null,
+  error: null,
   metadata: {
     size: 0,
     ratioW: 16,
@@ -60,7 +62,8 @@ export default function uploadReducer(state = uploadInitialState, action) {
       return state
         .set('file', fromJS(action.file))
         .setIn(['video', 'name'], action.file.name.replace(/\.[^/.]+$/, ''))
-        .setIn(['metadata', 'size'], action.file.size);
+        .setIn(['metadata', 'size'], action.file.size)
+        .set('error', null);
     case SET_UPLOAD_METADATA:
       return state
         .set('metadata', state.get('metadata').merge(action.metadata))
@@ -83,7 +86,11 @@ export default function uploadReducer(state = uploadInitialState, action) {
       return state.setIn(['video', 'privacy'], action.privacy);
     case SET_UPLOAD_VIDEO_ACL:
       return state.setIn(['video', 'acl'], fromJS(action.acl));
-
+    case SET_UPLOAD_ERROR:
+      return state.merge(uploadInitialState)
+        .set('error', action.error);
+    case LOCATION_CHANGE:
+      return uploadInitialState;
     default:
       return state;
   }

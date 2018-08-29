@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { transitions } from 'polished';
 import { Box } from 'grid-styled';
+import axios from 'axios';
 
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
@@ -35,6 +36,30 @@ const ChannelPivot = styled(Pivot)`
 `
 
 export default class Channel extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      uploads: [],
+    };
+  }
+
+  componentDidMount() {
+    this.fetchUploads();
+  }
+
+  fetchUploads = () => {
+    const { channel } = this.props;
+
+    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/${channel.id}/videos`)
+    .then(({ data }) => {
+      this.setState({
+        uploads: data,
+      });
+    })
+    .catch(console.error); 
+  };
+
   render() {
     const { channel } = this.props;
 
@@ -53,7 +78,7 @@ export default class Channel extends Component {
           </ChannelPivot>
         </TitleBox>
         <ContentBox>
-          <VideoList category="העלאות" />
+          <VideoList category="העלאות" videos={this.state.uploads} />
         </ContentBox>
       </Fragment>
     );

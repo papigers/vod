@@ -1,6 +1,7 @@
 var fs = require("fs");
 var path = require("path");
 var Sequelize = require("sequelize");
+var embed = require("sequelize-embed");
 var config = require('config');
 var debug = require('debug')('vod:db');
 
@@ -35,6 +36,7 @@ try {
 
   db.sequelize = sequelize;
   db.Sequelize = Sequelize;
+  db.embed = embed(sequelize);
 }
 catch(e) {
   console.log('Database connector initialization failed...');

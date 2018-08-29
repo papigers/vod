@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "start": "lerna run start --stream",
-    "dev": "lerna run dev --parallel"
+    "dev": "lerna run dev --parallel",
+    "lerna": "lerna",
+    "postinstall": "lerna bootstrap --stream"
   },
   "devDependencies": {
     "lerna": "^3.0.5"

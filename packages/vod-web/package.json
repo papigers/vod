@@ -8,14 +8,17 @@
     "dev:server": "cross-env DEBUG=vod:server nodemon ./bin/www",
     "dev": "concurrently --kill-others-on-fail \"yarn dev:server\" \"yarn dev:client\"",
     "start": "cross-env-shell NODE_ENV=production \"cd client && yarn build && cd .. && yarn server\"",
-    "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
+    "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
+    "postinstall": "cd client && yarn install"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "config": "^2.0.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.16.0",
-    "morgan": "~1.9.0"
+    "morgan": "~1.9.0",
+    "query-string": "^6.1.0"
   },
   "devDependencies": {
     "concurrently": "^3.6.1",

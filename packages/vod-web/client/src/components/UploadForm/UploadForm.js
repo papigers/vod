@@ -66,7 +66,10 @@ const Metadata = styled.div`
 class UploadForm extends Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      nameError: null,
+      privacyError: null,
+    };
   }
 
   onRenderPrivacyOption = (item) => {
@@ -135,10 +138,35 @@ class UploadForm extends Component {
         return '';
     }
   }
-
   onChangeName = ({ target }) => this.props.onChangeName(target.value);
   onChangeDescription = ({ target }) => this.props.onChangeDescription(target.value);
   onChangePrivacy = (e, { key }) => this.props.onChangePrivacy(key);
+  onChangeACL = (acls) => {
+    this.props.onChangeACL(acls.map(acl => ({
+      id: acl.secondaryText,
+      type: acl.type,
+    })));
+  }
+
+  onSubmit = () => {
+    const {
+      step,
+      video: {
+        name,
+        privacy,
+      },
+    } = this.props;
+    if (step === 'form_waiting') {
+      if (!name) {
+        return this.setState({ nameError: 'חייב לציין שם לסרטון'});
+      }
+      if (!privacy) {
+        return this.setState({ privacyError: 'חייב לציין גישה לסרטון'});
+      }
+      this.setState({ nameError: null, privacyError: null });
+      return this.props.onSubmit();
+    }
+  }
 
   render() {
     const {
@@ -154,13 +182,13 @@ class UploadForm extends Component {
       metadata,
     } = this.props;
 
-    const intermidiateProgress = false && progress >= 100;
+    const intermidiateProgress = step === 'upload_submit' && progress >= 100;
 
     return (
       <Fragment>
         <Progress
           label={this.getUploadStatus(step)}
-          description={intermidiateProgress ? 'מסיים כמה דברים...' : `${Math.round(progress)}%`}
+          description={intermidiateProgress ? 'מפרסם... בקרוב תועבר/י לסרטון' : `${Math.round(progress)}%`}
           percentComplete={intermidiateProgress ? null : (progress / 100)}
           barHeight={7}
         />
@@ -179,7 +207,7 @@ class UploadForm extends Component {
           </Box>
           <Box mx={1}/>
           <Box width={3/4}>
-            <Form>
+            <Form onSubmit={this.onSubmit}>
               <Flex alignItems="flex-end">
                 <VideoThumbnail
                   width={210}
@@ -192,6 +220,7 @@ class UploadForm extends Component {
                   required
                   value={name}
                   onChange={this.onChangeName}
+                  errorMessage={this.state.nameError}
                 />
               </Flex>
               <TextField
@@ -232,6 +261,7 @@ class UploadForm extends Component {
                   onRenderTitle={this.onRenderPrivacyOption}
                   onRenderOption={this.onRenderPrivacyOption}
                   placeHolder="בחר/י גישה לסרטון"
+                  errorMessage={this.state.privacyError}
                   options={[
                     { key: 'private', text: 'פרטי', data: { icon: 'Contact' } },
                     { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
@@ -241,7 +271,7 @@ class UploadForm extends Component {
                 />
               </DropdownContainer>
               {privacy !== 'public' ? (
-                <PeoplePicker label="הסרטון משותף עם:" />
+                <PeoplePicker label="הסרטון משותף עם:" onChange={this.onChangeACL} />
               ) :  null}
               {metadata ? (
                 <Metadata>
@@ -281,7 +311,11 @@ class UploadForm extends Component {
               ) : null}
               <Box pt={40}>
                 <Flex justifyContent="flex-start" alignItems="center">
-                  <PrimaryButton text="שמור" disabled={step !== 'form_waiting'} />
+                  <PrimaryButton
+                    text="שמור"
+                    disabled={step !== 'form_waiting'}
+                    onClick={this.onSubmit}
+                  />
                   <Box mx={3} />
                   <DefaultButton text="בטל" />
                 </Flex>

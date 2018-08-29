@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
-import { createStructuredSelector } from 'reselect';
-
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
+import qs from 'query-string';
+import axios from 'axios';
 
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-
-import createReduxContainer from 'utils/createReduxContainer';
-import { makeSelectSidebar } from 'containers/App/selectors';
+import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
@@ -19,15 +18,12 @@ const VideoContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-
-  & > * + * {
-    margin-top: 6px;
-  }
 `;
 
-const VideoSection = styled.div`
-  margin-bottom: 10px;
-  padding-bottom: 12px;
+const VideoSection = styled(Box).attrs({
+  my: 10,
+  pb: 12,
+})`
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 `;
 
@@ -48,7 +44,57 @@ const VideoButton = styled(DefaultButton)`
 `;
 
 class VideoPage extends Component {
+  constructor() {
+    super();
+    this.state = {
+      loading: true,
+      error: null,
+      video: null,
+    };
+  }
+  
+  static getDerivedStateFromProps(props, state) {
+    const propsId = qs.parse(props.location.search).v;
+    if (!state.videoId || (state.videoId !== propsId)) {
+      return {
+        videoId: propsId,
+        video: null,
+        loading: true,
+        error: null,
+      };
+    } 
+    return null;
+  }
 
+  componentDidMount() {
+    this.fetchVideo();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.videoId !== this.state.videoId) {
+      this.fetchVideo();
+    }
+  }
+
+  fetchVideo() {
+    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/videos/view/${this.state.videoId}`)
+      .then(({ data }) => {
+        this.setState({
+          video: data,
+          loading: false,
+          error: null,
+        });
+      })
+      .catch((err) => {
+        // TODO: do something
+        this.setState({
+          video: null,
+          loading: false,
+          error: 'הסרטון אינו זמין',
+        });
+      });
+  }
+  
   onRenderItem(item) {
     if (item.onRender) {
       return item.onRender(item);
@@ -66,80 +112,143 @@ class VideoPage extends Component {
   }
 
   render() {
+    const { video, error } = this.state;
+
+    const LinkOnLoad = video ? Link : 'div';
+
     return (
       <Box px={20} pt={24}>
         <Flex justifyContent="center">
           <Box width={[1, 1, 1, 11/12]}>
             <Flex justifyContent="center">
-              <Box width={[1, 1, 1, 0.68]}>
+              <Box width={[1, 1, 1, 0.65]}>
                 <VideoContainer>
-                  {/* <Plyr
-                    type="youtube" // or "vimeo"
-                    videoId="dQw4w9WgXcQ"
-                  /> */}
-                  <Player />
-                  <div>
-                    <span className="ms-fontSize-xxl">אביתר בנאי - עד מתי</span>
-                  </div>
+                  <Player videoId={video && video.id} error={error} />
+                  <Box mt={20} className="ms-font-xxl">
+                    <Shimmer shimmerElements={[{ type: ElemType.line, height: 32 }]} width='40%' isDataLoaded={!!video}>
+                      {video && video.name}
+                    </Shimmer>
+                  </Box>
                   <VideoSection>
-                    <SpreadItems>
-                      <span className="ms-fontSize-mPlus">1,231,289 צפיות</span>
-                      <OverflowSet
-                        items={[
-                          {
-                            key: 'like',
-                            name: 'אהבתי',
-                            icon: 'Like',
-                            ariaLabel: 'אהבתי',
-                            onClick: () => {
-                              return;
+                    <Shimmer
+                      shimmerElements={[
+                        { type: ElemType.line, width: '20%', height: 18 },
+                        { type: ElemType.gap, width: '62%', height: 20 },
+                        { type: ElemType.line, width: '8%', height: 25 },
+                        { type: ElemType.gap, width: '2%', height: 20 },
+                        { type: ElemType.line, width: '8%', height: 25 },
+                      ]}
+                      width='100%'
+                      isDataLoaded={!!video}
+                    >
+                      <SpreadItems>
+                        <span className="ms-fontSize-mPlus">1,231,289 צפיות</span>
+                        <OverflowSet
+                          items={[
+                            {
+                              key: 'like',
+                              name: 'אהבתי',
+                              icon: 'Like',
+                              ariaLabel: 'אהבתי',
+                              onClick: () => {
+                                return;
+                              },
                             },
-                          },
-                          {
-                            key: 'dislike',
-                            name: 'לא אהבתי',
-                            icon: 'Dislike',
-                            onClick: () => {
-                              return;
+                            {
+                              key: 'share',
+                              name: 'שתף',
+                              icon: 'Share',
+                              onClick: () => {
+                                return;
+                              }
                             }
-                          },
-                          {
-                            key: 'share',
-                            name: 'שתף',
-                            icon: 'Share',
-                            onClick: () => {
-                              return;
-                            }
-                          }
-                        ]}
-                        onRenderOverflowButton={this.onRenderOverflowButton}
-                        onRenderItem={this.onRenderItem}
-                      />
-                    </SpreadItems>
+                          ]}
+                          onRenderOverflowButton={this.onRenderOverflowButton}
+                          onRenderItem={this.onRenderItem}
+                        />
+                      </SpreadItems>
+                    </Shimmer>
                   </VideoSection>
                   <VideoSection>
-                    <SpreadItems>
-                      <Persona
-                        imageUrl="https://scontent.ftlv5-1.fna.fbcdn.net/v/t1.0-9/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=691bf8c0957e2ba052de6a1eb9ef5c08&oe=5BD4C941"
-                        imageInitials="גפ"
-                        text="גרשון פפיאשוילי"
-                        secondaryText="העלה לפני כמה דקות"
-                        size={PersonaSize.size100}
-                      />
-                      <DefaultButton
-                        text="עקוב"
-                        iconProps={{ iconName: 'FollowUser' }}
-                        primary
-                      />
-                    </SpreadItems>
+                    <Shimmer
+                      customElementsGroup={(
+                        <Box width={1}>
+                          <Flex>
+                            <ShimmerElementsGroup
+                              shimmerElements={[
+                                { type: ElemType.circle, height: 100 },
+                                { type: ElemType.gap, width: 16, height: 100 }
+                              ]}
+                            />
+                            <ShimmerElementsGroup
+                              flexWrap
+                              width={'calc(100% - 200px)'}
+                              shimmerElements={[
+                                { type: ElemType.gap, width: '100%', height: 25 },
+                                { type: ElemType.line, width: '50%', height: 20 },
+                                { type: ElemType.gap, width: '50%', height: 20 },
+                                { type: ElemType.line, width: '30%', height: 16 },
+                                { type: ElemType.gap, width: '70%', height: 16 },
+                                { type: ElemType.gap, width: '100%', height: 25 },
+                              ]}
+                            />
+                            <ShimmerElementsGroup
+                              flexWrap
+                              width={100}
+                              shimmerElements={[
+                                { type: ElemType.gap, width: '100%', height: 33.333 },
+                                { type: ElemType.line, width: '100%', height: 24 },
+                                { type: ElemType.gap, width: '100%', height: 33.333 },
+                              ]}
+                            />
+                          </Flex>
+                        </Box>
+                      )}
+                      width='100%'
+                      isDataLoaded={!!video}
+                    >
+                      <SpreadItems>
+                        <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
+                          <Persona
+                            imageUrl={video && video.channel && video.channel.picture}
+                            text={video && video.channel && video.channel.name}
+                            secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
+                            size={PersonaSize.size100}
+                          />
+                        </LinkOnLoad>
+                        <DefaultButton
+                          text="עקוב"
+                          iconProps={{ iconName: 'FollowUser' }}
+                          primary
+                        />
+                      </SpreadItems>
+                    </Shimmer>
                     <VideoDescription className="ms-font-s-plus">
-                      לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית צש בליא, מנסוטו צמלח לביקו ננבי, צמוקו בלוקריה שיצמה ברורק. מוסן מנת. להאמית קרהשק סכעיט דז מא, מנכם למטכין נשואי מנורך. להאמית קרהשק סכעיט דז מא, מנכם למטכין נשואי מנורך. ושבעגט ליבם סולגק. בראיט ולחת צורק מונחף, בגורמי מגמש. תרבנך וסתעד לכנו סתשם השמה - לתכי מורגם בורק? לתיג ישבעס.
+                      <Shimmer
+                        customElementsGroup={(
+                          <ShimmerElementsGroup
+                            flexWrap
+                            width={'100%'}
+                            shimmerElements={[
+                              { type: ElemType.line, width: '100%' },
+                              { type: ElemType.line, width: '75%' },
+                              { type: ElemType.gap, width: '25%', height: 20 },
+                              { type: ElemType.line, width: '50%' },
+                              { type: ElemType.gap, width: '50%', height: 20 },
+                            ]}
+                          />
+                        )}
+                        width='100%'
+                        isDataLoaded={!!video}
+                      >
+                        {video && video.description}
+                      </Shimmer>
                     </VideoDescription>
                   </VideoSection>
                 </VideoContainer>
               </Box>
               <Box mx={2} />
-              <Box width={[1, 1, 1, 0.32]}>
+              <Box width={[1, 1, 1, 0.35]}>
                 <VideoList type={VIDEO_LIST_TYPE.VERTICAL} />
               </Box>
             </Flex>
@@ -150,8 +259,4 @@ class VideoPage extends Component {
   }
 }
 
-const mapStateToProps = createStructuredSelector({
-  sidebar: makeSelectSidebar(),
-});
-
-export default createReduxContainer(VideoPage, mapStateToProps);
+export default VideoPage

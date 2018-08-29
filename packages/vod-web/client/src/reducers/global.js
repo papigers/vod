@@ -4,7 +4,7 @@ import { matchPath } from 'react-router'
 import { SIDEBAR_OPEN_TOGGLE, CHANNEL_MODAL_OPEN_TOGGLE } from '../constants/actionTypes';
 
 const untrapNavbarRoutes = [{
-  path: '/watch',
+  path: '/watch*',
   exact: true,
 }, {
   path: '/upload',

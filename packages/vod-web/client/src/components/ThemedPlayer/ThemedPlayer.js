@@ -210,44 +210,84 @@ const StyledVideoContainer = styled.div`
   .vjs-icon-subtitles {
     font-family: VideoJS;
   }
+
+  .vjs-error-display {
+    &:before {
+      display: none;
+    }
+
+    .vjs-modal-dialog-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: ${({theme}) => theme.typography.families.default};
+      font-size: ${({theme}) => theme.typography.sizes.large} !important;
+    }
+  }
 `;
 
 export default class ThemedPlyr extends Component {
   constructor() {
     super();
-    this.state = { playerReady: false };
+    this.state = { playerReady: false, videoId: null };
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.videoId !== state.videoId) {
+      return {
+        playerReady: false,
+        videoId: props.videoId,
+      };
+    }
+    return null;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.videoId && this.props.videoId !== prevProps.videoId) {
+      this.loadVideoSources();
+    }
+    if (this.props.error && this.props.error !== prevProps.error) {
+      this.showPlayerError(this.props.error);
+    }
   }
   
   componentDidMount() {
     const options = {
-      ...this.props,
       autoplay: true,
       controls: true,
+      preload: 'auto',
       playbackRates: [0.5, 1, 1.5, 2],
-      poster: `${process.env.REACT_APP_STREAMER_HOSTNAME}/FR5Ymgyk7yIG/poster.png`,
-      sources: [{
-        src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/FR5Ymgyk7yIG/mpd.mpd`,
-        // src: '/video/oE5z2aha~4cn.mpd',
-        // src: '/video/dHx4FL9HLmsA.mpd',
-        // src: '/video/iFWs2IQWcIgO.mpd',
-        // src: '/video/FbC2bIPoRKPL.mpd',
-        // src: '/video/FkVwFT7kuHou.mpd',
-        // src: '/video/I-Am-Legend-Trailer.mpd',
-        // src: 'http://www.bok.net/dash/tears_of_steel/cleartext/stream.mpd',
-        // src: 'https://s3.amazonaws.com/_bc_dml/example-content/sintel_dash/sintel_vod.mpd',
-        type: 'application/dash+xml',
-      }, {
-        src: 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8',
-        type: 'application/x-mpegURL',
-      }],
     };
     this.player = videojs(this.videoNode, options, this.onPlayerReady);
-    this.player.qualityPickerPlugin();
+    if (this.props.videoId) {
+      this.loadVideoSources();
+    }
   }
 
   componentWillUnmount() {
     if (this.player) {
       this.player.dispose();
+    }
+  }
+
+  loadVideoSources() {
+    if (this.player) {
+      this.player.reset();
+      this.player.poster(`${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/poster.png`);
+      this.player.src({
+        src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/mpd.mpd`,
+        type: 'application/dash+xml',
+      });
+      this.player.load();
+      this.player.play();
+      this.player.qualityPickerPlugin();
+    }
+  }
+
+  showPlayerError(err) {
+    if (this.player) {
+      this.player.reset();
+      this.player.error(err);
     }
   }
 

@@ -29,4 +29,15 @@ module.exports = {
     description: 'wubba lubba dub dub',
     isAdmin: true,
   },
+  ad: {
+    url: 'ldap://vod-dc.westeurope.cloudapp.azure.com',
+    baseDN: 'ou=orgs,dc=example,dc=com',
+    username: 'vod@example.com',
+    password: 'Aa123123',
+    scope: 'sub',
+    attributes: {
+      user: ['sAMAccountName', 'displayName', 'objectClass'],
+      group: ['dn', 'cn', 'displayName', 'objectClass'],
+    }
+  },
 };

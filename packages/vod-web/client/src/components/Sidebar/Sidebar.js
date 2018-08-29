@@ -11,8 +11,9 @@ import { ThemeContext } from 'theme';
 import HeaderLogo from 'components/HeaderLogo';
 
 const PanelHost = styled(LayerHost)`
-  position: relative;
+  position: fixed;
   margin-top: 64px;
+  height: calc(100% - 64px);
 `;
 
 const StyledPanel = styled(Panel)`
