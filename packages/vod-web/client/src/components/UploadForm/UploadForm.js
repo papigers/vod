@@ -136,6 +136,10 @@ class UploadForm extends Component {
     }
   }
 
+  onChangeName = ({ target }) => this.props.onChangeName(target.value);
+  onChangeDescription = ({ target }) => this.props.onChangeDescription(target.value);
+  onChangePrivacy = (e, { key }) => this.props.onChangePrivacy(key);
+
   render() {
     const {
       step,
@@ -148,9 +152,6 @@ class UploadForm extends Component {
         selectedThumbnail
       },
       metadata,
-      onChangeName,
-      onChangeDescription,
-      onChangePrivacy
     } = this.props;
 
     const intermidiateProgress = false && progress >= 100;
@@ -167,13 +168,13 @@ class UploadForm extends Component {
           <Box width={1/4}>
             <Label>בחר תמונת תצוגה:</Label>
             {[0,1,2,3].map(k => (
-                <VideoThumbnail
-                  width={180}
-                  height={101}
-                  src={thumbnails && thumbnails[k]}
-                  key={k}
-                  onClick={this.props.onChangeThumbnail.bind(this, k)}
-                />
+              <VideoThumbnail
+                width={180}
+                height={101}
+                src={thumbnails && thumbnails[k]}
+                key={k}
+                onClick={this.props.onChangeThumbnail.bind(this, k)}
+              />
             ))}
           </Box>
           <Box mx={1}/>
@@ -190,7 +191,7 @@ class UploadForm extends Component {
                   label="שם סרטון"
                   required
                   value={name}
-                  onChanged={onChangeName}
+                  onChange={this.onChangeName}
                 />
               </Flex>
               <TextField
@@ -198,7 +199,7 @@ class UploadForm extends Component {
                 multiline
                 autoAdjustHeight
                 value={description}
-                onChanged={onChangeDescription}
+                onChange={this.onChangeDescription}
               />
               <DropdownContainer>
                 <Dropdown
@@ -227,7 +228,7 @@ class UploadForm extends Component {
                   required
                   label="גישה"
                   selectedKey={privacy}
-                  onChanged={onChangePrivacy}
+                  onChange={this.onChangePrivacy}
                   onRenderTitle={this.onRenderPrivacyOption}
                   onRenderOption={this.onRenderPrivacyOption}
                   placeHolder="בחר/י גישה לסרטון"

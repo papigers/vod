@@ -109,8 +109,6 @@ class UploadPage extends Component {
     this.props.setUploadStep('form_upload');
   }
 
-  setVideoPrivacy = ({ key }) => this.props.setUploadVideoPrivacy(key)
-
   finishUploadStep = ({ id }) => {
     if (id !== this.id) {
       return;
@@ -165,7 +163,7 @@ class UploadPage extends Component {
             onChangeName={this.props.setUploadVideoName}
             onChangeDescription={this.props.setUploadVideoDescription}
             onChangeACL={this.props.setUploadVideoACL}
-            onChangePrivacy={this.setVideoPrivacy}
+            onChangePrivacy={this.props.setUploadVideoPrivacy}
             onChangeThumbnail={this.props.selectUploadVideoThumbnail}
           />
         )}

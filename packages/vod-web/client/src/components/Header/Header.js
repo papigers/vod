@@ -243,11 +243,11 @@ export default function Header(props) {
                   {
                     key: 'createChannel',
                     to: '/channel/new',
+                    onClick: props.toggleChannelModalOpen,
                     text: 'צור ערוץ',
                     iconProps: {
                       iconName: 'AddGroup'
                     },
-                    onRender: SubMenuLink,
                   },
                 ],
               },
