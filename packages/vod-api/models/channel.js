@@ -115,7 +115,7 @@ module.exports = function(sequelize, DataTypes) {
           include: [{
             model: Channel,
             as: 'channel',
-            attributes: ['id', 'picture', 'name'],
+            attributes: ['id', 'name'],
           }],
         }));
       });
@@ -123,7 +123,7 @@ module.exports = function(sequelize, DataTypes) {
 
     Channel.getChannel = function(videoId) {
       return Channel.findOne(Channel.addAuthorizedFilter({
-        attributes: ['id', 'picture', 'cover', 'personal', 'name', 'description'],
+        attributes: ['id', 'personal', 'name', 'description'],
         where: {
           id: videoId,
         },
@@ -152,8 +152,6 @@ module.exports = function(sequelize, DataTypes) {
             name: channel.name,
             description: channel.description,
             personal: channel.personal,
-            picture: channel.picture,
-            cover: channel.cover,
           }, [Acls]);
         });      
     };

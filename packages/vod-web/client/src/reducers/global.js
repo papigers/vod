@@ -17,7 +17,7 @@ const globalInitialState = fromJS({
     trapped: true,
     prevState: null,
   },
-  channelModalOpen: true,
+  channelModalOpen: false,
 });
 
 export default function routeReducer(state = globalInitialState, action) {

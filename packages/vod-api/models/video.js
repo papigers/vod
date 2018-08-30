@@ -279,7 +279,7 @@ module.exports = function(sequelize, DataTypes) {
         include: [{
           model: models.Channel,
           as: 'channel',
-          attributes: ['id', 'picture', 'name'],
+          attributes: ['id', 'name'],
         }],
       }));
     }
@@ -312,7 +312,7 @@ module.exports = function(sequelize, DataTypes) {
         include: [{
           model: models.Channel,
           as: 'channel',
-          attributes: ['id', 'picture', 'name'],
+          attributes: ['id', 'name'],
         }],
       }));
     };
