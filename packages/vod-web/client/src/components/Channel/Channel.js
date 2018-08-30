@@ -48,27 +48,35 @@ export default class Channel extends Component {
     this.fetchUploads();
   }
 
-  fetchUploads = () => {
-    const { channel } = this.props;
+  componentDidUpdate(prevProps) {
+    if (this.props.channel && (this.props.channel.id !== (prevProps.channel && prevProps.channel.id))) {
+      this.fetchUploads();
+    }
+  }
 
-    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/${channel.id}/videos`)
-    .then(({ data }) => {
-      this.setState({
-        uploads: data,
-      });
-    })
-    .catch(console.error); 
+  fetchUploads = () => {
+    const { channel, loading } = this.props;
+
+    if (channel && !loading) {
+      axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/${channel.id}/videos`)
+      .then(({ data }) => {
+        this.setState({
+          uploads: data,
+        });
+      })
+      .catch(console.error); 
+    }
   };
 
   render() {
-    const { channel } = this.props;
+    const { channel, loading } = this.props;
 
     return (
       <Fragment>
-        <Image height={280} src={`/profile/${channel.id}/cover.png`} imageFit={ImageFit.cover} maximizeFrame />
+        {channel && <Image height={280} src={`/profile/${channel.id}/cover.png`} imageFit={ImageFit.cover} maximizeFrame />}
         <TitleBox>
           <Box py={20}>
-            <Persona imageUrl={`/profile/${channel.id}/profile.png`} primaryText={channel.name} size={PersonaSize.size72} />
+            {channel && <Persona imageUrl={`/profile/${channel.id}/profile.png`} primaryText={channel.name} size={PersonaSize.size72} />}
           </Box>
           <ChannelPivot linkSize={PivotLinkSize.large} headersOnly>
             <PivotItem linkText="בית" />
@@ -78,7 +86,7 @@ export default class Channel extends Component {
           </ChannelPivot>
         </TitleBox>
         <ContentBox>
-          <VideoList category="העלאות" videos={this.state.uploads} />
+          <VideoList category="העלאות" loading={loading} videos={this.state.uploads} />
         </ContentBox>
       </Fragment>
     );

@@ -87,10 +87,12 @@ router.post('/', channelImagesUpload, function(req, res) {
 
 // default redirect to new uploads
 router.get('/:id/videos', function(req, res) {
+  console.log(`${req.baseUrl}/${req.params.id}/videos/new`);
   res.redirect(`${req.baseUrl}/${req.params.id}/videos/new`);
 });
 
 router.get('/:id/videos/:sort', function(req, res) {
+  console.log(req.params);
   var limit = req.query.limit || 12;
   var offset = req.query.offset || 0;
   var sort = req.params && req.params.sort;

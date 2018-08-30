@@ -10,7 +10,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    privacy: DataTypes.ENUM(['PUBLIC', 'PRIVATE']),
+    privacy: {
+      type: DataTypes.ENUM(['PUBLIC', 'PRIVATE']),
+      defaultValue: 'PUBLIC',
+    },
     name: DataTypes.STRING,
     description: DataTypes.STRING,
     isAdmin: {
@@ -51,6 +54,9 @@ module.exports = function(sequelize, DataTypes) {
         [Op.or]: [{
             id: userId,
           }, {
+            privacy: 'PUBLIC',
+          }, {
+            privacy: 'PRIVATE',
             [Op.or]: [{
               '$channelACL.id$': userId,
               '$channelACL.type$': 'USER',
@@ -95,17 +101,13 @@ module.exports = function(sequelize, DataTypes) {
       return filter;
     };
 
-    Channel.getChannelVideos = function(videoId, limit, offset, sort) {
+    Channel.getChannelVideos = function(channelId, limit, offset, sort) {
+      console.log('channelId', channelId, arguments);
       return Channel.findOne(Channel.addAuthorizedFilter({
         attributes: ['id'],
         where: {
-          id: videoId,
+          id: channelId,
         },
-        include: [{
-          model: models.Video,
-          as: 'videos',
-          duplicating: false,
-        }]
       })).then(function(channel) {
         return channel.getVideos(models.Video.addAuthorizedFilter({
           attributes: ['id', 'createdAt', 'name', 'description'],

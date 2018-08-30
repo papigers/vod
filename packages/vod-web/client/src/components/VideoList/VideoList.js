@@ -25,13 +25,13 @@ export default function VideoList(props) {
     <Box pb={16}>
       {category ? <CategoryHeader>{category}</CategoryHeader> : null}
       <ThumbnailList type={type}>
-        {videos && videos.length ? (
+        {videos ? (
           videos.map(video => <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} video={video} key={video.id} />)
         ) : (
           [1,2,3,4,5,6,7,8,9,10].map(k => <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} loading key={k} />)
         )}
       </ThumbnailList>
-      <PrimaryButton text="עוד" />
+      {videos && videos.length ? <PrimaryButton text="עוד" /> : null}
     </Box>
   );
 }
