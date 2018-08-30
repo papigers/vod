@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 
+require('dotenv').config();
 var config = require('config');
 var app = require('../app');
 var models = require('../models');
@@ -44,8 +45,8 @@ models.sequelize.sync({ force: false })
         access: config.admin.access,
         type: config.admin.type,
         personal: config.admin.personal,
-        picture: config.admin.picture,
-        cover: config.admin.cover,
+        // picture: config.admin.picture,
+        // cover: config.admin.cover,
         name: config.admin.name,
         description: config.admin.description,
       });

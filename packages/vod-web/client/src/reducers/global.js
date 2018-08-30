@@ -1,7 +1,7 @@
 import { fromJS } from 'immutable';
 import { LOCATION_CHANGE } from 'react-router-redux';
 import { matchPath } from 'react-router'
-import { SIDEBAR_OPEN_TOGGLE } from '../constants/actionTypes';
+import { SIDEBAR_OPEN_TOGGLE, CHANNEL_MODAL_OPEN_TOGGLE } from '../constants/actionTypes';
 
 const untrapNavbarRoutes = [{
   path: '/watch*',
@@ -17,6 +17,7 @@ const globalInitialState = fromJS({
     trapped: true,
     prevState: null,
   },
+  channelModalOpen: true,
 });
 
 export default function routeReducer(state = globalInitialState, action) {
@@ -38,8 +39,10 @@ export default function routeReducer(state = globalInitialState, action) {
           .setIn(['sidebar', 'open'], false);
       }
       return state;
-    case SIDEBAR_OPEN_TOGGLE:
-      return state.setIn(['sidebar', 'open'], !state.getIn(['sidebar', 'open']));
+      case SIDEBAR_OPEN_TOGGLE:
+        return state.setIn(['sidebar', 'open'], !state.getIn(['sidebar', 'open']));
+      case CHANNEL_MODAL_OPEN_TOGGLE:
+        return state.set('channelModalOpen', !state.get('channelModalOpen'));
     default:
       return state;
   }

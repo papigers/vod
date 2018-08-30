@@ -1,6 +1,30 @@
+var os = require('os');
+var fs = require('fs');
+var path = require('path');
 var express = require('express');
+var multer = require('multer');
 var Channel = require('../../models').Channel;
 var router = express.Router();
+
+var s3Client = require('vod-s3-client')();
+
+var channelStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    var dest = path.join(os.tmpdir(), req.body.id);
+    fs.access(dest, function(err) {
+      if (err) {
+        fs.mkdir(dest, function(err) {
+          cb(err, dest);
+        });
+      }
+      cb(null, dest);
+    });
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${file.fieldname}.png`);
+  }
+});
+var upload = multer({ storage: channelStorage });
 
 router.get('/:id', function(req, res) {
   Channel.getChannel(req.params.id)
@@ -38,9 +62,19 @@ router.put('/:id', function(req, res) {
     });
 });
 
-router.post('/', function(req, res) {
+var channelImagesUpload = upload.fields([{
+  name: 'profile',
+  maxCount: 1,
+}, {
+  name: 'cover',
+  maxCount: 1,
+}]);
+
+router.post('/', channelImagesUpload, function(req, res) {
   Channel.createChannel(req.body)
     .then(function(result) {
+      s3Client.uploadChannelImage(result.get('id'), 'profile', req.files.profile[0].path);
+      s3Client.uploadChannelImage(result.get('id'), 'cover', req.files.cover[0].path);
       return res.json({ id: result.get('id') });
     })
     .catch(function (err) {
