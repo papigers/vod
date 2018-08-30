@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
+import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
@@ -138,7 +138,9 @@ class UploadForm extends Component {
         return '';
     }
   }
-
+  onChangeName = ({ target }) => this.props.onChangeName(target.value);
+  onChangeDescription = ({ target }) => this.props.onChangeDescription(target.value);
+  onChangePrivacy = (e, { key }) => this.props.onChangePrivacy(key);
   onChangeACL = (acls) => {
     this.props.onChangeACL(acls.map(acl => ({
       id: acl.secondaryText,
@@ -178,9 +180,6 @@ class UploadForm extends Component {
         selectedThumbnail
       },
       metadata,
-      onChangeName,
-      onChangeDescription,
-      onChangePrivacy,
     } = this.props;
 
     const intermidiateProgress = step === 'upload_submit' && progress >= 100;
@@ -197,13 +196,13 @@ class UploadForm extends Component {
           <Box width={1/4}>
             <Label>בחר תמונת תצוגה:</Label>
             {[0,1,2,3].map(k => (
-                <VideoThumbnail
-                  width={180}
-                  height={101}
-                  src={thumbnails && thumbnails[k]}
-                  key={k}
-                  onClick={this.props.onChangeThumbnail.bind(this, k)}
-                />
+              <VideoThumbnail
+                width={180}
+                height={101}
+                src={thumbnails && thumbnails[k]}
+                key={k}
+                onClick={this.props.onChangeThumbnail.bind(this, k)}
+              />
             ))}
           </Box>
           <Box mx={1}/>
@@ -220,7 +219,7 @@ class UploadForm extends Component {
                   label="שם סרטון"
                   required
                   value={name}
-                  onChanged={onChangeName}
+                  onChange={this.onChangeName}
                   errorMessage={this.state.nameError}
                 />
               </Flex>
@@ -229,7 +228,7 @@ class UploadForm extends Component {
                 multiline
                 autoAdjustHeight
                 value={description}
-                onChanged={onChangeDescription}
+                onChange={this.onChangeDescription}
               />
               <DropdownContainer>
                 <Dropdown
@@ -243,7 +242,8 @@ class UploadForm extends Component {
                     data: {
                       img: 'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
                     },
-                  }, {
+                  },{ key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
+                  {
                     key: 'channel11',
                     text: 'ערוץ 11',
                     data: {
@@ -257,14 +257,15 @@ class UploadForm extends Component {
                   required
                   label="גישה"
                   selectedKey={privacy}
-                  onChanged={onChangePrivacy}
+                  onChange={this.onChangePrivacy}
                   onRenderTitle={this.onRenderPrivacyOption}
                   onRenderOption={this.onRenderPrivacyOption}
                   placeHolder="בחר/י גישה לסרטון"
                   errorMessage={this.state.privacyError}
                   options={[
-                    { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
                     { key: 'private', text: 'פרטי', data: { icon: 'Contact' } },
+                    { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
+                    { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
                     { key: 'channel', text: 'יורש מהערוץ', data: { icon: 'MSNVideos' } },
                   ]}
                 />
