@@ -14,12 +14,8 @@ function S3Client() {
   });
 };
 
-S3Client.prototype.getObject = function(req, callback) {
-  var opts = {
-      Bucket: this.Bucket,
-      Key: `${req.params.videoId}/${req.params.object}`,
-  };
-  var header = null
+S3Client.prototype.getObject = function(opts, req, callback) {
+  var header = null;
   if ((header = req.header('range'))) {
       opts.Range = header;
   }
@@ -37,14 +33,30 @@ S3Client.prototype.getObject = function(req, callback) {
   }
   var get = this.S3.getObject(opts);
   if (callback) {
-      get.on('succes', function(res) {
+    get.on('succes', function(res) {
       callback(null, res);
-      });
-      get.on('error', function(err) {
+    });
+    get.on('error', function(err) {
       callback(err, null);
-      });
+    });
   }
   return get;
+}
+
+S3Client.prototype.getVideoObject = function(req, callback) {
+  var config = {
+    Bucket: this.Bucket,
+    Key: `video/${req.params.videoId}/${req.params.object}`,
+  }
+  return this.getObject(config, req, callback);
+}
+
+S3Client.prototype.getChannelObject = function(req, callback) {
+  var config = {
+    Bucket: this.Bucket,
+    Key: `channel/${req.params.channelId}/${req.params.img}`,
+  }
+  return this.getObject(config, req, callback);
 }
 
 function uploadFile(config, progressHandler, callback) {
@@ -69,7 +81,7 @@ function uploadFile(config, progressHandler, callback) {
 S3Client.prototype.uploadVideo = function(videoId, fileName, body, progressHandler, callback) {
   return uploadFile.call(this, {
     Bucket: this.Bucket,
-    Key: `${videoId}/${fileName}`,
+    Key: `video/${videoId}/${fileName}`,
     Body: body,
   }, progressHandler, callback);
 }
@@ -77,7 +89,7 @@ S3Client.prototype.uploadVideo = function(videoId, fileName, body, progressHandl
 S3Client.prototype.uploadChannelImage = function(id, type, body, progressHandler, callback) {
   return uploadFile.call(this, {
     Bucket: this.Bucket,
-    Key: `${id}/${type}.png`,
+    Key: `channel/${id}/${type}.png`,
     Body: body,
   }, progressHandler, callback);
 };

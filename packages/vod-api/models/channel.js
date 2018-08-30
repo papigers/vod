@@ -168,5 +168,13 @@ module.exports = function(sequelize, DataTypes) {
     };
   }
 
+  Channel.checkAuth = function(cahnnelId, userId, groups) {
+    return Channel.count(Channel.addAuthorizedFilter({
+      where: {
+        id: cahnnelId,
+      },
+    }, userId, groups));
+  };
+
   return Channel;
 };

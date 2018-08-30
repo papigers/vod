@@ -108,4 +108,19 @@ router.get('/:id/videos/:sort', function(req, res) {
     });
 });
 
+router.get('/:channelId/auth-check/:userId', function(req, res) {
+  Channel.checkAuth(req.params.channelId, req.params.userId)
+    .then(function(count) {
+      res.json({
+        authorized: count > 0,
+      });
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.json({
+        authorized: false,
+      });
+    });
+});
+
 module.exports = router;

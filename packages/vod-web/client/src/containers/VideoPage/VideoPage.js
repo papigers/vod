@@ -210,7 +210,7 @@ class VideoPage extends Component {
                       <SpreadItems>
                         <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
                           <Persona
-                            imageUrl={video && video.channel && video.channel.picture}
+                            imageUrl={video && video.channel && `/profile/${video.channel.id}/profile.png`}
                             text={video && video.channel && video.channel.name}
                             secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
                             size={PersonaSize.size100}

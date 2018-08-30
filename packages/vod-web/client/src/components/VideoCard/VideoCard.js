@@ -138,7 +138,7 @@ export default function VideoCard(props) {
               <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
                 <DocumentCardActivity
                   activity={video && `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}`}
-                  people={video && [{ name: video.channel.name, profileImageSrc: video.channel.picture }]}
+                  people={video && [{ name: video.channel.name, profileImageSrc: `/profile/${video.channel.id}/profile.png` }]}
                 />
               </LinkOnLoad>
             </Shimmer>

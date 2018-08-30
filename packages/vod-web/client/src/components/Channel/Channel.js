@@ -65,10 +65,10 @@ export default class Channel extends Component {
 
     return (
       <Fragment>
-        <Image height={280} src={channel.cover} imageFit={ImageFit.cover} maximizeFrame />
+        <Image height={280} src={`/profile/${channel.id}/cover.png`} imageFit={ImageFit.cover} maximizeFrame />
         <TitleBox>
           <Box py={20}>
-            <Persona imageUrl={channel.picture} primaryText={channel.name} size={PersonaSize.size72} />
+            <Persona imageUrl={`/profile/${channel.id}/profile.png`} primaryText={channel.name} size={PersonaSize.size72} />
           </Box>
           <ChannelPivot linkSize={PivotLinkSize.large} headersOnly>
             <PivotItem linkText="בית" />

@@ -34,7 +34,7 @@ var provisionHeaders = [
 
 app.get('/:videoId/:object',
   function checkAuthorized(req, res, next) {
-    var cacheKey = `${req.params.videoId}/${getUser(req)}`;
+    var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
     authCache.getAsync(cacheKey)
       .then(function(authorized) {
         if (authorized) {
@@ -58,7 +58,7 @@ app.get('/:videoId/:object',
   },
   function serveRequest(req, res) {
     // res.set('Cache-Control', 'max-age=43200');
-    S3Client.getObject(req)
+    S3Client.getVideoObject(req)
       .on('httpHeaders', function (statusCode, headers) {
         res.status(statusCode);
         provisionHeaders.forEach(function(header) {
