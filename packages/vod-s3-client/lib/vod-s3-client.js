@@ -1,5 +1,6 @@
 'use strict';
 var AWS = require('aws-sdk');
+var fs = require('fs');
 
 module.exports = S3Client;
 
@@ -46,13 +47,37 @@ S3Client.prototype.getObject = function(req, callback) {
   return get;
 }
 
-S3Client.prototype.uploadVideo = function(videoId, fileName, stream, progressHandler, callback) {
-  var upload = this.S3.upload({
-    Bucket: this.Bucket,
-    Key: `${videoId}/${fileName}`,
-    Body: stream,
-  });
-  upload.on('httpUploadProgress', progressHandler)
-  upload.send(callback);
+function uploadFile(config, progressHandler, callback) {
+  if (typeof config.Body === 'string') {
+    config.Body = fs.createReadStream(config.Body);
+  }
+  var upload = this.S3.upload(config);
+  if (progressHandler) {
+    upload.on('httpUploadProgress', progressHandler);
+  }
+
+  function callbackWrapper(err, data) {
+    if (callback) {
+      return callback(err, data);
+    }
+    console.error(err);
+  }
+  upload.send(callbackWrapper);
   return upload;
 }
+
+S3Client.prototype.uploadVideo = function(videoId, fileName, body, progressHandler, callback) {
+  return uploadFile.call(this, {
+    Bucket: this.Bucket,
+    Key: `${videoId}/${fileName}`,
+    Body: body,
+  }, progressHandler, callback);
+}
+
+S3Client.prototype.uploadChannelImage = function(id, type, body, progressHandler, callback) {
+  return uploadFile.call(this, {
+    Bucket: this.Bucket,
+    Key: `${id}/${type}.png`,
+    Body: body,
+  }, progressHandler, callback);
+};

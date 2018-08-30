@@ -6,13 +6,17 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    picture: DataTypes.STRING,
-    cover: DataTypes.STRING,
-    personal: DataTypes.BOOLEAN,
-    // access: DataTypes.ENUM(['PUBLIC', 'PRIVATE', 'SHARED']),
+    personal: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    privacy: DataTypes.ENUM(['PUBLIC', 'PRIVATE']),
     name: DataTypes.STRING,
     description: DataTypes.STRING,
-    isAdmin: DataTypes.BOOLEAN,
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   });
 
   Channel.associate = function(models) {
@@ -162,8 +166,6 @@ module.exports = function(sequelize, DataTypes) {
         name: channel.name,
         description: channel.description,
         personal: channel.personal,
-        picture: channel.picture,
-        cover: channel.cover,
       }, [Acls])
     };
   }

@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
+import axios from 'axios';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Label } from 'office-ui-fabric-react/lib/Label';
@@ -71,6 +74,13 @@ const Buttons = styled(Box)`
   z-index: 0;
 `;
 
+const ErrorMsg = styled(Box)`
+  color: #e90000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
+
 class NewChannelForm extends Component{
 
   constructor() {
@@ -83,6 +93,7 @@ class NewChannelForm extends Component{
       acl: [],
       profile: null,
       cover: null,
+      error: null,
     };
   }
   
@@ -107,7 +118,10 @@ class NewChannelForm extends Component{
   readFileIntoState = (input, field) => {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
-      reader.onload = (e) => this.setState({ [field]: e.target.result });
+      reader.onload = (e) => this.setState({ [field]: {
+        preview: e.target.result,
+        file: input.files[0],
+       }});
       reader.readAsDataURL(input.files[0]);
     }
   }
@@ -119,8 +133,76 @@ class NewChannelForm extends Component{
   onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
   onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
 
+  setError(error) {
+    this.setState({ error }, () => {
+      if (error) {
+        ReactDOM.findDOMNode(this).parentNode.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth',
+        });
+      }
+    });
+  }
+
+  validate() {
+    const {
+      name,
+      id,
+      privacy,
+    } = this.state;
+
+    if (!name) {
+      this.setError('חובה להזין שם ערוץ');
+      return false;
+    }
+    if (!id) {
+      this.setError('חובה להזין מזהה ערוץ');
+      return false;
+    }
+    if (!privacy) {
+      this.setError('חובה להזין גישה לערוץ');
+      return false;
+    }
+    return true;
+  }
+
   onSubmit = () => {
-    this.props.onDismiss();
+    this.setError(null);
+    if (this.validate()) {
+      const {
+        name,
+        id,
+        profile,
+        cover,
+        privacy,
+        description,
+        acl,
+      } = this.state;
+
+      const data = new FormData();
+      data.append('name', name);
+      data.append('id', id);
+      data.append('privacy', privacy);
+      data.append('description', description);
+      data.append('acl', acl);
+      if (profile && profile.file) {
+        data.append('profile', profile.file);
+      }
+      if (cover && cover.file) {
+        data.append('cover', cover.file);
+      }
+
+      axios.post(`${process.env.REACT_APP_API_HOSTNAME}/api/channels`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }).then(response => {
+        this.props.onDismiss();
+        this.props.history.push(`/channel/${response.data.id}`);
+      }).catch(error => {
+        console.error(error);
+        this.setError('עלתה שגיאה ביצירת הערוץ');
+      });
+    }
   }
   
   render(){
@@ -132,10 +214,16 @@ class NewChannelForm extends Component{
       privacy,
       description,
       acl,
+      error
     } = this.state;
 
     return(
       <Form onSubmit={this.onSubmit}>
+        {error && (
+          <ErrorMsg width={1}>
+            {error}
+          </ErrorMsg>
+        )}
         <TextField
           label="מזהה הערוץ"
           required
@@ -185,7 +273,7 @@ class NewChannelForm extends Component{
               <input type="file" accept="image/*" onChange={this.onChangeProfile} />
             </InputButton>
           </Box>
-          <Persona size={PersonaSize.size48} imageUrl={profile} />
+          <Persona size={PersonaSize.size48} imageUrl={(profile && profile.preview) || '/images/user.svg'} />
         </Flex>
 
         <Label>בחר תמונת נושא:</Label>
@@ -197,7 +285,7 @@ class NewChannelForm extends Component{
           </Box>
         </Flex>
         <Box mt={2}>
-          <Image src={cover} coverStyle={ImageCoverStyle.landscape} width={420} />
+          <Image src={cover && cover.preview} coverStyle={ImageCoverStyle.landscape} width={420} />
         </Box>
         <Buttons py={2} px={32}>
           <Flex>
@@ -211,4 +299,4 @@ class NewChannelForm extends Component{
   }
 }
 
-export default NewChannelForm;
+export default withRouter(NewChannelForm);
