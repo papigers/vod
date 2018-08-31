@@ -249,7 +249,7 @@ class VideoPage extends Component {
               </Box>
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
-                <VideoList type={VIDEO_LIST_TYPE.VERTICAL} />
+                <VideoList type={VIDEO_LIST_TYPE.LIST} />
               </Box>
             </Flex>
           </Box>
