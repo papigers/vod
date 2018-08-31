@@ -5,7 +5,7 @@ module.exports = {
   db: {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'Aa123123',
-    database: process.env.DB_DATABASE || 'postgres',
+    database: process.env.DB_DATABASE || 'vod',
     config: {
       dialect: process.env.DB_TYPE || 'postgres',
       host: process.env.DB_HOSTNAME || '35.187.74.250',

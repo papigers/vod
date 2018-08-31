@@ -102,7 +102,6 @@ module.exports = function(sequelize, DataTypes) {
     };
 
     Channel.getChannelVideos = function(channelId, limit, offset, sort) {
-      console.log('channelId', channelId, arguments);
       return Channel.findOne(Channel.addAuthorizedFilter({
         attributes: ['id'],
         where: {

@@ -27,7 +27,10 @@ class HomePage extends Component {
   constructor() {
     super();
     this.state = {};
-    Object.keys(VIDEO_LISTS_DATA).forEach(key => this.state[key] = []);
+    Object.keys(VIDEO_LISTS_DATA).forEach(key => this.state[key] = {
+      videos: [],
+      loading: true,
+    });
   }
 
   componentDidMount() {
@@ -39,7 +42,10 @@ class HomePage extends Component {
       axios.get(VIDEO_LISTS_DATA[videoListId].endpoint)
         .then(({ data }) => {
           this.setState({
-            [videoListId]: data,
+            [videoListId]: {
+              videos: data,
+              loading: false,
+            },
           });
         })
         .catch(console.error); 
@@ -54,7 +60,8 @@ class HomePage extends Component {
             <VideoList
               key={videoListId}
               category={VIDEO_LISTS_DATA[videoListId].label}
-              videos={this.state[videoListId]}
+              videos={this.state[videoListId].videos}
+              loading={this.state[videoListId].loading}
               type={VIDEO_LIST_TYPE.GRID}
             />
           ))}

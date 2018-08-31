@@ -33,6 +33,16 @@ const StyledVideoCard = styled(DocumentCard)`
   .ms-DocumentCardTitle {
     box-sizing: content-box;
   }
+
+  .ms-DocumentCardActivity {
+    transition: background-color 200ms ease-in-out, border 200ms ease-in-out;
+    border-top: 2px solid transparent;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.palette.neutralLighterAlt};
+      border-top: ${({ theme }) => `2px solid ${theme.palette.neutralLighter}`};
+    }
+  }
   &.ms-DocumentCard:not(.ms-DocumentCard--compact) {
     width: 210px;
   }
@@ -44,7 +54,7 @@ const StyledVideoCard = styled(DocumentCard)`
       max-height: 118px;
     }
     .ms-DocumentCardTitle {
-      height: 60px;
+      height: 46px;
     }
   }
 `;

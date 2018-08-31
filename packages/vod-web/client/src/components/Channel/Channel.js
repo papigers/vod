@@ -41,6 +41,7 @@ export default class Channel extends Component {
     super();
     this.state = {
       uploads: [],
+      loading: true,
     };
   }
 
@@ -62,6 +63,7 @@ export default class Channel extends Component {
       .then(({ data }) => {
         this.setState({
           uploads: data,
+          loading: false,
         });
       })
       .catch(console.error); 
@@ -70,6 +72,7 @@ export default class Channel extends Component {
 
   render() {
     const { channel, loading } = this.props;
+    const { loading: loadingVideos } = this.state;
 
     return (
       <Fragment>
@@ -86,7 +89,7 @@ export default class Channel extends Component {
           </ChannelPivot>
         </TitleBox>
         <ContentBox>
-          <VideoList category="העלאות" loading={loading} videos={this.state.uploads} />
+          <VideoList category="העלאות" loading={loading || loadingVideos} videos={this.state.uploads} />
         </ContentBox>
       </Fragment>
     );
