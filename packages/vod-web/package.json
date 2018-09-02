@@ -21,6 +21,7 @@
     "express": "~4.16.0",
     "morgan": "~1.9.0",
     "query-string": "^6.1.0",
+    "react-router-scroll-4": "^1.0.0-beta.2",
     "vod-redis-client": "^0.0.0",
     "vod-s3-client": "^0.0.0"
   },

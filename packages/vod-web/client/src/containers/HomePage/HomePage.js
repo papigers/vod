@@ -14,7 +14,7 @@ const VIDEO_LISTS_DATA = {
     endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/videos/top`,
   },
   trending: {
-    label: 'עולים',
+    label: 'חמים',
     endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/videos/trending`,
   },
   random: {

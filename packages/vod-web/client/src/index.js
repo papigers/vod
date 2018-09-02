@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import createHistory from 'history/createBrowserHistory';
 import { Route } from 'react-router-dom';
 import { ConnectedRouter } from 'react-router-redux';
+import { ScrollContext } from 'react-router-scroll-4';
 
 import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
 import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
@@ -43,11 +44,13 @@ const store = configureStore({}, history);
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <ThemeProvider>
-        <Fabric>
-          <Route component={App} />
-        </Fabric>
-      </ThemeProvider>
+      <ScrollContext>
+        <ThemeProvider>
+          <Fabric>
+            <Route component={App} />
+          </Fabric>
+        </ThemeProvider>
+      </ScrollContext>
     </ConnectedRouter>
   </Provider>,
   document.getElementById('root'),
