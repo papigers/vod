@@ -72,6 +72,10 @@ class UploadForm extends Component {
     };
   }
 
+  componentDidMount() {
+    this.props.onChangeChannel(this.props.user.id);
+  }
+
   onRenderPrivacyOption = (item) => {
     const option = item[0] || item;
     
@@ -148,6 +152,10 @@ class UploadForm extends Component {
     })));
   }
 
+  onChangeChannel = (e, item) => {
+    this.props.onChangeChannel(item.key);
+  }
+
   onSubmit = () => {
     const {
       step,
@@ -177,12 +185,35 @@ class UploadForm extends Component {
         description,
         privacy,
         thumbnails,
-        selectedThumbnail
+        selectedThumbnail,
+        channel,
       },
       metadata,
+      user,
     } = this.props;
 
     const intermidiateProgress = step === 'upload_submit' && progress >= 100;
+
+    const channelOptions = [{
+      key: user.id,
+      text: user.name,
+      data: {
+        img: `/profile/${user.id}/profile.png`,
+      },
+    }].concat((user.managedChannels || []).map(channel => ({
+      key: channel.id,
+      text: channel.name,
+      data: {
+        img: `/profile/${channel.id}/profile.png`,
+      },
+    })));
+    
+    const dropdownOptions = [];
+    channelOptions.forEach((item, index) => {
+      dropdownOptions.push(item);
+      dropdownOptions.push({ key: `divider${index}`, text: '-', itemType: DropdownMenuItemType.Divider });
+    });
+    dropdownOptions.splice(dropdownOptions.length - 1, 1);
 
     return (
       <Fragment>
@@ -236,20 +267,9 @@ class UploadForm extends Component {
                   label="ערוץ"
                   onRenderTitle={this.onRenderChannelOption}
                   onRenderOption={this.onRenderChannelOption}
-                  options={[{
-                    key: 's7591665',
-                    text: 'גרשון ח פפיאשוילי',
-                    data: {
-                      img: 'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
-                    },
-                  },{ key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
-                  {
-                    key: 'channel11',
-                    text: 'ערוץ 11',
-                    data: {
-                      img: 'https://yt3.ggpht.com/-BbwsM-6h7Qg/AAAAAAAAAAI/AAAAAAAAAAA/S-9eysJS6os/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg',
-                    }, 
-                  }]}
+                  onChange={this.onChangeChannel}
+                  selectedKey={channel}
+                  options={dropdownOptions}
                 />
               </DropdownContainer>
               <DropdownContainer>

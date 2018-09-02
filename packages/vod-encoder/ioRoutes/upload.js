@@ -311,96 +311,77 @@ function UploadData(user, socket) {
       }
       return weights[type1] - weights[type2];
     });
-    // var uploadIndex = 0;
-    // var fileType = fileTypes[uploadIndex];
-    // var tryCount = 0;
 
-    // function progressHandler(progress) {
-    //   files[fileType].progress = ((progress.loaded / progress.total) * 40);
-    //   sendTotalProgress();
-    // }
+    var fileIndex = 0;
+    var fileTypes = Object.keys(files);
+    function uploadNext() {
+      var fileType = fileTypes[fileIndex];
+      var file = files[fileType].path;
 
-    // function s3Callback(err, data) {
-    //   if (err) {
-    //     if (tryCount < 3) {
-    //       tryCount++;
-    //       uploadVideoFile(
-    //         self.id,
-    //         `${fileType}.${getFileExtension(fileType)}`,
-    //         files[fileType].path,
-    //         progressHandler,
-    //         s3Callback,
-    //       );
-    //     }
-    //     return self.uploadErrorHandler(err);
-    //   }
-    //   files[fileType].link = data.Location;
-    //   files[fileType].progress = 100;
-    //   var totalProgress  = sendTotalProgress();
-    //   console.log('uploaded', fileType);
-      
-    //   tryCount = 0;
-    //   uploadIndex++;
-    //   fileType = fileTypes[uploadIndex];
-    //   if (uploadIndex < fileTypes.length) {
+      uploadVideoFile(
+        self.id,
+        `${fileType}.${getFileExtension(fileType)}`,
+        file,
+        function progressHandler(progress) {
+          files[fileType].progress = ((progress.loaded / progress.total) * 40);
+          sendTotalProgress();
+        },
+        function s3Callback(err, data) {
+          if (err) {
+            return self.uploadErrorHandler(err);
+          }
+          files[fileType].link = data.Location;
+          files[fileType].progress = 100;
+          sendTotalProgress();
+          console.log('uploaded', fileType);
+          fileIndex++;
+          count++;
+          if (fileIndex < fileTypes.length) {
+            uploadNext();
+          }
+          else {
+            uploaded = {};
+            Object.keys(files).map(function(fileType) {
+              return uploaded[fileType] = files[fileType].link;
+            });
+            self.postUpload(uploaded);
+          }
+        },
+      );
+    }
+    
+    uploadNext();
+    // fileTypes.forEach(function(fileType) {
+    //   var file = files[fileType].path;
+    //   setTimeout(function() {
     //     uploadVideoFile(
     //       self.id,
     //       `${fileType}.${getFileExtension(fileType)}`,
-    //       files[fileType].path,
-    //       progressHandler,
-    //       s3Callback,
+    //       file,
+    //       function progressHandler(progress) {
+    //         files[fileType].progress = ((progress.loaded / progress.total) * 40);
+    //         sendTotalProgress();
+    //       },
+    //       function s3Callback(err, data) {
+    //         if (err) {
+    //           return self.uploadErrorHandler(err);
+    //         }
+    //         files[fileType].link = data.Location;
+    //         files[fileType].progress = 100;
+    //         sendTotalProgress();
+    //         console.log('uploaded', fileType);
+    //         count++;
+    //         if (count === fileTypes.length) {
+    //           uploaded = {};
+    //           Object.keys(files).map(function(fileType) {
+    //             return uploaded[fileType] = files[fileType].link;
+    //           });
+    //           self.postUpload(uploaded);
+    //         }
+    //       },
     //     );
-    //   }
-
-    //   if (totalProgress >= 100 && self.step !== 'draft') {
-    //     uploaded = {};
-    //     Object.keys(files).map(function(fileType) {
-    //       return uploaded[fileType] = files[fileType].link;
-    //     });
-    //     self.postUpload(uploaded);
-    //   }
-    // }
-
-    // uploadVideoFile(
-    //   self.id,
-    //   `${fileType}.${getFileExtension(fileType)}`,
-    //   files[fileType].path,
-    //   progressHandler,
-    //   s3Callback,
-    // );
-
-    // console.log(fileTypes, files);
-    fileTypes.forEach(function(fileType) {
-      var file = files[fileType].path;
-      setTimeout(function() {
-        uploadVideoFile(
-          self.id,
-          `${fileType}.${getFileExtension(fileType)}`,
-          file,
-          function progressHandler(progress) {
-            files[fileType].progress = ((progress.loaded / progress.total) * 40);
-            sendTotalProgress();
-          },
-          function s3Callback(err, data) {
-            if (err) {
-              return self.uploadErrorHandler(err);
-            }
-            files[fileType].link = data.Location;
-            files[fileType].progress = 100;
-            sendTotalProgress();
-            console.log('uploaded', fileType);
-            count++;
-            if (count === fileTypes.length) {
-              uploaded = {};
-              Object.keys(files).map(function(fileType) {
-                return uploaded[fileType] = files[fileType].link;
-              });
-              self.postUpload(uploaded);
-            }
-          },
-        );
-      }, weights[fileType] * 750);
-    });
+    //   }, weights[fileType] * 750);
+    // });
   }
 
   this.postUpload = function (links) {

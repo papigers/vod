@@ -1,6 +1,10 @@
 'use strict';
 var AWS = require('aws-sdk');
 var fs = require('fs');
+var http = require('http');
+var agent = new http.Agent({
+   maxSockets: 100,
+});
 
 module.exports = S3Client;
 
@@ -11,6 +15,10 @@ function S3Client() {
   this.Bucket = 'bucketvod';
   this.S3 = new AWS.S3({
     region: 'eu-central-1',
+    sslEnabled: false,
+    // httpOptions: {
+    //   agent: agent,
+    // }
   });
 };
 
@@ -63,7 +71,10 @@ function uploadFile(config, progressHandler, callback) {
   if (typeof config.Body === 'string') {
     config.Body = fs.createReadStream(config.Body);
   }
-  var upload = this.S3.upload(config);
+  var upload = this.S3.upload(config, {
+    partSize: 5 * 1024 * 1024,
+    queueSize: 30,
+  });
   if (progressHandler) {
     upload.on('httpUploadProgress', progressHandler);
   }

@@ -44,7 +44,7 @@ app.get('/:videoId/:object',
       })
       .then(function({ data }) {
         if (!data.cache) {
-          authCache.setAsync(cacheKey, data.authorized, 'EX', 10 * 60);
+          authCache.setAsync(cacheKey, data.authorized, 'EX', 24 * 60 * 60);
         }
         if (data.authorized) {
           return next();

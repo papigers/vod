@@ -13,6 +13,7 @@ import UploadButton from 'components/UploadButton';
 import UploadForm from 'components/UploadForm';
 
 import { makeSelectStepState } from './selectors';
+import { makeSelectUser } from '../ChannelPage/selectors';
 
 import * as actions from './actions';
 import { push } from 'react-router-redux';
@@ -180,6 +181,7 @@ class UploadPage extends Component {
       privacy,
       description,
       acl,
+      channel,
       selectedThumbnail,
     } = this.props.upload.video;
     this.props.setUploadStep('form_submit');
@@ -188,6 +190,7 @@ class UploadPage extends Component {
       name,
       privacy,
       description,
+      channel,
       acl,
     }).then(({ data }) => {
       if (!data.error) {
@@ -227,11 +230,13 @@ class UploadPage extends Component {
             video={this.props.upload.video}
             onChangeName={this.props.setUploadVideoName}
             onChangeDescription={this.props.setUploadVideoDescription}
+            onChangeChannel={this.props.setUploadVideoChannel}
             onChangeACL={this.props.setUploadVideoACL}
             onChangePrivacy={this.props.setUploadVideoPrivacy}
             onChangeThumbnail={this.props.selectUploadVideoThumbnail}
             setUploadError={this.props.setUploadError}
             onSubmit={this.onSubmit}
+            user={this.props.user}
           />
         )}
       </Container>
@@ -241,6 +246,7 @@ class UploadPage extends Component {
 
 const mapStateToProps = createStructuredSelector({
   upload: makeSelectStepState(),
+  user: makeSelectUser(),
 });
 
 const mapDispatchToProps = (dispatch) => {

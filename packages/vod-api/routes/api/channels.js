@@ -10,7 +10,7 @@ var s3Client = require('vod-s3-client')();
 
 var channelStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    var dest = path.join(os.tmpdir(), req.body.id);
+    var dest = path.join(os.tmpdir(), req.params.id);
     fs.access(dest, function(err) {
       if (err) {
         fs.mkdir(dest, function(err) {
@@ -25,6 +25,19 @@ var channelStorage = multer.diskStorage({
   }
 });
 var upload = multer({ storage: channelStorage });
+
+router.get('/managed', function(req, res) {
+  Channel.getManagedChannels(req.params.id)
+    .then(function(results) {
+      return res.json(results);
+    })
+    .catch(function(err){
+      console.error(err);
+      return res.status(500).json({
+        error: 'Failed to get managed channels',
+      });
+    });
+});
 
 router.get('/:id', function(req, res) {
   Channel.getChannel(req.params.id)
@@ -70,11 +83,22 @@ var channelImagesUpload = upload.fields([{
   maxCount: 1,
 }]);
 
+router.post('/images/:id', channelImagesUpload, function(req, res) {
+  // TO DO check auth
+  if (req.files.profile) {
+    s3Client.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path);
+  }
+  if (req.files.cover) {
+    s3Client.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path);
+  }
+  return setTimeout(function() {
+    res.json({});
+  }, 1000);
+});
+
 router.post('/', channelImagesUpload, function(req, res) {
   Channel.createChannel(req.body)
     .then(function(result) {
-      s3Client.uploadChannelImage(result.get('id'), 'profile', req.files.profile[0].path);
-      s3Client.uploadChannelImage(result.get('id'), 'cover', req.files.cover[0].path);
       return res.json({ id: result.get('id') });
     })
     .catch(function (err) {

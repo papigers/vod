@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
   var ChannelAccess = sequelize.define('ChannelAccess', {
-    access: DataTypes.ENUM('VIEW', 'POST'),
+    access: DataTypes.ENUM('VIEW', 'MANAGE'),
     type: DataTypes.ENUM(['USER', 'AD_GROUP']),
     id: {
       type: DataTypes.STRING,

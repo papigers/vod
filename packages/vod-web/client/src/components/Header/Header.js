@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
-import { transparentize } from 'polished';
+import { Box } from 'grid-styled';
+import { transparentize, clearFix } from 'polished';
 
 import { Link } from 'react-router-dom';
 import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox';
@@ -8,6 +9,8 @@ import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 import { CommandBarButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { ContextualMenuItemType } from 'office-ui-fabric-react/lib/ContextualMenu';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
+import { Label } from 'office-ui-fabric-react/lib/Label';
 
 import HeaderLogo from 'components/HeaderLogo';
 import { ThemeContext } from 'theme';
@@ -116,6 +119,7 @@ const StyledChannelButton = styled(CommandBarButton)`
 const StyledSubMenuButton = styled(DefaultButton)`
   width: 100%;
   background-color: transparent;
+  padding: 0 6px;
 
   &:hover {
     background-color: ${({theme}) =>transparentize(0.95, theme.palette.neutralPrimary)};
@@ -143,118 +147,157 @@ const StyledSubMenuButton = styled(DefaultButton)`
   }
 `;
 
-function ButtonLink(props) {
-  const { to, ...other } = props;
-  
-  if (!to) {
-    return (
-      <CommandBarButton {...other} />
-    );
-  }
-  else if (to.indexOf('/channel') !== -1) {
-    return (
-      <StyledChannelButton {...other}>
-        <Link to={to}>
-          <Persona
-            imageUrl="https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A"
-            size={PersonaSize.size32}
-            text="גרשון ח פפיאשוילי"
-          />
-        </Link>
-      </StyledChannelButton>
-    );
-  }
-  return (
-    <Link to={to}>
-      <CommandBarButton {...other} />
-   </Link>
-  );
-}
+const StyledSpinnerContainer = styled(Box)`
+  ${clearFix()}
+  display: flex;
 
-function SubMenuLink(props, dismiss) {
-  const { to, channel, onRender, ...other } = props;
-  if (to.indexOf('/channel') !== -1 && to !== '/channel/new') {
+  .ms-Spinner {
+    float: right;
+    display: flex;
+    margin-right: 5px;
+  }
+
+  .ms-Label {
+    float: right;
+    margin-right: 5px;
+  }
+`;
+
+export default class Header extends Component {
+  renderHeaderButton = (props) => {
+    const { to, ...other } = props;
+    
+    if (!to) {
+      return (
+        <CommandBarButton {...other} />
+      );
+    }
+    else if (to.indexOf('/channel') !== -1) {
+      return (
+        <StyledChannelButton {...other}>
+          <Link to={to}>
+            <Persona
+              imageUrl={`/profile/${this.props.user.id}/profile.png`}
+              size={PersonaSize.size32}
+              text={this.props.user.name}
+            />
+          </Link>
+        </StyledChannelButton>
+      );
+    }
     return (
-      <StyledSubMenuButton {...other}>
-        <Link to={to}>
-          <Persona
-            imageUrl={channel.picture}
-            size={PersonaSize.size24}
-            text={channel.name}
-          />
-        </Link>
-      </StyledSubMenuButton>
+      <Link to={to}>
+        <CommandBarButton {...other} />
+    </Link>
     );
   }
-  return (
-    <Link to={to} onClick={dismiss}>
-      <StyledSubMenuButton {...other} />
-   </Link>
-  );
-}
 
-export default function Header(props) {
-  return (
-    <HeaderContainer>
-      <HeaderGroup>
-        <HeaderLogo toggleSidebar={props.toggleSidebar} />
-      </HeaderGroup>
-      <SearchGroup>
-        <StyledSearchBox placeholder="חיפוש" />
-      </SearchGroup>
-      <HeaderGroup>
-        <ThemeContext.Consumer>
-          {({ theme, toggleTheme }) => (
-            <StyledCommandBar buttonAs={ButtonLink} items={[{
-              key: 'night',
-              name: theme.name === 'light' ? 'מצב לילה' : 'מצב יום',
-              onClick: toggleTheme,
-              iconProps: {
-                iconName: theme.name === 'light' ? 'ClearNight' : 'Brightness',
-              },
-              iconOnly: true,
-            }, {
-              key: 'upload',
-              name: 'העלאה',
-              to: '/upload',
-              iconProps: {
-                  iconName: 'Upload'
-              },
-            }, {
-              key: 'channel',
-              name: 'הערוץ שלי',
-              to: '/channel',
-              iconOnly: true,
-              subMenuProps: {
-                items: [
-                  {
-                    key: 'channel11',
-                    to: '/channel/channel11',
-                    channel: {
-                      name: 'ערוץ 11',
-                      picture: 'https://yt3.ggpht.com/-BbwsM-6h7Qg/AAAAAAAAAAI/AAAAAAAAAAA/S-9eysJS6os/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg',
+  renderSubMenuLink = (props, dismiss) => {
+    const { to, channel, onRender, ...other } = props;
+    if (to.indexOf('/channel') !== -1) {
+      return (
+        <StyledSubMenuButton {...other} onClick={dismiss}>
+          <Link to={to}>
+            <Persona
+              imageUrl={channel.picture}
+              size={PersonaSize.size24}
+              text={channel.name}
+            />
+          </Link>
+        </StyledSubMenuButton>
+      );
+    }
+    return (
+      <Link to={to} onClick={dismiss}>
+        <StyledSubMenuButton {...other} />
+      </Link>
+    );
+  }
+  renderLoadingSpinner(props) {
+    return (
+      <StyledSpinnerContainer p="1px" py="2px">
+        <Spinner size={SpinnerSize.medium} {...props}/>
+        <Label>טוען ערוצים... </Label>
+      </StyledSpinnerContainer>
+    );
+  }
+
+  render() {
+    const {
+      user,
+      toggleSidebar,
+      toggleChannelModalOpen,
+    } = this.props;
+
+    const managedChannelsLinks = user && user.managedChannels ? (
+      user.managedChannels.map((channel) => ({
+        key: channel.id,
+        to: `/channel/${channel.id}`,
+        channel: {
+          name: channel.name,
+          picture: `/profile/${channel.id}/profile.png`,
+        },
+        onRender: this.renderSubMenuLink,
+      }))
+    ) : ([{
+      key: 'loading-channels',
+      onRender: this.renderLoadingSpinner,
+    }]);
+
+    return (
+      <HeaderContainer>
+        <HeaderGroup>
+          <HeaderLogo toggleSidebar={toggleSidebar} />
+        </HeaderGroup>
+        <SearchGroup>
+          <StyledSearchBox placeholder="חיפוש" />
+        </SearchGroup>
+        <HeaderGroup>
+          <ThemeContext.Consumer>
+            {({ theme, toggleTheme }) => (
+              <StyledCommandBar buttonAs={this.renderHeaderButton} items={[{
+                key: 'night',
+                name: theme.name === 'light' ? 'מצב לילה' : 'מצב יום',
+                onClick: toggleTheme,
+                iconProps: {
+                  iconName: theme.name === 'light' ? 'ClearNight' : 'Brightness',
+                },
+                iconOnly: true,
+              }, {
+                key: 'upload',
+                name: 'העלאה',
+                to: '/upload',
+                iconProps: {
+                    iconName: 'Upload'
+                },
+              }, {
+                key: 'channel',
+                name: 'הערוץ שלי',
+                to: '/channel',
+                iconOnly: true,
+                subMenuProps: {
+                  items: [
+                    ...managedChannelsLinks,
+                    {
+                      key: 'divider_1',
+                      itemType: ContextualMenuItemType.Divider
                     },
-                    onRender: SubMenuLink,
-                  },
-                  {
-                    key: 'divider_1',
-                    itemType: ContextualMenuItemType.Divider
-                  },
-                  {
-                    key: 'createChannel',
-                    to: '/channel/new',
-                    onClick: props.toggleChannelModalOpen,
-                    text: 'צור ערוץ',
-                    iconProps: {
-                      iconName: 'AddGroup'
+                    {
+                      key: 'createChannel',
+                      to: '/channel/new',
+                      onClick: toggleChannelModalOpen,
+                      text: 'צור ערוץ',
+                      iconProps: {
+                        iconName: 'AddGroup'
+                      },
                     },
-                  },
-                ],
-              },
-            }]} />
-          )}
-        </ThemeContext.Consumer>
-      </HeaderGroup>
-    </HeaderContainer>
-  );
+                  ],
+                },
+              }]} />
+            )}
+          </ThemeContext.Consumer>
+        </HeaderGroup>
+      </HeaderContainer>
+    );
+  }
 }

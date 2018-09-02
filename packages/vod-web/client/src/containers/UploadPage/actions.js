@@ -10,6 +10,7 @@ import {
   SET_UPLOAD_VIDEO_DESCRIPTION,
   SET_UPLOAD_VIDEO_PRIVACY,
   SET_UPLOAD_VIDEO_ACL,
+  SET_UPLOAD_VIDEO_CHANNEL,
   SET_UPLOAD_ERROR,
 } from 'constants/actionTypes';
 
@@ -80,6 +81,13 @@ export function setUploadVideoPrivacy(privacy) {
   return {
     type: SET_UPLOAD_VIDEO_PRIVACY,
     privacy,
+  };
+}
+
+export function setUploadVideoChannel(channel) {
+  return {
+    type: SET_UPLOAD_VIDEO_CHANNEL,
+    channel,
   };
 }
 

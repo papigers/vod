@@ -20,6 +20,37 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+  }, {
+    scopes: {
+      canManage: function(userId, groups) {
+        var userId = userId || 's7591665';
+        var groups = groups || [];
+
+        return {
+          where: {
+            [Op.or]: [{
+              id: userId,
+            }, {
+              '$channelACL.id$': userId,
+              '$channelACL.type$': 'USER',
+              '$channelACL.access$': 'MANAGE',
+            }, {
+              '$channelACL.id$': {
+                [Op.in]: groups,
+              },
+              '$channelACL.type$': 'AD_GROUP',
+              '$channelACL.access$': 'MANAGE',
+            }],
+          },
+          include: [{
+            model: sequelize.models.ChannelAccess,
+            as: 'channelACL',
+            attributes: [],
+            required: false,
+          }],
+        }
+      },
+    }
   });
 
   Channel.associate = function(models) {
@@ -37,8 +68,29 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false,
       },
     });
+    Channel.belongsToMany(Channel, {
+      as: 'followers',
+      foreignKey: {
+        name: 'followeeId',
+        onDelete: 'CASCADE',
+      },
+      through: 'ChannelFollowers',
+    });
+    Channel.belongsToMany(Channel, {
+      as: 'followee',
+      foreignKey: {
+        name: 'followerId',
+        onDelete: 'CASCADE',
+      },
+      through: 'ChannelFollowers',
+    });
+    Channel.belongsToMany(models.Video, { as: 'likes', through: 'VideoLikes' });
+    Channel.belongsToMany(models.Video, { as: 'views', through: models.VideoView });
     Channel.belongsToMany(models.Video, { through: models.Comment });
-    Channel.ChannelACL = Channel.hasMany(models.ChannelAccess, { as: 'channelACL' });
+    Channel.ChannelACL = Channel.hasMany(models.ChannelAccess, {
+      as: 'channelACL',
+      onDelete: "CASCADE",
+    });
 
     Channel.setClassMethods(models);
   };
@@ -101,6 +153,14 @@ module.exports = function(sequelize, DataTypes) {
       return filter;
     };
 
+    Channel.getManagedChannels = function() {
+      return Channel.scope({
+        method: ['canManage', null, null],
+      }).findAll({
+        attributes: ['id', 'name'],
+      });
+    }
+
     Channel.getChannelVideos = function(channelId, limit, offset, sort) {
       return Channel.findOne(Channel.addAuthorizedFilter({
         attributes: ['id'],
@@ -159,12 +219,30 @@ module.exports = function(sequelize, DataTypes) {
 
     Channel.createChannel = function(channel) {
       var Acls = models.embed.util.helpers.mkInclude(Channel.ChannelACL);
-      channel.channelACL = channel.acl;
+      console.log(channel);
+      var acls = channel.viewACL.map(function(acl) {
+        acl.access = 'VIEW';
+        return acl;
+      });
+      channel.manageACL.forEach(function(acl) {
+        var index = acls.findIndex(function(viewACL) {
+          return viewACL.id === acl.id && viewACL.type === acl.type;
+        });
+        if (index !== -1) {
+          acls[index].access = 'MANAGE';
+        }
+        else {
+          acl.access = 'MANAGE';
+          acls.push(acl);
+        }
+      });
+
       return models.embed.insert(Channel, {
         id: channel.id,
         name: channel.name,
         description: channel.description,
         personal: channel.personal,
+        channelACL: acls,
       }, [Acls])
     };
   }

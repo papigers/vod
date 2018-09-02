@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+import axios from 'axios';
 
 import Header from 'components/Header';
 import Sidebar from 'components/Sidebar';
@@ -17,7 +18,9 @@ import ChannelPage from 'containers/ChannelPage';
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectSidebar, makeSelectChannelModal } from './selectors';
-import { toggleSidebarOpen, toggleChannelModalOpen } from './actions';
+import { makeSelectUser } from '../ChannelPage/selectors';
+import * as actions from './actions';
+
 
 const Container = styled.div`
   display: flex;
@@ -32,6 +35,17 @@ const Content = styled.div`
 `;
 
 class App extends Component {
+  componentDidMount() {
+    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/managed`)
+      .then(result => {
+        this.props.setManagedChannels(result.data);
+      })
+      .catch(error => {
+        console.log('Could not fetch managed channels');
+        console.error(error);
+      });
+  }
+
   render() {
     const {
       toggleSidebarOpen,
@@ -41,11 +55,16 @@ class App extends Component {
         open: isSidebarOpen,
         trapped: isSidebarTrapped,
       },
+      user,
     } = this.props;
 
     return (
       <Fragment>
-        <Header toggleSidebar={toggleSidebarOpen} toggleChannelModalOpen={toggleChannelModalOpen} />
+        <Header
+          toggleSidebar={toggleSidebarOpen}
+          toggleChannelModalOpen={toggleChannelModalOpen}
+          user={user}
+        />
         <Container>
           <Sidebar isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} onDismissed={toggleSidebarOpen} />
           <Content addSidebarMargin={isSidebarOpen && isSidebarTrapped}>
@@ -70,13 +89,11 @@ class App extends Component {
 const mapStateToProps = createStructuredSelector({
   sidebar: makeSelectSidebar(),
   channelModalOpen: makeSelectChannelModal(),
+  user: makeSelectUser(),
 });
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({
-    toggleSidebarOpen,
-    toggleChannelModalOpen,
-  }, dispatch);
+  return bindActionCreators(actions, dispatch);
 };
 
 export default createReduxContainer(App, mapStateToProps, mapDispatchToProps);

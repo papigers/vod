@@ -11,6 +11,7 @@ import {
   SET_UPLOAD_VIDEO_DESCRIPTION,
   SET_UPLOAD_VIDEO_PRIVACY,
   SET_UPLOAD_VIDEO_ACL,
+  SET_UPLOAD_VIDEO_CHANNEL,
   SET_UPLOAD_ERROR,
 } from 'constants/actionTypes';
 import { LOCATION_CHANGE } from 'react-router-redux';
@@ -45,9 +46,9 @@ function getProgress(step, progress) {
       return progress;
     case 'form_encode':
       // return 30 + (progress * 0.6);
-      return progress * 0.9;
+      return progress * 0.85;
     case 'form_s3':
-      return 90 + (progress * 0.1);
+      return 85 + (progress * 0.15);
     default:
       return 0;
   }
@@ -86,6 +87,8 @@ export default function uploadReducer(state = uploadInitialState, action) {
       return state.setIn(['video', 'privacy'], action.privacy);
     case SET_UPLOAD_VIDEO_ACL:
       return state.setIn(['video', 'acl'], fromJS(action.acl));
+    case SET_UPLOAD_VIDEO_CHANNEL:
+      return state.setIn(['video', 'channel'], action.channel)
     case SET_UPLOAD_ERROR:
       return state.merge(uploadInitialState)
         .set('error', action.error);

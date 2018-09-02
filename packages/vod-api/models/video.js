@@ -42,8 +42,8 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false,
       },
     });
-    // Video.belongsToMany(models.Channel, { as: 'likes' });
-    // Video.belongsToMany(models.Channel, { as: 'views' });
+    Video.belongsToMany(models.Channel, { as: 'likes', through: 'VideoLikes' });
+    Video.belongsToMany(models.Channel, { as: 'views', through: models.VideoView });
     Video.belongsToMany(models.Channel, { through: models.Comment });
     // creator of video
     Video.belongsTo(models.Channel, {
@@ -78,7 +78,9 @@ module.exports = function(sequelize, DataTypes) {
           }, {
             privacy: 'public',
           }, {
-            privacy: 'private',
+            privacy: {
+              [Op.ne]: 'public',
+            },
             [Op.or]: [{
               '$videoACL.id$': userId,
               '$videoACL.type$': 'USER',
@@ -187,11 +189,13 @@ module.exports = function(sequelize, DataTypes) {
           channelId: video.channel,
           creatorId: video.creator,
           name: video.name,
+          published: false,
         },
         defaults: {
           channelId: video.channel,
           creatorId: video.creator,
           name: video.name,
+          published: false,
         },
       }).spread(function(videoDb) {
         videoDb.setChannel(video.channel);
@@ -246,9 +250,11 @@ module.exports = function(sequelize, DataTypes) {
           published: false,
         },
       }).then(function(found) {
-        console.log(video);
         if (!found) {
           return null;
+        }
+        if (video.channel) {
+          found.setChannel(video.channel);
         }
         return models.embed.update(Video, {
           id: id,
@@ -256,7 +262,6 @@ module.exports = function(sequelize, DataTypes) {
           name: video.name,
           description: video.description,
           privacy: video.privacy,
-          channelId: video.channel || found.get('channelId'),
           published: true,
         }, [Acls]);
       })

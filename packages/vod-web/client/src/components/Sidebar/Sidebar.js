@@ -109,7 +109,7 @@ export default class Sidebar extends Component {
                       ]
                     }, 
                     {
-                      name: 'ערוצים',
+                      name: 'ערוצים במעקב',
                       links: [
                         { name: 'ערוץ 11', to: '/channel/channel11', key: 'channel11', img: 'https://yt3.ggpht.com/-BbwsM-6h7Qg/AAAAAAAAAAI/AAAAAAAAAAA/S-9eysJS6os/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg' },
                         { name: 'ערוץ 12', to: '/channel/channel12', key: 'channel12', img: 'https://yt3.ggpht.com/-6KZQLJ8zEZk/AAAAAAAAAAI/AAAAAAAAAAA/O7YW5jF52Cg/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg' },

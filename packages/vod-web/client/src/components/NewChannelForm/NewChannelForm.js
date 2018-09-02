@@ -89,8 +89,9 @@ class NewChannelForm extends Component{
       name: '',
       id: '',
       description: '',
-      privacy: '',
-      acl: [],
+      privacy: 'public',
+      viewACL: [],
+      manageACL: [],
       profile: null,
       cover: null,
       error: null,
@@ -132,7 +133,18 @@ class NewChannelForm extends Component{
   onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
   onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
   onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
-
+  onChangeViewACL = (acls) => {
+    this.setState({ viewACL: acls.map(acl => ({
+      id: acl.secondaryText,
+      type: acl.type,
+    }))});
+  }
+  onChangeManageACL = (acls) => {
+    this.setState({ manageACL: acls.map(acl => ({
+      id: acl.secondaryText,
+      type: acl.type,
+    }))});
+  }
   setError(error) {
     this.setState({ error }, () => {
       if (error) {
@@ -177,27 +189,38 @@ class NewChannelForm extends Component{
         cover,
         privacy,
         description,
-        acl,
+        viewACL,
+        manageACL
       } = this.state;
 
       const data = new FormData();
-      data.append('name', name);
-      data.append('id', id);
-      data.append('privacy', privacy);
-      data.append('description', description);
-      data.append('acl', acl);
+      // data.append('name', name);
+      // data.append('id', id);
+      // data.append('privacy', privacy);
+      // data.append('description', description);
+      // data.append('viewAcl', viewAcl);
+      // data.append('manageACL', manageACL);
       if (profile && profile.file) {
         data.append('profile', profile.file);
       }
       if (cover && cover.file) {
         data.append('cover', cover.file);
       }
-
-      axios.post(`${process.env.REACT_APP_API_HOSTNAME}/api/channels`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      axios.post(`${process.env.REACT_APP_API_HOSTNAME}/api/channels`, {
+        id,
+        name,
+        description,
+        viewACL,
+        manageACL,
+        privacy,
       }).then(response => {
+        return axios.post(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/images/${response.data.id}`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      })
+      .then(() => {
         this.props.onDismiss();
-        this.props.history.push(`/channel/${response.data.id}`);
+        this.props.history.push(`/channel/${id}`);
       }).catch(error => {
         console.error(error);
         this.setError('עלתה שגיאה ביצירת הערוץ');
@@ -213,7 +236,6 @@ class NewChannelForm extends Component{
       cover,
       privacy,
       description,
-      acl,
       error
     } = this.state;
 
@@ -254,9 +276,9 @@ class NewChannelForm extends Component{
           />
         </DropdownContainer>
         {privacy !== 'public' ? (
-          <PeoplePicker label="הרשאות צפייה" />
+          <PeoplePicker label="הרשאות צפייה" onChange={this.onChangeViewACL} />
         ) :  null}
-        <PeoplePicker label="הרשאות ניהול" />
+        <PeoplePicker label="הרשאות ניהול" onChange={this.onChangeManageACL} />
         <TextField
           label="תיאור"
           required
