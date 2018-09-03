@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 import qs from 'query-string';
-import axios from 'axios';
 
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
@@ -13,6 +12,7 @@ import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'o
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
+import axios from 'utils/axios';
 
 const VideoContainer = styled.div`
   display: flex;
@@ -77,7 +77,7 @@ class VideoPage extends Component {
   }
 
   fetchVideo() {
-    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/videos/view/${this.state.videoId}`)
+    axios.get(`/videos/view/${this.state.videoId}`)
       .then(({ data }) => {
         this.setState({
           video: data,

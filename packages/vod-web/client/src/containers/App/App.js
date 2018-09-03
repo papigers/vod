@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
-import axios from 'axios';
 
 import Header from 'components/Header';
 import Sidebar from 'components/Sidebar';
@@ -14,6 +13,7 @@ import HomePage from 'containers/HomePage';
 import VideoPage from 'containers/VideoPage';
 import UploadPage from 'containers/UploadPage';
 import ChannelPage from 'containers/ChannelPage';
+import axios from 'utils/axios';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -36,7 +36,7 @@ const Content = styled.div`
 
 class App extends Component {
   componentDidMount() {
-    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/managed`)
+    axios.get('channels/managed')
       .then(result => {
         this.props.setManagedChannels(result.data);
       })

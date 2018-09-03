@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
-import axios from 'axios';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Label } from 'office-ui-fabric-react/lib/Label';
@@ -13,6 +12,7 @@ import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button'
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Image, ImageCoverStyle } from 'office-ui-fabric-react/lib/Image';
 
+import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
 
 const DropdownContainer = styled.div`
@@ -206,7 +206,7 @@ class NewChannelForm extends Component{
       if (cover && cover.file) {
         data.append('cover', cover.file);
       }
-      axios.post(`${process.env.REACT_APP_API_HOSTNAME}/api/channels`, {
+      axios.post('/channels', {
         id,
         name,
         description,
@@ -214,7 +214,7 @@ class NewChannelForm extends Component{
         manageACL,
         privacy,
       }).then(response => {
-        return axios.post(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/images/${response.data.id}`, data, {
+        return axios.post(`channels/images/${response.data.id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       })

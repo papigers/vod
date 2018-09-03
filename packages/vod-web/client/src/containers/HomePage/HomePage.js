@@ -1,25 +1,25 @@
 import React, { Component } from 'react';
 import { Box, Flex } from 'grid-styled';
-import axios from 'axios';
+import axios from 'utils/axios';
 
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 
 const VIDEO_LISTS_DATA = {
   new: {
     label: 'חדשים',
-    endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/videos/new`,
+    endpoint: '/videos/new',
   },
   top: {
     label: 'הנצפים ביותר',
-    endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/videos/top`,
+    endpoint: '/videos/top',
   },
   trending: {
     label: 'חמים',
-    endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/videos/trending`,
+    endpoint: '/videos/trending',
   },
   random: {
     label: 'רנדומלי',
-    endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/videos/random`,    
+    endpoint: '/videos/random',    
   },
 };
 

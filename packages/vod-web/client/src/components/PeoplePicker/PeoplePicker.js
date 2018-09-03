@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
+
+import axios from 'utils/axios';
 
 import { ListPeoplePicker } from 'office-ui-fabric-react/lib/Pickers';
 import { Label } from 'office-ui-fabric-react/lib/Label';
@@ -127,7 +128,7 @@ class PeoplePicker extends Component {
   onFilterChanged = (filter, currentSelected, limitResults) => {
     if (filter) {
       return new Promise((resolve, reject) => {
-        axios.post(`${process.env.REACT_APP_API_HOSTNAME}/ldap/search`, {
+        axios.post('/ldap/search', {
           filter,
         }).then(({ data: { results } }) => {
           const reformatted = this.reformatResults(results, currentSelected);

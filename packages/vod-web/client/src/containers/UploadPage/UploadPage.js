@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { Box } from 'grid-styled';
 import io from 'socket.io-client';
-import axios from 'axios';
 import { bindActionCreators } from 'redux';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 
@@ -11,6 +10,7 @@ import createReduxContainer from 'utils/createReduxContainer';
 
 import UploadButton from 'components/UploadButton';
 import UploadForm from 'components/UploadForm';
+import axios from 'utils/axios';
 
 import { makeSelectStepState } from './selectors';
 import { makeSelectUser } from '../ChannelPage/selectors';
@@ -186,7 +186,7 @@ class UploadPage extends Component {
     } = this.props.upload.video;
     this.props.setUploadStep('form_submit');
     this.uploadSocket.emit('uploadScreenshot', selectedThumbnail);
-    axios.put(`${process.env.REACT_APP_API_HOSTNAME}/api/videos/publish/${this.id}`, {
+    axios.put(`/videos/publish/${this.id}`, {
       name,
       privacy,
       description,

@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { transitions } from 'polished';
 import { Box, Flex } from 'grid-styled';
-import axios from 'axios';
 
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
@@ -10,7 +9,7 @@ import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivo
 import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 
 import VideoList from 'components/VideoList';
-
+import axios from 'utils/axios';
 
 const ContentBox = styled(Box).attrs({
   pr: 100,
@@ -73,7 +72,7 @@ export default class Channel extends Component {
     const { channel, loading } = this.props;
 
     if (channel && !loading) {
-      axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/${channel.id}/videos`)
+      axios.get(`/channels/${channel.id}/videos`)
       .then(({ data }) => {
         this.setState({
           uploads: data,

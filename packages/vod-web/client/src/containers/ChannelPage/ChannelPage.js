@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
-import axios from 'axios';
 
 import Channel from 'components/Channel';
+import axios from 'utils/axios';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -50,7 +50,7 @@ class ChannelPage extends Component {
   }
 
   fetchChannel() {
-    axios.get(`${process.env.REACT_APP_API_HOSTNAME}/api/channels/${this.state.channelId}`)
+    axios.get(`/channels/${this.state.channelId}`)
       .then(({ data }) => {
         this.setState({
           channel: data,

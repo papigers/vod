@@ -277,7 +277,12 @@ module.exports = function(sequelize, DataTypes) {
 
     Video.viewGetVideo = function(videoId) {
       return Video.findOne(Video.addAuthorizedFilter({
-        attributes: ['id', 'createdAt', 'name', 'description'],
+        attributes: [
+          'id',
+          'createdAt',
+          'name',
+          'description',
+        ],
         where: {
           id: videoId,
         },
@@ -286,7 +291,13 @@ module.exports = function(sequelize, DataTypes) {
           as: 'channel',
           attributes: ['id', 'name'],
         }],
-      }));
+      })).then(function(video) {
+        return Promise.all([
+          Promise.resolve(video),
+          video.countViews(),
+          video.countLikes(),
+        ]);
+      });
     }
 
     Video.getFilterOrder = function(sort) {

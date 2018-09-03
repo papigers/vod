@@ -69,9 +69,12 @@ router.post('/', function(req, res, next) {
 
 router.get('/view/:id', function(req, res) {
   Video.viewGetVideo(req.params.id)
-    .then(function(result) {
-      if (result) {
-        return res.json(result.get({ plain: true }));
+    .then(function([video, viewCount, likeCount]) {
+      if (video) {
+        var result = video.get({ plain: true });
+        result.viewCount = viewCount;
+        result.likeCount = likeCount;
+        return res.json(result);
       }
       return res.status(404).json({
         error: 'No such video',
