@@ -77,7 +77,7 @@ module.exports = function(sequelize, DataTypes) {
       through: 'ChannelFollowers',
     });
     Channel.belongsToMany(Channel, {
-      as: 'followee',
+      as: 'followings',
       foreignKey: {
         name: 'followerId',
         onDelete: 'CASCADE',
@@ -96,6 +96,7 @@ module.exports = function(sequelize, DataTypes) {
     Channel.ChannelACL = Channel.hasMany(models.ChannelAccess, {
       as: 'channelACL',
       onDelete: "CASCADE",
+      allowNull: false,
     });
 
     Channel.setClassMethods(models);
@@ -204,6 +205,58 @@ module.exports = function(sequelize, DataTypes) {
         //   attributes: ['id', 'name'],
         // }],
       }));
+    }
+
+    Channel.followChannel = function(id) {
+      return Channel.findById(id)
+        .then(function(channel) {
+          channel.addFollower('s7591665');
+        });
+    };
+
+    Channel.unfollowChannel = function(id) {
+      return Channel.findById(id)
+        .then(function(channel) {
+          channel.removeFollower('s7591665');
+        });
+    };
+
+    Channel.getFollowers = function(id) {
+      return Channel.findOne({
+        attributes: ['id'],
+        where: {
+          id: id,
+        },
+        include: [{
+          model: Channel,
+          as: 'followers',
+          attributes: ['id', 'name', 'description'],
+          through: {
+            attributes: []
+          },
+        }],
+      }).then(function(followers) {
+        return Promise.resolve(followers.get('followers'));
+      });
+    }
+
+    Channel.getFollowings = function(id) {
+      return Channel.findOne({
+        attributes: ['id'],
+        where: {
+          id: id,
+        },
+        include: [{
+          model: Channel,
+          as: 'followings',
+          attributes: ['id', 'name', 'description'],
+          through: {
+            attributes: []
+          },
+        }],
+      }).then(function(followings) {
+        return Promise.resolve(followings.get('followings'));
+      });
     }
 
     Channel.editChannel = function(id, channel) {

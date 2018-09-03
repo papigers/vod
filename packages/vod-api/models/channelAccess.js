@@ -6,6 +6,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       primaryKey: true,
     },
+    ChannelId: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+    },
   });
 
   return ChannelAccess;

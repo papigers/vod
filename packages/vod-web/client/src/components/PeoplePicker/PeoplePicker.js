@@ -59,6 +59,20 @@ class PeoplePicker extends Component {
     };
   }
 
+  static getDerivedStateFromProps(props, state) {
+    if (props.selectedItems) {
+      return {
+        currentSelectedItems: (props.selectedItems || []).map(item => ({
+          text: item.name,
+          secondaryText: item.id,
+          imageUrl: item.profile,
+          type: item.type,
+        })),
+      };
+    }
+    return null;
+  }
+
   render() {
     return (
       <PickerContainer className={this.props.className} selectedItems={this.state.currentSelectedItems}>

@@ -7,7 +7,7 @@ var compression = require('compression');
 var axios = require('axios');
 
 var s3Client = require('vod-s3-client')();
-var authCache = require('vod-redis-client')(config.cache.auth);
+// var authCache = require('vod-redis-client')(config.cache.auth);
 
 var app = express();
 
@@ -34,18 +34,9 @@ function getUser(req) {
 
 app.get('/profile/:channelId/:img',
   function checkAuthorized(req, res, next) {
-    var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    authCache.getAsync(cacheKey)
-      .then(function(authorized) {
-        if (authorized) {
-          return Promise.resolve({ data: { authorized, cache: true } });
-        }
-        return axios.get(`${config.api}/channels/${req.params.channelId}/auth-check/${getUser(req)}`);  
-      })
+    // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
+    return axios.get(`${config.api}/channels/${req.params.channelId}/auth-check/${getUser(req)}`)
       .then(function({ data }) {
-        if (!data.cache) {
-          authCache.setAsync(cacheKey, data.authorized, 'EX', 24 * 60 * 60);
-        }
         if (data.authorized) {
           return next();
         }
@@ -55,6 +46,26 @@ app.get('/profile/:channelId/:img',
         console.error(err);
         return res.status(500).send('Server Error');
       });
+    // authCache.getAsync(cacheKey)
+    //   .then(function(authorized) {
+    //     if (authorized) {
+    //       return Promise.resolve({ data: { authorized, cache: true } });
+    //     }
+    //     return axios.get(`${config.api}/channels/${req.params.channelId}/auth-check/${getUser(req)}`);  
+    //   })
+    //   .then(function({ data }) {
+    //     if (!data.cache) {
+    //       authCache.setAsync(cacheKey, data.authorized, 'EX', 24 * 60 * 60);
+    //     }
+    //     if (data.authorized) {
+    //       return next();
+    //     }
+    //     return res.status(403).send('Unauthorized');
+    //   })
+    //   .catch(function(err) {
+    //     console.error(err);
+    //     return res.status(500).send('Server Error');
+    //   });
   },
   function serveRequest(req, res) {
     s3Client.getChannelObject(req)

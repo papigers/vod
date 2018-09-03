@@ -5,6 +5,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       primaryKey: true,
     },
+    VideoId: {
+      type: DataTypes.CHAR(12),
+      primaryKey: true,
+    },
   });
 
   return VideoAccess;

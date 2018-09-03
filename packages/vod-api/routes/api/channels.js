@@ -13,8 +13,8 @@ var channelStorage = multer.diskStorage({
     var dest = path.join(os.tmpdir(), req.params.id);
     fs.access(dest, function(err) {
       if (err) {
-        fs.mkdir(dest, function(err) {
-          cb(err, dest);
+        fs.mkdir(dest, function(error) {
+          cb(error, dest);
         });
       }
       cb(null, dest);
@@ -53,6 +53,58 @@ router.get('/:id', function(req, res) {
       console.error(err);
       return res.status(500).json({
         error: 'Couldn\'t get channel',
+      });
+    });
+});
+
+router.post('/:id/follow', function(req, res) {
+  Channel.followChannel(req.params.id)
+    .then(function() {
+      res.json({});
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Coldn\'t follow channel',
+      });
+    })
+});
+
+router.post('/:id/unfollow', function(req, res) {
+  Channel.unfollowChannel(req.params.id)
+    .then(function() {
+      res.json({});
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Coldn\'t unfollow channel',
+      });
+    });
+});
+
+router.get('/:id/followers', function(req, res) {
+  Channel.getFollowers(req.params.id)
+    .then(function(followers) {
+      return res.json(followers);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Coldn\'t get followers',
+      });
+    });
+});
+
+router.get('/:id/followings', function(req, res) {
+  Channel.getFollowings(req.params.id)
+    .then(function(followings) {
+      return res.json(followings);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Coldn\'t get followings',
       });
     });
 });

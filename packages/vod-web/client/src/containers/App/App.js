@@ -36,6 +36,10 @@ const Content = styled.div`
 
 class App extends Component {
   componentDidMount() {
+    this.fetchManagedChannels();
+  }
+
+  fetchManagedChannels = () => {
     axios.get('channels/managed')
       .then(result => {
         this.props.setManagedChannels(result.data);
@@ -79,7 +83,7 @@ class App extends Component {
           </Content>
         </Container>
         <Modal isOpen={channelModalOpen} title="יצירת ערוץ" onDismiss={toggleChannelModalOpen}>
-          <NewChannelForm />
+          <NewChannelForm user={user} onSubmit={this.fetchManagedChannels} />
         </Modal>
       </Fragment>
     );
