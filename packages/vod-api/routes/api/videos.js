@@ -2,25 +2,6 @@ var express = require('express');
 var Video = require('../../models').Video;
 var router = express.Router();
 
-
-function getVideos(req, res) {
-  var limit = req.query.limit || 12;
-  var offset = req.query.offset || 0;
-  var sort = req.params && req.params.sort;
-  limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
-
-  Video.getVideos(limit, offset, sort)
-    .then(function(videos) {
-      res.json(videos);
-    })
-    .catch(function(err) {
-      console.error(err);
-      res.status(500).json({
-        error: 'Couldn\'t fetch videos',
-      });
-    });
-};
-
 // default redirect to random
 router.get('/', function(req, res) {
   res.redirect(`${req.baseUrl}/random`);
@@ -67,13 +48,14 @@ router.post('/', function(req, res, next) {
   });
 });
 
-router.get('/view/:id', function(req, res) {
-  Video.viewGetVideo(req.params.id)
-    .then(function([video, viewCount, likeCount]) {
+router.get('/video/:id', function(req, res) {
+  Video.getVideo(req.params.id)
+    .then(function([video, viewCount, likeCount, like]) {
       if (video) {
         var result = video.get({ plain: true });
         result.viewCount = viewCount;
         result.likeCount = likeCount;
+        result.userLiked = like;
         return res.json(result);
       }
       return res.status(404).json({
@@ -86,6 +68,45 @@ router.get('/view/:id', function(req, res) {
         error: 'Couldn\'t get video',
       });
     })
+});
+
+router.put('/video/:id/view', function(req, res) {
+  Video.viewVideo(req.params.id)
+    .then(function() {
+      return res.json({});
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Failed to add video view',
+      });
+    });
+});
+
+router.put('/video/:id/like', function(req, res) {
+  Video.likeVideo(req.params.id)
+    .then(function() {
+      return res.json({});
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Failed to like video',
+      });
+    });
+});
+
+router.put('/video/:id/dislike', function(req, res) {
+  Video.dislikeVideo(req.params.id)
+    .then(function() {
+      return res.json({});
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Failed to dislike video',
+      });
+    });
 });
 
 router.put('/:id', function(req, res) {

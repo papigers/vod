@@ -43,7 +43,13 @@ module.exports = function(sequelize, DataTypes) {
       },
     });
     Video.belongsToMany(models.Channel, { as: 'likes', through: 'VideoLikes' });
-    Video.belongsToMany(models.Channel, { as: 'views', through: models.VideoView });
+    Video.belongsToMany(models.Channel, {
+      as: 'views',
+      through: {
+        model: models.VideoView,
+        unique: false,
+      },
+    });
     Video.belongsToMany(models.Channel, { through: models.Comment });
     // creator of video
     Video.belongsTo(models.Channel, {
@@ -275,7 +281,7 @@ module.exports = function(sequelize, DataTypes) {
       }, userId, groups));
     };
 
-    Video.viewGetVideo = function(videoId) {
+    Video.getVideo = function(videoId) {
       return Video.findOne(Video.addAuthorizedFilter({
         attributes: [
           'id',
@@ -296,8 +302,54 @@ module.exports = function(sequelize, DataTypes) {
           Promise.resolve(video),
           video.countViews(),
           video.countLikes(),
+          video.hasLike('s7591665'),
         ]);
       });
+    }
+
+    Video.viewVideo = function(id) {
+      return Video.findById(id, {
+        attributes: ['id'],
+        include: [{
+          model: models.Channel,
+          attributes: ['id'],
+          where: {
+            id: 's7591665',
+          },
+          as: 'views',
+          through: {
+            attributes: ['createdAt'],
+            where: {
+              createdAt: {
+                [Op.gt]: new Date(new Date() - 3 * 60 * 60 * 1000)
+              }
+            }
+          },
+        }],
+      }).then(function(views) {
+        // viewed 3 hours ago or less 
+        if (views) { 
+          return Promise.resolve();
+        }
+        return models.VideoView.create({
+          VideoId: id,
+          ChannelId: 's7591665', 
+        });
+      });
+    }
+
+    Video.likeVideo = function(id) {
+      return Video.findById(id)
+        .then(function(video) {
+          return video.addLike('s7591665');
+        });
+    }
+
+    Video.dislikeVideo = function(id) {
+      return Video.findById(id)
+        .then(function(video) {
+          return video.removeLike('s7591665');
+        });
     }
 
     Video.getFilterOrder = function(sort) {

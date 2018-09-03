@@ -85,7 +85,13 @@ module.exports = function(sequelize, DataTypes) {
       through: 'ChannelFollowers',
     });
     Channel.belongsToMany(models.Video, { as: 'likes', through: 'VideoLikes' });
-    Channel.belongsToMany(models.Video, { as: 'views', through: models.VideoView });
+    Channel.belongsToMany(models.Video, {
+      as: 'views',
+      through: {
+        model: models.VideoView,
+        unique: false,
+      },
+    });
     Channel.belongsToMany(models.Video, { through: models.Comment });
     Channel.ChannelACL = Channel.hasMany(models.ChannelAccess, {
       as: 'channelACL',

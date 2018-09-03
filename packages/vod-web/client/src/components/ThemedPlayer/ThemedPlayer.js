@@ -280,6 +280,9 @@ export default class ThemedPlyr extends Component {
       });
       this.player.load();
       this.player.play();
+      this.player.on('timeupdate', () => {
+        this.props.onTimeUpdate(this.player.currentTime(), this.player.duration());
+      });
       this.player.qualityPickerPlugin();
     }
   }

@@ -41,6 +41,28 @@ const VideoDescription = styled.div`
 
 const VideoButton = styled(DefaultButton)`
   background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
+  &:hover, &:active {
+    &:before {
+      background: transparent;
+    }
+  }
+
+  &:before {
+    content: ${({ beforeText }) => `'${beforeText || ''}'`}; 
+    display: ${({ beforeText }) => beforeText !== undefined ? 'inline' : 'none'};
+    font-size: 1.1em;
+    font-weight: bold;
+    color: ${({ theme }) => theme.palette.themePrimary};
+    background: ${({ theme }) => theme.palette.neutralLight};
+    padding: 4px 12px;
+    margin-left: 6px;
+    position: relative;
+    top: -1px;
+  }
 `;
 
 class VideoPage extends Component {
@@ -50,6 +72,8 @@ class VideoPage extends Component {
       loading: true,
       error: null,
       video: null,
+      likeDelta: 0,
+      viewed: false,
     };
   }
   
@@ -77,7 +101,7 @@ class VideoPage extends Component {
   }
 
   fetchVideo() {
-    axios.get(`/videos/view/${this.state.videoId}`)
+    axios.get(`/videos/video/${this.state.videoId}`)
       .then(({ data }) => {
         this.setState({
           video: data,
@@ -99,7 +123,16 @@ class VideoPage extends Component {
     if (item.onRender) {
       return item.onRender(item);
     }
-    return <VideoButton iconProps={{ iconName: item.icon }} menuProps={item.subMenuProps} text={item.name} />;
+    const { icon, subMenuProps, name, beforeText, ...props } = item;
+    return (
+      <VideoButton
+        iconProps={{ iconName: icon }}
+        menuProps={subMenuProps}
+        text={name}
+        beforeText={beforeText !== undefined ? `${beforeText}` : undefined}
+        {...props}
+      />
+    );
   }
 
   onRenderOverflowButton(overflowItems) {
@@ -111,8 +144,29 @@ class VideoPage extends Component {
     );
   }
 
+  onLike = () => {
+    this.setState({ likeDelta: this.state.likeDelta + 1 });
+    axios.put(`/videos/video/${this.state.video.id}/like`);
+  }
+  onDislike = () => {
+    this.setState({ likeDelta: this.state.likeDelta - 1 });
+    axios.put(`/videos/video/${this.state.video.id}/dislike`);
+  }
+  onTimeUpdate = (time, duration) => {
+    if (!this.state.viewed && (time > 120 || (time / duration >= 0.66))) {
+      this.setState({ viewed: true });
+      axios.put(`/videos/video/${this.state.video.id}/view`);
+    }
+  }
+
   render() {
-    const { video, error } = this.state;
+    const { video, error, likeDelta } = this.state;
+    let likeCount = 0;
+    let userLiked = false;
+    if (video) {
+      likeCount = video.likeCount + likeDelta;
+      userLiked = (video.userLiked && likeDelta >= 0) || (!video.userLiked && likeDelta > 0);
+    }
 
     const LinkOnLoad = video ? Link : 'div';
 
@@ -123,7 +177,7 @@ class VideoPage extends Component {
             <Flex justifyContent="center">
               <Box width={[1, 1, 1, 0.65]}>
                 <VideoContainer>
-                  <Player videoId={video && video.id} error={error} />
+                  <Player videoId={video && video.id} error={error} onTimeUpdate={this.onTimeUpdate} />
                   <Box mt={20} className="ms-font-xxl">
                     <Shimmer shimmerElements={[{ type: ElemType.line, height: 32 }]} width='40%' isDataLoaded={!!video}>
                       {video && video.name}
@@ -141,32 +195,31 @@ class VideoPage extends Component {
                       width='100%'
                       isDataLoaded={!!video}
                     >
-                      <SpreadItems>
-                        <span className="ms-fontSize-mPlus">1,231,289 צפיות</span>
-                        <OverflowSet
-                          items={[
-                            {
-                              key: 'like',
-                              name: 'אהבתי',
-                              icon: 'Like',
-                              ariaLabel: 'אהבתי',
-                              onClick: () => {
-                                return;
+                      {video && (
+                        <SpreadItems>
+                          <span className="ms-fontSize-mPlus">{video.viewCount} צפיות</span>
+                          <OverflowSet
+                            items={[
+                              {
+                                key: 'like',
+                                name: `אהבתי`,
+                                beforeText: likeCount,
+                                icon: userLiked ? 'LikeSolid' : 'Like',
+                                ariaLabel: 'אהבתי',
+                                onClick: userLiked ? this.onDislike : this.onLike,
                               },
-                            },
-                            {
-                              key: 'share',
-                              name: 'שתף',
-                              icon: 'Share',
-                              onClick: () => {
-                                return;
+                              {
+                                key: 'share',
+                                name: 'שתף',
+                                icon: 'Share',
+                                onClick: console.log,
                               }
-                            }
-                          ]}
-                          onRenderOverflowButton={this.onRenderOverflowButton}
-                          onRenderItem={this.onRenderItem}
-                        />
-                      </SpreadItems>
+                            ]}
+                            onRenderOverflowButton={this.onRenderOverflowButton}
+                            onRenderItem={this.onRenderItem}
+                          />
+                        </SpreadItems>
+                      )}
                     </Shimmer>
                   </VideoSection>
                   <VideoSection>

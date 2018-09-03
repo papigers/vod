@@ -4,6 +4,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       type: DataTypes.DATE,
       primaryKey: true,
+      defaultValue: Date.now,
     },
   }, {
     timestamps: true,
