@@ -6,7 +6,7 @@ var axios = require('axios');
 var cors = require('cors');
 var compression = require('compression');
 
-var OSClient = require('vod-object-storage-client').GCSClient();
+var OSClient = require('vod-object-storage-client').S3Client();
 // var authCache = require('vod-redis-client')(config.cache.auth);
 
 var app = express();
@@ -21,16 +21,6 @@ app.use(compression());
 function getUser(req) {
   return 's7591665';
 }
-
-var provisionHeaders = [
-  'content-length',
-  'content-type',
-  'content-range',
-  'content-encoding',
-  'accept-ranges',
-  'etag',
-  'last-modified',
-];
 
 app.get('/:videoId/:object',
   function checkAuthorized(req, res, next) {
@@ -67,19 +57,8 @@ app.get('/:videoId/:object',
     //     return res.status(500).send('Server Error');
     //   });
   },
-  function serveRequest(req, res) {
-    // res.set('Cache-Control', 'max-age=43200');
-    OSClient.getVideoObject(req)
-      .on('httpHeaders', function (statusCode, headers) {
-        res.status(statusCode);
-        provisionHeaders.forEach(function(header) {
-          if (headers[header]) {
-            res.set(header, headers[header])
-          }
-        });
-        this.response.httpResponse.createUnbufferedStream().pipe(res);
-      })
-      .send();
+  function serveRequest(req, res, next) {
+    OSClient.proxyGetObject(OSClient.getVideoObject(req), req, res, next);
   }
 );
 

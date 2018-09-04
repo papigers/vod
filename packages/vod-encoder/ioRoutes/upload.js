@@ -8,7 +8,7 @@ var ffmpeg = require('fluent-ffmpeg');
 var base64 = require('base64-img').base64;
 var rimraf = require('rimraf');
 
-var OSClient = require('vod-object-storage-client').GCSClient();
+var OSClient = require('vod-object-storage-client').S3Client();
 
 var CHUNK_SIZE = 1048576;
 var MOCK_USER = 's7591665';

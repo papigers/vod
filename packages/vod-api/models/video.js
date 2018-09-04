@@ -303,6 +303,7 @@ module.exports = function(sequelize, DataTypes) {
           video.countViews(),
           video.countLikes(),
           video.hasLike('s7591665'),
+          video.channel.hasFollower('s7591665'),
         ]);
       });
     }

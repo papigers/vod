@@ -1,12 +1,49 @@
 'use strict';
 var fs = require('fs');
 
+var provisionHeaders = [
+  'content-length',
+  'content-type',
+  'content-range',
+  'content-encoding',
+  'accept-ranges',
+  'etag',
+  'cache-control',
+  'last-modified',
+];
+
 module.exports = Client;
 
 function Client() {
   if (!(this instanceof Client)) {
     return new Client();
   }
+};
+
+Client.prototype.proxyGetObject = function(clientRequest, httpRequest, httpResponse, next) {
+  clientRequest.on('httpHeaders', function (statusCode, headers) {
+    httpResponse.status(statusCode);
+    provisionHeaders.forEach(function(header) {
+      if (headers[header]) {
+        httpResponse.set(header, headers[header])
+      }
+    });
+    // if (!headers['cache-control']) {
+      httpResponse.set('cache-control', 'private, max-age=86400');
+    // }
+  });
+  var stream = clientRequest.createReadStream()
+    .on('error', function(err) {
+      if (err.code === 'NotModified' || (err.code === 'PreconditionFailed' && httpRequest.header('if-none-match'))) {
+        return httpResponse.sendStatus(304);
+      }
+      if (err.code === 'NoSuchKey') {
+        return httpResponse.sendStatus(404);
+      }
+      return next(err);
+    });
+
+  stream.pipe(httpResponse);
 };
 
 Client.prototype.getObject = function(opts, req, callback) {
@@ -16,10 +53,10 @@ Client.prototype.getObject = function(opts, req, callback) {
       opts.Range = header;
   }
   if ((header = req.header('If-Modified-Since'))) {
-      opts.IfModifiedSince = header;
+      opts.IfModifiedSince = new Date(header);
   }
   if ((header = req.header('If-Unmodified-Since'))) {
-      opts.IfUnmodifiedSince = header;
+      opts.IfUnmodifiedSince = new Date(header);
   }
   if ((header = req.header('If-Match'))) {
       opts.IfMatch = header;

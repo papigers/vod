@@ -162,10 +162,10 @@ class VideoPage extends Component {
   render() {
     const { video, error, likeDelta } = this.state;
     let likeCount = 0;
-    let userLiked = false;
+    let userLikes = false;
     if (video) {
       likeCount = video.likeCount + likeDelta;
-      userLiked = (video.userLiked && likeDelta >= 0) || (!video.userLiked && likeDelta > 0);
+      userLikes = (video.userLikes && likeDelta >= 0) || (!video.userLikes && likeDelta > 0);
     }
 
     const LinkOnLoad = video ? Link : 'div';
@@ -204,9 +204,9 @@ class VideoPage extends Component {
                                 key: 'like',
                                 name: `אהבתי`,
                                 beforeText: likeCount,
-                                icon: userLiked ? 'LikeSolid' : 'Like',
+                                icon: userLikes ? 'LikeSolid' : 'Like',
                                 ariaLabel: 'אהבתי',
-                                onClick: userLiked ? this.onDislike : this.onLike,
+                                onClick: userLikes ? this.onDislike : this.onLike,
                               },
                               {
                                 key: 'share',

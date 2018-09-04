@@ -6,20 +6,10 @@ var logger = require('morgan');
 var compression = require('compression');
 var axios = require('axios');
 
-var OSClient = require('vod-object-storage-client').GCSClient();
+var OSClient = require('vod-object-storage-client').S3Client();
 // var authCache = require('vod-redis-client')(config.cache.auth);
 
 var app = express();
-
-var provisionHeaders = [
-  'content-length',
-  'content-type',
-  'content-range',
-  'content-encoding',
-  'accept-ranges',
-  'etag',
-  'last-modified',
-];
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -67,18 +57,8 @@ app.get('/profile/:channelId/:img',
     //     return res.status(500).send('Server Error');
     //   });
   },
-  function serveRequest(req, res) {
-    OSClient.getChannelObject(req)
-      .on('httpHeaders', function (statusCode, headers) {
-        res.status(statusCode);
-        provisionHeaders.forEach(function(header) {
-          if (headers[header]) {
-            res.set(header, headers[header])
-          }
-        });
-        this.response.httpResponse.createUnbufferedStream().pipe(res);
-      })
-      .send();
+  function serveRequest(req, res, next) {
+    OSClient.proxyGetObject(OSClient.getChannelObject(req), req, res, next);
   },
 );
 

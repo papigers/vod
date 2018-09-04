@@ -2,6 +2,7 @@ module.exports = {
   server: {
     port: process.env.PORT || '9091',
   },
+  api: 'http://localhost:9090/api',
   cache: {
     auth: {
       host: 'vod-auth-cache.redis.cache.windows.net',

@@ -195,16 +195,20 @@ module.exports = function(sequelize, DataTypes) {
         where: {
           id: videoId,
         },
-        // include: [{
-        //   model: models.Video,
-        //   as: 'videos',
-        //   where: {
-        //     published: true,
-        //   },
-        //   duplicating: false,
-        //   attributes: ['id', 'name'],
-        // }],
-      }));
+      })).then(function(channel) {
+        return Promise.all([
+          channel,
+          channel.hasFollower('s7591665'),
+        ]);
+      });
+    }
+
+    Channel.deleteChannel = function(videoId) {
+      return Channel.destroy({
+        where: {
+          id: videoId,
+        },
+      });
     }
 
     Channel.followChannel = function(id) {

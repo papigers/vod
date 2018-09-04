@@ -10,4 +10,5 @@ module.exports = {
       tls: true,
     },
   },
+  api: 'http://localhost:9090/api',
 };

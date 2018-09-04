@@ -50,12 +50,13 @@ router.post('/', function(req, res, next) {
 
 router.get('/video/:id', function(req, res) {
   Video.getVideo(req.params.id)
-    .then(function([video, viewCount, likeCount, like]) {
+    .then(function([video, viewCount, likeCount, like, follow]) {
       if (video) {
         var result = video.get({ plain: true });
         result.viewCount = viewCount;
         result.likeCount = likeCount;
-        result.userLiked = like;
+        result.userLikes = like;
+        result.channel.userFollows = follow;
         return res.json(result);
       }
       return res.status(404).json({
@@ -146,6 +147,7 @@ router.put('/publish/:id', function(req, res, next) {
 });
 
 router.get('/:videoId/auth-check/:userId', function(req, res) {
+  res.setHeader('cache-control', 'public, max-age=86400');
   Video.checkAuth(req.params.videoId, req.params.userId)
     .then(function(count) {
       res.json({

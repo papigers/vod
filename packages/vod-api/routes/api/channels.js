@@ -6,7 +6,7 @@ var multer = require('multer');
 var Channel = require('../../models').Channel;
 var router = express.Router();
 
-var OSClient = require('vod-object-storage-client').GCSClient();
+var OSClient = require('vod-object-storage-client').S3Client();
 
 var channelStorage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -17,7 +17,9 @@ var channelStorage = multer.diskStorage({
           cb(error, dest);
         });
       }
-      cb(null, dest);
+      else {
+        cb(null, dest);
+      }
     });
   },
   filename: function (req, file, cb) {
@@ -41,9 +43,11 @@ router.get('/managed', function(req, res) {
 
 router.get('/:id', function(req, res) {
   Channel.getChannel(req.params.id)
-    .then(function(result) {
-      if (result) {
-        return res.json(result.get({ plain: true }));
+    .then(function([channel, isFollowing]) {
+      if (channel) {
+        var resChannel = channel.get({ plain: true });
+        resChannel.isFollowing = isFollowing;
+        return res.json(resChannel);
       }
       return res.status(404).json({
         error: 'No such channel',
@@ -137,15 +141,24 @@ var channelImagesUpload = upload.fields([{
 
 router.post('/images/:id', channelImagesUpload, function(req, res) {
   // TO DO check auth
+  var promises = [];
   if (req.files.profile) {
-    OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path);
+    promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
   }
   if (req.files.cover) {
-    OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path);
+    promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
   }
-  return setTimeout(function() {
-    res.json({});
-  }, 1000);
+  Promise.all(promises)
+    .then(function() {
+      res.json({});
+    })
+    .catch(function(err) {
+      Channel.deleteChannel(req.params.id);
+      console.error(err);
+      res.status(500).json({
+        error: 'Failed to upload channel images',
+      });
+    });
 });
 
 router.post('/', channelImagesUpload, function(req, res) {
@@ -185,6 +198,7 @@ router.get('/:id/videos/:sort', function(req, res) {
 });
 
 router.get('/:channelId/auth-check/:userId', function(req, res) {
+  res.setHeader('cache-control', 'public, max-age=86400');
   Channel.checkAuth(req.params.channelId, req.params.userId)
     .then(function(count) {
       res.json({
