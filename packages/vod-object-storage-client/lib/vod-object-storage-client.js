@@ -1,5 +1,6 @@
 'use strict';
 var fs = require('fs');
+var mime = require('mime');
 
 var provisionHeaders = [
   'content-length',
@@ -26,6 +27,9 @@ Client.prototype.proxyGetObject = function(clientRequest, httpRequest, httpRespo
     provisionHeaders.forEach(function(header) {
       if (headers[header]) {
         httpResponse.set(header, headers[header])
+      }
+      if (header === 'content-type' && headers[header] === 'application/octet-stream') {
+        httpResponse.set(header, mime.getType(httpRequest.path));
       }
     });
     // if (!headers['cache-control']) {
