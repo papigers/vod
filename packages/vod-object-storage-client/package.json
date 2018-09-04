@@ -1,11 +1,11 @@
 {
-  "name": "vod-s3-client",
+  "name": "vod-object-storage-client",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "Gershon Papi <papigers93@gmail.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "lib/vod-s3-client.js",
+  "main": "lib/index.js",
   "directories": {
     "lib": "lib",
     "test": "__tests__"

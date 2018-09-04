@@ -23,7 +23,7 @@
     "query-string": "^6.1.0",
     "react-router-scroll-4": "^1.0.0-beta.2",
     "vod-redis-client": "^0.0.0",
-    "vod-s3-client": "^0.0.0"
+    "vod-object-storage-client": "^0.0.0"
   },
   "devDependencies": {
     "concurrently": "^3.6.1",

@@ -24,7 +24,7 @@
     "sequelize-embed": "^2.1.0",
     "sequelize-redis-cache": "^2.0.1",
     "vod-redis-client": "^0.0.0",
-    "vod-s3-client": "^0.0.0"
+    "vod-object-storage-client": "^0.0.0"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",

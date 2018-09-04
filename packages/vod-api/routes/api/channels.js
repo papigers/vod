@@ -6,7 +6,7 @@ var multer = require('multer');
 var Channel = require('../../models').Channel;
 var router = express.Router();
 
-var s3Client = require('vod-s3-client')();
+var OSClient = require('vod-object-storage-client').GCSClient();
 
 var channelStorage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -138,10 +138,10 @@ var channelImagesUpload = upload.fields([{
 router.post('/images/:id', channelImagesUpload, function(req, res) {
   // TO DO check auth
   if (req.files.profile) {
-    s3Client.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path);
+    OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path);
   }
   if (req.files.cover) {
-    s3Client.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path);
+    OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path);
   }
   return setTimeout(function() {
     res.json({});

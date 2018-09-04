@@ -17,7 +17,7 @@
     "express": "~4.16.0",
     "morgan": "~1.9.0",
     "vod-redis-client": "^0.0.0",
-    "vod-s3-client": "^0.0.0"
+    "vod-object-storage-client": "^0.0.0"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",

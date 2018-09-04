@@ -6,7 +6,7 @@ var axios = require('axios');
 var cors = require('cors');
 var compression = require('compression');
 
-var S3Client = require('vod-s3-client')();
+var OSClient = require('vod-object-storage-client').GCSClient();
 // var authCache = require('vod-redis-client')(config.cache.auth);
 
 var app = express();
@@ -69,7 +69,7 @@ app.get('/:videoId/:object',
   },
   function serveRequest(req, res) {
     // res.set('Cache-Control', 'max-age=43200');
-    S3Client.getVideoObject(req)
+    OSClient.getVideoObject(req)
       .on('httpHeaders', function (statusCode, headers) {
         res.status(statusCode);
         provisionHeaders.forEach(function(header) {

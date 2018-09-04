@@ -6,7 +6,7 @@ var logger = require('morgan');
 var compression = require('compression');
 var axios = require('axios');
 
-var s3Client = require('vod-s3-client')();
+var OSClient = require('vod-object-storage-client').GCSClient();
 // var authCache = require('vod-redis-client')(config.cache.auth);
 
 var app = express();
@@ -68,7 +68,7 @@ app.get('/profile/:channelId/:img',
     //   });
   },
   function serveRequest(req, res) {
-    s3Client.getChannelObject(req)
+    OSClient.getChannelObject(req)
       .on('httpHeaders', function (statusCode, headers) {
         res.status(statusCode);
         provisionHeaders.forEach(function(header) {

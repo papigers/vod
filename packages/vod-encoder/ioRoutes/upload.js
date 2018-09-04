@@ -8,7 +8,7 @@ var ffmpeg = require('fluent-ffmpeg');
 var base64 = require('base64-img').base64;
 var rimraf = require('rimraf');
 
-var S3Client = require('vod-s3-client')();
+var OSClient = require('vod-object-storage-client').GCSClient();
 
 var CHUNK_SIZE = 1048576;
 var MOCK_USER = 's7591665';
@@ -621,7 +621,7 @@ function uploadVideoFile(id, filename, path, progressHandler, callback) {
   // console.log(path);
   var stream = fs.createReadStream(path);
   var noop = function() {};
-  S3Client.uploadVideo(
+  OSClient.uploadVideo(
     id,
     filename,
     stream,
