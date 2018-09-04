@@ -153,7 +153,7 @@ class VideoPage extends Component {
     axios.put(`/videos/video/${this.state.video.id}/dislike`);
   }
   onTimeUpdate = (time, duration) => {
-    if (!this.state.viewed && (time > 120 || (time / duration >= 0.66))) {
+    if (!this.state.viewed && (time > 120 || (time / duration >= 0.4))) {
       this.setState({ viewed: true });
       axios.put(`/videos/video/${this.state.video.id}/view`);
     }

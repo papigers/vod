@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { darken, rgba, lighten } from 'polished';
 import videojs from 'video.js';
 
+import { withPreload } from 'containers/VideoPreloader';
+
 const StyledVideoContainer = styled.div`
   --fg-color: #fff;
   --bg-color: ${({theme}) => theme.palette.themePrimary};
@@ -226,7 +228,7 @@ const StyledVideoContainer = styled.div`
   }
 `;
 
-export default class ThemedPlyr extends Component {
+class ThemedPlayer extends Component {
   constructor() {
     super();
     this.state = { playerReady: false, videoId: null };
@@ -271,6 +273,7 @@ export default class ThemedPlyr extends Component {
   }
 
   loadVideoSources() {
+    this.props.preload(null);
     if (this.player) {
       this.player.reset();
       this.player.poster(`${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/poster.png`);
@@ -312,3 +315,5 @@ export default class ThemedPlyr extends Component {
     );
   }
 }
+
+export default withPreload(ThemedPlayer);

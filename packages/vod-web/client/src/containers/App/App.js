@@ -13,6 +13,7 @@ import HomePage from 'containers/HomePage';
 import VideoPage from 'containers/VideoPage';
 import UploadPage from 'containers/UploadPage';
 import ChannelPage from 'containers/ChannelPage';
+import VideoPreloader from 'containers/VideoPreloader';
 import axios from 'utils/axios';
 
 import createReduxContainer from 'utils/createReduxContainer';
@@ -64,6 +65,7 @@ class App extends Component {
 
     return (
       <Fragment>
+        <VideoPreloader />
         <Header
           toggleSidebar={toggleSidebarOpen}
           toggleChannelModalOpen={toggleChannelModalOpen}

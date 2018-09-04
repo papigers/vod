@@ -16,14 +16,15 @@
     "compression": "^1.7.3",
     "config": "^2.0.1",
     "cookie-parser": "~1.4.3",
+    "debounce": "^1.2.0",
     "debug": "~2.6.9",
     "dotenv": "^6.0.0",
     "express": "~4.16.0",
     "morgan": "~1.9.0",
     "query-string": "^6.1.0",
     "react-router-scroll-4": "^1.0.0-beta.2",
-    "vod-redis-client": "^0.0.0",
-    "vod-object-storage-client": "^0.0.0"
+    "vod-object-storage-client": "^0.0.0",
+    "vod-redis-client": "^0.0.0"
   },
   "devDependencies": {
     "concurrently": "^3.6.1",
