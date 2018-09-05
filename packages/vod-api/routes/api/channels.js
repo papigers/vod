@@ -61,7 +61,7 @@ router.get('/:id', function(req, res) {
     });
 });
 
-router.post('/:id/follow', function(req, res) {
+router.put('/:id/follow', function(req, res) {
   Channel.followChannel(req.params.id)
     .then(function() {
       res.json({});
@@ -74,7 +74,7 @@ router.post('/:id/follow', function(req, res) {
     })
 });
 
-router.post('/:id/unfollow', function(req, res) {
+router.put('/:id/unfollow', function(req, res) {
   Channel.unfollowChannel(req.params.id)
     .then(function() {
       res.json({});

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { createStructuredSelector } from 'reselect';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
@@ -8,6 +9,9 @@ import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
+
+import createReduxContainer from 'utils/createReduxContainer';
+import { makeSelectUser } from 'containers/ChannelPage/selectors';
 
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
@@ -73,6 +77,7 @@ class VideoPage extends Component {
       error: null,
       video: null,
       likeDelta: 0,
+      followDelta: 0,
       viewed: false,
     };
   }
@@ -158,14 +163,25 @@ class VideoPage extends Component {
       axios.put(`/videos/video/${this.state.video.id}/view`);
     }
   }
+  onFollow = () => {
+    this.setState({ followDelta: this.state.followDelta + 1 });
+    axios.put(`/channels/${this.state.video.channel.id}/follow`);
+  }
+  onUnfollow = () => {
+    this.setState({ followDelta: this.state.followDelta - 1 });
+    axios.put(`/channels/${this.state.video.channel.id}/unfollow`);
+  }
 
   render() {
-    const { video, error, likeDelta } = this.state;
+    const { video, error, likeDelta, followDelta } = this.state;
+    const { user } = this.props;
     let likeCount = 0;
     let userLikes = false;
+    let userFollows = false;
     if (video) {
       likeCount = video.likeCount + likeDelta;
       userLikes = (video.userLikes && likeDelta >= 0) || (!video.userLikes && likeDelta > 0);
+      userFollows = (video.channel.userFollows && followDelta >= 0) || (!video.channel.userFollows && followDelta > 0);
     }
 
     const LinkOnLoad = video ? Link : 'div';
@@ -202,7 +218,7 @@ class VideoPage extends Component {
                             items={[
                               {
                                 key: 'like',
-                                name: `אהבתי`,
+                                name: userLikes ? 'אוהב' : 'אהבתי',
                                 beforeText: likeCount,
                                 icon: userLikes ? 'LikeSolid' : 'Like',
                                 ariaLabel: 'אהבתי',
@@ -269,11 +285,14 @@ class VideoPage extends Component {
                             size={PersonaSize.size100}
                           />
                         </LinkOnLoad>
-                        <DefaultButton
-                          text="עקוב"
-                          iconProps={{ iconName: 'FollowUser' }}
-                          primary
-                        />
+                        {video && user.id !== video.channel.id ? (
+                          <DefaultButton
+                            text={userFollows ? 'עוקב' : 'עקוב'}
+                            iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}
+                            primary
+                            onClick={userFollows ? this.onUnfollow : this.onFollow}
+                          />
+                        ) : null}
                       </SpreadItems>
                     </Shimmer>
                     <VideoDescription className="ms-font-s-plus">
@@ -312,4 +331,8 @@ class VideoPage extends Component {
   }
 }
 
-export default VideoPage
+const mapStateToProps = createStructuredSelector({
+  user: makeSelectUser(),
+});
+
+export default createReduxContainer(VideoPage, mapStateToProps);
