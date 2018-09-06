@@ -31,6 +31,98 @@ module.exports = function(sequelize, DataTypes) {
           published: false,
         },
       },
+      authorizedManage: function(userId, groups) {
+        var userId = userId || 's7591665';
+        var groups = groups || [];
+        return {
+          where: {
+            [Op.or]: [{
+                channelId: userId,
+              }, {
+                '$channel.channelACL.access$': 'MANAGE',
+                [Op.or]: [{
+                  '$channel.channelACL.id$': userId,
+                  '$channel.channelACL.type$': 'USER',
+                }, {
+                  '$channel.channelACL.id$': {
+                    [Op.in]: groups,
+                  },
+                  '$channel.channelACL.type$': 'AD_GROUP',
+                }],
+              },
+            ],
+          },
+          include: [{
+            model: sequelize.models.Channel,
+            as: 'channel',
+            required: false,
+            attributes: [],
+            include: [{
+              model: sequelize.models.ChannelAccess,
+              as: 'channelACL',
+              attributes: [],
+              required: false,
+            }],
+          }],
+        };
+      },
+      authorizedView: function(userId, groups) {
+        var userId = userId || 's7591665';
+        var groups = groups || [];
+        return {
+          where: {
+            [Op.or]: [{
+                channelId: userId,
+              }, {
+                privacy: 'public',
+              }, {
+                privacy: {
+                  [Op.ne]: 'public',
+                },
+                [Op.or]: [{
+                  '$videoACL.id$': userId,
+                  '$videoACL.type$': 'USER',
+                }, {
+                  '$videoACL.id$': {
+                    [Op.in]: groups,
+                  },
+                  '$videoACL.type$': 'AD_GROUP',
+                }],
+              }, {
+                privacy: 'channel',
+                [Op.or]: [{
+                  '$channel.channelACL.id$': userId,
+                  '$channel.channelACL.type$': 'USER',
+                }, {
+                  '$channel.channelACL.id$': {
+                    [Op.in]: groups,
+                  },
+                  '$channel.channelACL.type$': 'AD_GROUP',
+                }],
+              },
+            ],
+          },
+          include: [{
+            model: sequelize.models.VideoAccess,
+            as: 'videoACL',
+            required: false,
+            attributes: [],
+            duplicating: false, // pg sequelize bug: https://github.com/sequelize/sequelize/issues/8432
+          }, {
+            model: sequelize.models.Channel,
+            as: 'channel',
+            required: false,
+            attributes: ['id'],
+            include: [{
+              model: sequelize.models.ChannelAccess,
+              as: 'channelACL',
+              attributes: [],
+              duplicating: false, // pg sequelize bug: https://github.com/sequelize/sequelize/issues/8432
+              required: false,
+            }],
+          }],
+        };
+      },
     },
   });
 
@@ -72,114 +164,12 @@ module.exports = function(sequelize, DataTypes) {
   };
 
   Video.setClassMethods = function(models) {
-
-    Video.addAuthorizedFilter = function(filter, userId, groups) {
-      // mock auth
-      var userId = userId || 's7591665';
-      var groups = groups || [];
-
-      var authWhere = {
-        [Op.or]: [{
-            channelId: userId,
-          }, {
-            privacy: 'public',
-          }, {
-            privacy: {
-              [Op.ne]: 'public',
-            },
-            [Op.or]: [{
-              '$videoACL.id$': userId,
-              '$videoACL.type$': 'USER',
-            }, {
-              '$videoACL.id$': {
-                [Op.in]: groups,
-              },
-              '$videoACL.type$': 'AD_GROUP',
-            }],
-          }, {
-            privacy: 'channel',
-            [Op.or]: [{
-              '$channel.channelACL.id$': userId,
-              '$channel.channelACL.type$': 'USER',
-            }, {
-              '$channel.channelACL.id$': {
-                [Op.in]: groups,
-              },
-              '$channel.channelACL.type$': 'AD_GROUP',
-            }],
-          },
-        ],
-      };
-
-      var authInclude = [{
-          model: models.VideoAccess,
-          as: 'videoACL',
-          required: false,
-          attributes: [],
-          duplicating: false, // pg sequelize bug: https://github.com/sequelize/sequelize/issues/8432
-        }, {
-          model: models.Channel,
-          as: 'channel',
-          required: false,
-          attributes: ['id'],
-          include: [{
-            model: models.ChannelAccess,
-            as: 'channelACL',
-            attributes: [],
-            duplicating: false, // pg sequelize bug: https://github.com/sequelize/sequelize/issues/8432
-            required: false,
-          }],
-        },
-      ];
-
-      filter.where = filter.where ? {
-        [Op.and]: [filter.where, authWhere]
-      } : authWhere;
-
-      if (filter.include) {
-        var videoAclInclude = false;
-        var channelInclude = false;
-        var channelAclInclude = false;
-        filter.include = filter.include.map(function(incl) {
-          if (incl.model === models.VideoAccess) {
-            videoAclInclude = true;
-            return Object.assign(authInclude[0], incl);
-          }
-          if (incl.model === models.Channel && incl.as === 'channel') {
-            channelInclude = true;
-            var include = Object.assign(authInclude[1], incl);
-            var subInclude = authInclude[1].include[0];
-            if (incl.include) {
-              include.include = [];
-              incl.include.forEach(function(incl2) {
-                if (incl2.model === subInclude.model) {
-                  channelAclInclude = true;
-                  include.include.push(Object.assign(subInclude, incl2));
-                }
-                else {
-                  include.include.push(incl2);
-                }
-              });
-              if (!channelAclInclude) {
-                include.include = subInclude;
-              }
-            }
-            return include;
-          }
-          return incl;
-        });
-        if (!videoAclInclude) {
-          filter.include.push(authInclude[0]);
-        }
-        if (!channelInclude) {
-          filter.include.push(authInclude[1]);
-        }
-      }
-      else {
-        filter.include = authInclude;
-      }
-      return filter;
-    };
+    Video.authorizedManage = function(userId, groups) {
+      return { method: ['authorizedManage', userId, groups] };
+    }
+    Video.authorizedView = function(userId, groups) {
+      return { method: ['authorizedView', userId, groups] };
+    }
 
     /**
      * 
@@ -220,20 +210,20 @@ module.exports = function(sequelize, DataTypes) {
         video.acl = [];
       }
 
-      var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
-      video.videoACL = video.acl;
-      return Video.findById(id)
+      return Video.scope(Video.authorizedManage(null, null)).findById(id)
         .then(function(found) {
           if (!found) {
             return null;
           }
-          return models.embed.update(Video, {
+          video.channelId = video.channel || found.get('channelId');
+          var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
+          return models.embed.update(Video.scope(Video.authorizedManage(null, null)), {
             id: id,
             videoACL: video.acl,
             name: video.name,
             description: video.description,
             privacy: video.privacy,
-            channelId: video.channel,
+            channelId: video.channelId,
           }, [Acls]);
         });
     }
@@ -244,72 +234,57 @@ module.exports = function(sequelize, DataTypes) {
      * @param {Video} video Missing video's attributes
      */
     Video.publish = function(id, video) {
-      if (video.privacy === 'public') {
-        video.acl = [];
-      }
-      
-      var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
-      video.videoACL = video.acl;
-      return Video.find({
-        where: {
-          id: id,
-          published: false,
-        },
-      }).then(function(found) {
-        if (!found) {
-          return null;
-        }
-        if (video.channel) {
-          found.setChannel(video.channel);
-        }
-        return models.embed.update(Video, {
-          id: id,
-          videoACL: video.acl,
-          name: video.name,
-          description: video.description,
-          privacy: video.privacy,
-          published: true,
-        }, [Acls]);
-      })
+      video.published = true;
+      return Video.edit(id, video);
+    }
+
+    Video.delete = function(id) {
+      return Video.scope(Video.authorizedManage(null, null)).findById(id)
+        .then(function(video) {
+          if (video) {
+            return video.destroy().then(function() {
+              return true;
+            });
+          }
+          return false;
+        });
     }
 
     Video.checkAuth = function(videoId, userId, groups) {
-      return Video.count(Video.addAuthorizedFilter({
+      return Video.scope(Video.authorizedView(userId, groups)).count({
         where: {
           id: videoId,
         },
-      }, userId, groups));
+      });
     };
 
     Video.getVideo = function(videoId) {
-      return Video.findOne(Video.addAuthorizedFilter({
+      return Video.scope(Video.authorizedView(null, null)).findOne({
         attributes: [
           'id',
           'createdAt',
           'name',
           'description',
+          'channelId',
         ],
         where: {
           id: videoId,
         },
-        include: [{
-          model: models.Channel,
-          as: 'channel',
-          attributes: ['id', 'name'],
-        }],
-      })).then(function(video) {
+      }).then(function(video) {
         return Promise.all([
-          Promise.resolve(video),
+          video,
+          video.getChannel({
+            attributes: ['id', 'name'],
+          }),
           video.countViews(),
           video.countLikes(),
           video.hasLike('s7591665'),
-          video.channel.hasFollower('s7591665'),
         ]);
       });
     }
 
     Video.viewVideo = function(id) {
-      return Video.findById(id, {
+      return Video.scope(Video.authorizedView(null, null)).findById(id, {
         attributes: ['id'],
         include: [{
           model: models.Channel,
@@ -340,14 +315,14 @@ module.exports = function(sequelize, DataTypes) {
     }
 
     Video.likeVideo = function(id) {
-      return Video.findById(id)
+      return Video.scope(Video.authorizedView(null, null)).findById(id)
         .then(function(video) {
           return video.addLike('s7591665');
         });
     }
 
     Video.dislikeVideo = function(id) {
-      return Video.findById(id)
+      return Video.scope(Video.authorizedView(null, null)).findById(id)
         .then(function(video) {
           return video.removeLike('s7591665');
         });
@@ -373,17 +348,18 @@ module.exports = function(sequelize, DataTypes) {
     };
 
     Video.getVideos =  function(limit, offset, sort) {
-      return Video.findAll(Video.addAuthorizedFilter({
-        attributes: ['id', 'createdAt', 'name', 'description'],
+      return Video.scope(Video.authorizedView(null, null)).findAll({
+        attributes: ['id', 'createdAt', 'name', 'description', 'channelId'],
         limit: limit,
         offset: offset,
         order: Video.getFilterOrder(sort),
-        include: [{
-          model: models.Channel,
-          as: 'channel',
-          attributes: ['id', 'name'],
-        }],
-      }));
+      }).then(function(videos) {
+        return Promise.all(videos.map(function(video) {
+          return Promise.all([video, video.getChannel({
+            attributes: ['id', 'name'],
+          })]);
+        }));
+      });
     };
   }
 

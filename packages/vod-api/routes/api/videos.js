@@ -15,7 +15,12 @@ router.get('/:sort', function(req, res) {
 
   Video.getVideos(limit, offset, sort)
     .then(function(videos) {
-      res.json(videos);
+      res.json(videos.map(function([video, channel]) {
+        var res = video.get({ plain: true });
+        delete res.channelId;
+        res.channel = channel;
+        return res;
+      }));
     })
     .catch(function(err) {
       console.error(err);
@@ -50,13 +55,14 @@ router.post('/', function(req, res, next) {
 
 router.get('/video/:id', function(req, res) {
   Video.getVideo(req.params.id)
-    .then(function([video, viewCount, likeCount, like, follow]) {
+    .then(function([video, channel, viewCount, likeCount, like]) {
       if (video) {
         var result = video.get({ plain: true });
+        delete result.channelId;
+        result.channel = channel;
         result.viewCount = viewCount;
         result.likeCount = likeCount;
         result.userLikes = like;
-        result.channel.userFollows = follow;
         return res.json(result);
       }
       return res.status(404).json({
@@ -113,14 +119,15 @@ router.put('/video/:id/dislike', function(req, res) {
 router.put('/:id', function(req, res) {
   Video.edit(req.params.id, req.body)
     .then(function(result) {
-      if (result[0] > 0) {
-        return res.json({});
+      if (!!result) {
+        return res.json(result.get({ plain: true }));
       }
       return res.status(404).json({
         error: 'No such video',
       });
     })
     .catch(function (err) {
+      console.error(err);
       res.status(500).json({
         error: 'Video edit failed',
       });
@@ -132,7 +139,7 @@ router.put('/publish/:id', function(req, res, next) {
   Video.publish(req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
-        return res.json({});
+        return res.json(result.get({ plain: true }));
       }
       return res.status(404).json({
         error: 'No such video',
@@ -143,6 +150,20 @@ router.put('/publish/:id', function(req, res, next) {
       res.status(500).json({
         error: 'Video publish failed',
       });
+    });
+});
+
+router.delete('/:id', function(req, res) {
+  Video.delete(req.params.id)
+    .then(function(deleted) {
+      if (deleted) {
+        return res.json({});
+      }
+      return res.sendStatus(404);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.sendStatus(500);
     });
 });
 
