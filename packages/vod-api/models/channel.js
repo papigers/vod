@@ -22,7 +22,7 @@ module.exports = function(sequelize, DataTypes) {
     },
   }, {
     scopes: {
-      canManage: function(userId, groups) {
+      authorizedManage: function(userId, groups) {
         var userId = userId || 's7591665';
         var groups = groups || [];
 
@@ -48,9 +48,41 @@ module.exports = function(sequelize, DataTypes) {
             attributes: [],
             required: false,
           }],
-        }
+        };
       },
-    }
+      authorizedView: function(userId, groups) {
+        var userId = userId || 's7591665';
+        var groups = groups || [];
+
+        return {
+          where: {
+            [Op.or]: [{
+              id: userId,
+            }, {
+              privacy: 'PUBLIC',
+            }, {
+              privacy: 'PRIVATE',
+              [Op.or]: [{
+                '$channelACL.id$': userId,
+                '$channelACL.type$': 'USER',
+              }, {
+                '$channelACL.id$': {
+                  [Op.in]: groups,
+                },
+                '$channelACL.type$': 'AD_GROUP',
+              }],
+            }],
+          },
+          include: [{
+            model: sequelize.models.ChannelAccess,
+            as: 'channelACL',
+            attributes: [],
+            required: false,
+            duplicating: false,
+          }],
+        };
+      },
+    },
   });
 
   Channel.associate = function(models) {
@@ -104,98 +136,55 @@ module.exports = function(sequelize, DataTypes) {
 
   Channel.setClassMethods = function(models) {
 
-    Channel.addAuthorizedFilter = function(filter, userId, groups) {
-      // mock auth
-      var userId = userId || 's7591665';
-      var groups = groups || [];
-
-      var authWhere = {
-        [Op.or]: [{
-            id: userId,
-          }, {
-            privacy: 'PUBLIC',
-          }, {
-            privacy: 'PRIVATE',
-            [Op.or]: [{
-              '$channelACL.id$': userId,
-              '$channelACL.type$': 'USER',
-            }, {
-              '$channelACL.id$': {
-                [Op.in]: groups,
-              },
-              '$channelACL.type$': 'AD_GROUP',
-            }],
-          },
-        ],
-      };
-
-      var authInclude = [{
-        model: models.ChannelAccess,
-        as: 'channelACL',
-        required: false,
-        attributes: [],
-        duplicating: false, // pg sequelize bug: https://github.com/sequelize/sequelize/issues/8432
-      }];
-
-      filter.where = filter.where ? {
-        [Op.and]: [filter.where, authWhere]
-      } : authWhere;
-
-      if (filter.include) {
-        var channelAclInclude = false;
-        filter.include = filter.include.map(function(incl) {
-          if (incl.model === models.ChannelAccess) {
-            channelAclInclude = true;
-            return Object.assign(authInclude[0], incl);
-          }
-          return incl;
-        });
-        if (!channelAclInclude) {
-          filter.include.push(authInclude[0]);
-        }
-      }
-      else {
-        filter.include = authInclude;
-      }
-      return filter;
-    };
+    Channel.authorizedManage = function(userId, groups) {
+      return { method: ['authorizedManage', userId, groups] };
+    }
+    Channel.authorizedView = function(userId, groups) {
+      return { method: ['authorizedView', userId, groups] };
+    }
 
     Channel.getManagedChannels = function() {
-      return Channel.scope({
-        method: ['canManage', null, null],
-      }).findAll({
+      return Channel.scope(Channel.authorizedManage(null, null)).findAll({
         attributes: ['id', 'name'],
       });
     }
 
+    Channel.getVideoFilterOrder = function(sort) {
+      var order = models.Video.getFilterOrder(sort).map(function(orderPart) {
+        if (!orderPart[0].fn) {
+          orderPart.unshift(Channel.associations.videos);
+        }
+        return orderPart;
+      });
+      console.log(order);
+      return order;
+    };
+
     Channel.getChannelVideos = function(channelId, limit, offset, sort) {
-      return Channel.findOne(Channel.addAuthorizedFilter({
-        attributes: ['id'],
+      return Channel.scope(Channel.authorizedView(null, null)).findOne({
+        attributes: ['id', 'name'],
         where: {
           id: channelId,
         },
-      })).then(function(channel) {
-        return channel.getVideos(models.Video.addAuthorizedFilter({
-          attributes: ['id', 'createdAt', 'name', 'description'],
+        include: [{
+          model: models.Video.scope(models.Video.authorizedView(null, null)),
+          as: 'videos',
           limit,
           offset,
           order: models.Video.getFilterOrder(sort),
-          include: [{
-            model: Channel,
-            as: 'channel',
-            attributes: ['id', 'name'],
-          }],
-        }));
+          separate: true,
+          attributes: ['id', 'createdAt', 'name', 'description', 'channelId'],
+        }],
       });
     }
 
     Channel.getChannel = function(videoId) {
-      return Channel.findOne(Channel.addAuthorizedFilter({
+      return Channel.scope(Channel.authorizedView(null, null)).findOne({
         attributes: ['id', 'personal', 'name', 'description'],
         where: {
           id: videoId,
         },
-      })).then(function(channel) {
+      }).then(function(channel) {
         return Promise.all([
           channel,
           channel.hasFollower('s7591665'),
@@ -204,7 +193,7 @@ module.exports = function(sequelize, DataTypes) {
     }
 
     Channel.deleteChannel = function(videoId) {
-      return Channel.destroy({
+      return Channel.scope(Channel.authorizedManage(null, null)).destroy({
         where: {
           id: videoId,
         },
@@ -212,61 +201,50 @@ module.exports = function(sequelize, DataTypes) {
     }
 
     Channel.followChannel = function(id) {
-      return Channel.findById(id)
+      return Channel.scope(Channel.authorizedView(null, null)).findById(id)
         .then(function(channel) {
           channel.addFollower('s7591665');
         });
     };
 
     Channel.unfollowChannel = function(id) {
-      return Channel.findById(id)
+      return Channel.scope(Channel.authorizedView(null, null)).findById(id)
         .then(function(channel) {
           channel.removeFollower('s7591665');
         });
     };
 
     Channel.getFollowers = function(id) {
-      return Channel.findOne({
+      return Channel.scope(Channel.authorizedView(null, null)).findOne({
         attributes: ['id'],
         where: {
           id: id,
         },
-        include: [{
-          model: Channel,
-          as: 'followers',
+      }).then(function(channel) {
+        return channel.getFollowers({
+          scope: Channel.authorizedView(null, null),
           attributes: ['id', 'name', 'description'],
-          through: {
-            attributes: []
-          },
-        }],
-      }).then(function(followers) {
-        return Promise.resolve(followers.get('followers'));
+        });
       });
     }
 
     Channel.getFollowings = function(id) {
-      return Channel.findOne({
+      return Channel.scope(Channel.authorizedView(null, null)).findOne({    
         attributes: ['id'],
         where: {
           id: id,
         },
-        include: [{
-          model: Channel,
-          as: 'followings',
+      }).then(function(channel) {
+        return channel.getFollowings({
+          scope: Channel.authorizedView(null, null),
           attributes: ['id', 'name', 'description'],
-          through: {
-            attributes: []
-          },
-        }],
-      }).then(function(followings) {
-        return Promise.resolve(followings.get('followings'));
+        });
       });
     }
 
     Channel.editChannel = function(id, channel) {
       var Acls = models.embed.util.helpers.mkInclude(Channel.ChannelACL);
-      channel.channelACL = channel.acl;
-      return Channel.findById(id)
+      return Channel.scope(Channel.authorizedManage(null, null)).findById(id)
         .then(function(found) {
           if (!found) {
             return null;
@@ -282,11 +260,10 @@ module.exports = function(sequelize, DataTypes) {
 
     Channel.createChannel = function(channel) {
       var Acls = models.embed.util.helpers.mkInclude(Channel.ChannelACL);
-      console.log(channel);
-      var acls = channel.viewACL.map(function(acl) {
+      var acls = channel.privacy === 'PRIVATE' ? channel.viewACL.map(function(acl) {
         acl.access = 'VIEW';
         return acl;
-      });
+      }) : [];
       channel.manageACL.forEach(function(acl) {
         var index = acls.findIndex(function(viewACL) {
           return viewACL.id === acl.id && viewACL.type === acl.type;

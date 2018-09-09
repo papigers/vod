@@ -112,7 +112,7 @@ module.exports = function(sequelize, DataTypes) {
             model: sequelize.models.Channel,
             as: 'channel',
             required: false,
-            attributes: ['id'],
+            attributes: ['id', 'name'],
             include: [{
               model: sequelize.models.ChannelAccess,
               as: 'channelACL',
@@ -343,7 +343,9 @@ module.exports = function(sequelize, DataTypes) {
           // TODO
         case 'random':
         default:
-          return sequelize.random();
+          return [
+            [sequelize.random()],
+          ];
       }
     };
 

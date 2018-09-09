@@ -1,10 +1,11 @@
 var express = require('express');
+var qs = require('querystring');
 var Video = require('../../models').Video;
 var router = express.Router();
 
 // default redirect to random
 router.get('/', function(req, res) {
-  res.redirect(`${req.baseUrl}/random`);
+  res.redirect(`${req.baseUrl}/random?${qs.stringify(req.query)}`);
 });
 
 router.get('/:sort', function(req, res) {
