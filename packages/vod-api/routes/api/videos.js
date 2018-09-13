@@ -57,14 +57,15 @@ router.post('/', function(req, res, next) {
 
 router.get('/video/:id', function(req, res) {
   Video.getVideo(req.params.id)
-    .then(function([video, channel, viewCount, likeCount, like]) {
+    .then(function([video, channel, viewCount, likeCount, like, follow]) {
       if (video) {
         var result = video.get({ plain: true });
         delete result.channelId;
-        result.channel = channel;
+        result.channel = channel.get({ plain: true });
         result.viewCount = viewCount;
         result.likeCount = likeCount;
         result.userLikes = like;
+        result.channel.userFollows = follow;
         return res.json(result);
       }
       return res.status(404).json({

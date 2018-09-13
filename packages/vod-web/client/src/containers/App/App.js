@@ -14,7 +14,6 @@ import VideoPage from 'containers/VideoPage';
 import UploadPage from 'containers/UploadPage';
 import ChannelPage from 'containers/ChannelPage';
 import VideoPreloader from 'containers/VideoPreloader';
-import axios from 'utils/axios';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -37,30 +36,8 @@ const Content = styled.div`
 
 class App extends Component {
   componentDidMount() {
-    this.fetchManagedChannels();
-    this.fetchFollowingChannels();
-  }
-
-  fetchManagedChannels = () => {
-    axios.get('channels/managed')
-      .then(result => {
-        this.props.setManagedChannels(result.data);
-      })
-      .catch(error => {
-        console.log('Could not fetch managed channels');
-        console.error(error);
-      });
-  }
-
-  fetchFollowingChannels = () => {
-    axios.get(`channels/${this.props.user.id}/following`)
-      .then(result => {
-        this.props.setFollowedChannels(result.data);
-      })
-      .catch(error => {
-        console.log('Could not fetch following channels');
-        console.error(error);
-      });
+    this.props.getManagedChannels();
+    this.props.getFollowedChannels();
   }
 
   render() {
@@ -98,7 +75,7 @@ class App extends Component {
           </Content>
         </Container>
         <Modal isOpen={channelModalOpen} title="יצירת ערוץ" onDismiss={toggleChannelModalOpen}>
-          <NewChannelForm user={user} onSubmit={this.fetchManagedChannels} />
+          <NewChannelForm user={user} onSubmit={this.props.getManagedChannels} />
         </Modal>
       </Fragment>
     );

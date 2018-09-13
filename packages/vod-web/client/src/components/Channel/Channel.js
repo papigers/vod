@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { transitions } from 'polished';
 import { Box, Flex } from 'grid-styled';
 
+import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivot';
@@ -55,6 +56,7 @@ export default class Channel extends Component {
     this.state = {
       uploads: [],
       loading: true,
+      followDelta: 0,
     };
   }
 
@@ -83,9 +85,25 @@ export default class Channel extends Component {
     }
   };
 
+  
+  onFollow = () => {
+    this.setState({ followDelta: this.state.followDelta + 1 });
+    this.props.followChannel(this.props.channel.id);
+  }
+
+  onUnfollow = () => {
+    this.setState({ followDelta: this.state.followDelta - 1 });
+    this.props.unfollowChannel(this.props.channel.id);
+  }
+
   render() {
     const { channel, loading } = this.props;
-    const { loading: loadingVideos } = this.state;
+    const { loading: loadingVideos, followDelta } = this.state;
+
+    let userFollows = false;
+    if (channel) {
+      userFollows = (channel.isFollowing && followDelta >= 0) || (!channel.isFollowing && followDelta > 0);
+    }
 
     return (
       <Fragment>
@@ -112,7 +130,7 @@ export default class Channel extends Component {
                     />
                     <ShimmerElementsGroup
                       flexWrap
-                      width={'calc(100% - 100px)'}
+                      width={'calc(100% - 200px)'}
                       shimmerElements={[
                         { type: ElemType.gap, width: '100%', height: 25 },
                         { type: ElemType.line, width: '50%', height: 20 },
@@ -122,6 +140,15 @@ export default class Channel extends Component {
                         { type: ElemType.gap, width: '100%', height: 25 },
                       ]}
                     />
+                    <ShimmerElementsGroup
+                      width={100}
+                      flexWrap
+                      shimmerElements={[
+                        { type: ElemType.gap, width: '100%', height: 33.5 },
+                        { type: ElemType.line, width: '100%', height: 30 },
+                        { type: ElemType.gap, width: '100%', height: 33.5 }
+                      ]}
+                    />
                   </Flex>
                 </Box>
               )}
@@ -129,12 +156,21 @@ export default class Channel extends Component {
               isDataLoaded={!!channel}
             >
               {channel && (
-                <Persona
-                  imageUrl={`/profile/${channel.id}/profile.png`}
-                  primaryText={channel.name}
-                  secondaryText={channel.description}
-                  size={PersonaSize.size72}
-                />
+                <Flex alignItems="center" justifyContent="space-between">
+                  <Persona
+                    imageUrl={`/profile/${channel.id}/profile.png`}
+                    primaryText={channel.name}
+                    secondaryText={channel.description}
+                    size={PersonaSize.size72}
+                  />
+                  <Box ml={16}>
+                    <PrimaryButton
+                      text={userFollows ? 'עוקב' : 'עקוב'}
+                      iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}
+                      onClick={userFollows ? this.onUnfollow : this.onFollow}
+                    />
+                  </Box>
+                </Flex>
               )}
             </Shimmer>
           </Box>

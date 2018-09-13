@@ -16,7 +16,7 @@ export default function userReducer(state = userInitialState, action) {
       return state.mergeIn(['profile'], action.user);
     case SET_MANAGED_CHANNELS:
       return state.setIn(['user', 'managedChannels'], action.managed.filter(
-        channel => channel.id !== state.get('id'),
+        channel => channel.id !== state.getIn(['user','id']),
       ));
     case SET_FOLLOWED_CHANNELS:
       return state.set('followedChannels', action.followed);
