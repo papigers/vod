@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 
 import { ThemeContext } from 'theme';
 import HeaderLogo from 'components/HeaderLogo';
+import { mapEnumByName } from '@uifabric/utilities';
 
 const PanelHost = styled(LayerHost)`
   position: fixed;
@@ -68,7 +69,7 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    const { isSidebarTrapped, isSidebarOpen, onDismissed } = this.props;
+    const { isSidebarTrapped, isSidebarOpen, onDismissed, followedChannels } = this.props;
     return (
       <Fragment>
         <PanelHost id="panelHost" />
@@ -110,12 +111,12 @@ export default class Sidebar extends Component {
                     }, 
                     {
                       name: 'ערוצים במעקב',
-                      links: [
-                        { name: 'ערוץ 11', to: '/channel/channel11', key: 'channel11', img: 'https://yt3.ggpht.com/-BbwsM-6h7Qg/AAAAAAAAAAI/AAAAAAAAAAA/S-9eysJS6os/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg' },
-                        { name: 'ערוץ 12', to: '/channel/channel12', key: 'channel12', img: 'https://yt3.ggpht.com/-6KZQLJ8zEZk/AAAAAAAAAAI/AAAAAAAAAAA/O7YW5jF52Cg/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg' },
-                        { name: 'ערוץ 13', to: '/channel/channel13', key: 'channel13', img: 'https://yt3.ggpht.com/-QorRqZfdyFg/AAAAAAAAAAI/AAAAAAAAAAA/rnUbhg0GbJk/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg' },
-                        { name: 'ערוץ 10', to: '/channel/channel10', key: 'channel10', img: 'https://yt3.ggpht.com/-6FjpbqWzuV0/AAAAAAAAAAI/AAAAAAAAAAA/E_jXVF6EZ5M/s288-mo-c-c0xffffffff-rj-k-no/photo.jpg' },
-                      ]
+                      links: followedChannels.map(channel => ({
+                        name: channel.name,
+                        to: `/channel/${channel.id}`,
+                        key: channel.id,
+                        img: `/profile/${channel.id}/profile.png`,
+                      })),
                     }
                   ]}
                   expandedStateText={'expanded'}

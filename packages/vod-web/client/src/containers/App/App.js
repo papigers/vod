@@ -19,7 +19,7 @@ import axios from 'utils/axios';
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectSidebar, makeSelectChannelModal } from './selectors';
-import { makeSelectUser } from '../ChannelPage/selectors';
+import { makeSelectUser, makeSelectFollowedChannels } from '../ChannelPage/selectors';
 import * as actions from './actions';
 
 
@@ -38,6 +38,7 @@ const Content = styled.div`
 class App extends Component {
   componentDidMount() {
     this.fetchManagedChannels();
+    this.fetchFollowingChannels();
   }
 
   fetchManagedChannels = () => {
@@ -47,6 +48,17 @@ class App extends Component {
       })
       .catch(error => {
         console.log('Could not fetch managed channels');
+        console.error(error);
+      });
+  }
+
+  fetchFollowingChannels = () => {
+    axios.get(`channels/${this.props.user.id}/following`)
+      .then(result => {
+        this.props.setFollowedChannels(result.data);
+      })
+      .catch(error => {
+        console.log('Could not fetch following channels');
         console.error(error);
       });
   }
@@ -61,6 +73,7 @@ class App extends Component {
         trapped: isSidebarTrapped,
       },
       user,
+      followed,
     } = this.props;
 
     return (
@@ -72,7 +85,7 @@ class App extends Component {
           user={user}
         />
         <Container>
-          <Sidebar isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} onDismissed={toggleSidebarOpen} />
+          <Sidebar followedChannels={followed} isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} onDismissed={toggleSidebarOpen} />
           <Content addSidebarMargin={isSidebarOpen && isSidebarTrapped}>
             <Switch>
               <Route exact path="/" component={HomePage} />
@@ -96,6 +109,7 @@ const mapStateToProps = createStructuredSelector({
   sidebar: makeSelectSidebar(),
   channelModalOpen: makeSelectChannelModal(),
   user: makeSelectUser(),
+  followed: makeSelectFollowedChannels(),
 });
 
 const mapDispatchToProps = (dispatch) => {

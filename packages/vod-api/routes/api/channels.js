@@ -91,6 +91,9 @@ router.put('/:id/unfollow', function(req, res) {
 router.get('/:id/followers', function(req, res) {
   Channel.getFollowers(req.params.id)
     .then(function(followers) {
+      if (!followers) {
+        return res.sendStatus(404);
+      }
       return res.json(followers.map(function(follower) {
         var res = follower.get({ plain: true });
         delete res.ChannelFollowers;
@@ -105,9 +108,12 @@ router.get('/:id/followers', function(req, res) {
     });
 });
 
-router.get('/:id/followings', function(req, res) {
+router.get('/:id/following', function(req, res) {
   Channel.getFollowings(req.params.id)
     .then(function(followings) {
+      if (!followings) {
+        return res.sendStatus(404);
+      }
       return res.json(followings.map(function(following) {
         var res = following.get({ plain: true });
         delete res.ChannelFollowers;

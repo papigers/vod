@@ -214,16 +214,17 @@ module.exports = function(sequelize, DataTypes) {
       });
     }
 
-    Channel.getChannel = function(videoId) {
+    Channel.getChannel = function(id) {
       return Channel.scope(Channel.authorizedView(null, null)).findOne({
         attributes: ['id', 'personal', 'name', 'description'],
         where: {
-          id: videoId,
+          id,
         },
       }).then(function(channel) {
+        console.log(id, channel);
         return Promise.all([
           channel,
-          channel.hasFollower('s7591665'),
+          channel ? channel.hasFollower('s7591665') : false,
         ]);
       });
     }
@@ -257,6 +258,10 @@ module.exports = function(sequelize, DataTypes) {
           id: id,
         },
       }).then(function(channel) {
+        if (!channel) {
+          return null;
+        }
+        
         return channel.getFollowers({
           scope: Channel.authorizedView(null, null),
           attributes: ['id', 'name', 'description'],
@@ -271,6 +276,10 @@ module.exports = function(sequelize, DataTypes) {
           id: id,
         },
       }).then(function(channel) {
+        if (!channel) {
+          return null;
+        }
+
         return channel.getFollowings({
           scope: Channel.authorizedView(null, null),
           attributes: ['id', 'name', 'description'],

@@ -23,7 +23,6 @@ export default function VideoList(props) {
   const { category, type, videos, loading } = props;
 
   const showPlaceholder = loading || !videos;
-  console.log(videos);
   return (
     <Box pb={16}>
       {category ? <CategoryHeader>{category}</CategoryHeader> : null}
