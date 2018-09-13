@@ -16,10 +16,11 @@ router.get('/:sort', function(req, res) {
 
   Video.getVideos(limit, offset, sort)
     .then(function(videos) {
-      res.json(videos.map(function([video, channel]) {
+      res.json(videos.map(function([video, channel, viewCount]) {
         var res = video.get({ plain: true });
         delete res.channelId;
         res.channel = channel;
+        res.viewCount = viewCount;
         return res;
       }));
     })

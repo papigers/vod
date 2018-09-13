@@ -182,19 +182,35 @@ module.exports = function(sequelize, DataTypes) {
 
     Channel.getChannelVideos = function(channelId, limit, offset, sort) {
       return Channel.scope(Channel.authorizedView(null, null)).findOne({
-        attributes: ['id', 'name'],
+        attributes: ['id'],
         where: {
           id: channelId,
         },
         include: [{
-          model: models.Video.scope(models.Video.authorizedView(null, null)),
+          model: models.Video,
           as: 'videos',
           limit,
           offset,
           order: models.Video.getFilterOrder(sort),
           separate: true,
           attributes: ['id', 'createdAt', 'name', 'description', 'channelId'],
+          include: [{
+            model: Channel,
+            as: 'channel',
+            attributes: ['id', 'name'],
+          }],
         }],
+      }).then(function(channel) {
+        var countMap = channel.videos.map(function(video) {
+          return video.countViews();
+        });
+        return Promise.all(countMap).then(function(viewCounts) {
+          return channel.videos.map(function(video, index) {
+            var resVideo = video.get({ plain: true });
+            resVideo.viewCount = viewCounts[index];
+            return resVideo;
+          });
+        });
       });
     }
 

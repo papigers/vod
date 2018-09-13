@@ -223,6 +223,7 @@ module.exports = function(sequelize, DataTypes) {
             name: video.name,
             description: video.description,
             privacy: video.privacy,
+            published: video.published,
             channelId: video.channelId,
           }, [Acls]);
         });
@@ -359,7 +360,7 @@ module.exports = function(sequelize, DataTypes) {
         return Promise.all(videos.map(function(video) {
           return Promise.all([video, video.getChannel({
             attributes: ['id', 'name'],
-          })]);
+          }), video.countViews()]);
         }));
       });
     };

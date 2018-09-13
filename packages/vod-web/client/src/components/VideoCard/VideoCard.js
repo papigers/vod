@@ -165,7 +165,8 @@ class VideoCard extends Component {
                 />}
                 <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
                   <DocumentCardActivity
-                    activity={video && `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}`}
+                    // activity={video && `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}`}
+                    activity={video && `${video.viewCount} צפיות`}
                     people={video && [{ name: video.channel.name, profileImageSrc: `/profile/${video.channel.id}/profile.png` }]}
                   />
                 </LinkOnLoad>
