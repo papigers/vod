@@ -8,6 +8,7 @@ import qs from 'query-string';
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
+import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 
 import createReduxContainer from 'utils/createReduxContainer';
@@ -16,6 +17,7 @@ import { makeSelectUser } from 'containers/ChannelPage/selectors';
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
+import Comment from 'components/VideoComment';
 import axios from 'utils/axios';
 
 const VideoContainer = styled.div`
@@ -41,6 +43,15 @@ const VideoDescription = styled.div`
   margin: 0 100px;
   margin-top: -16px;
   padding: 0 16px;
+`;
+
+const NewComment = styled.div`
+  margin-top: -16px;
+  padding: 10px 16px;
+`;
+
+const CommentsTitle = styled.h2`
+  margin-top: -16px;
 `;
 
 const VideoButton = styled(DefaultButton)`
@@ -282,7 +293,7 @@ class VideoPage extends Component {
                             imageUrl={video && video.channel && `/profile/${video.channel.id}/profile.png`}
                             text={video && video.channel && video.channel.name}
                             secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
-                            size={PersonaSize.size100}
+                            size={PersonaSize.size72}
                           />
                         </LinkOnLoad>
                         {video && user.id !== video.channel.id ? (
@@ -316,6 +327,26 @@ class VideoPage extends Component {
                         {video && video.description}
                       </Shimmer>
                     </VideoDescription>
+                  </VideoSection>
+                  <VideoSection>
+                    <CommentsTitle>תגובות:</CommentsTitle>
+                  
+                    <NewComment>
+                    <Flex>
+                      <Box width={50}>
+                        <Persona
+                            size={PersonaSize.size40}
+                            imageUrl={null}
+                        />
+                      </Box>
+                      <Box width="100%">
+                        <TextField autoAdjustHeight placeholder="הזן את התגובה פה" />
+                      </Box>
+                    </Flex>
+                    </NewComment>
+                  <Comment/>
+                  <Comment/>
+                  <Comment/>
                   </VideoSection>
                 </VideoContainer>
               </Box>
