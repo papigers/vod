@@ -85,6 +85,26 @@ module.exports = function(sequelize, DataTypes) {
     },
   });
 
+  function formatChannelACL(channel, privacy) {
+    var channelACL = privacy === 'PUBLIC' ? [] : channel.viewACL.map(function(acl) {
+      acl.access = 'VIEW';
+      return acl;
+    });
+    channel.manageACL.forEach(function(acl) {
+      var index = channelACL.findIndex(function(cAcl) {
+        return cAcl.id === acl.id && cAcl.type === acl.type;
+      });
+      if (index !== -1) {
+        channelACL[index].access = 'MANAGE';
+      }
+      else {
+        acl.access = 'MANAGE';
+        channelACL.push(acl);
+      }
+    });
+    return channelACL;
+  } 
+
   Channel.associate = function(models) {
     Channel.hasMany(models.Video, {
       as: 'videos',
@@ -249,50 +269,41 @@ module.exports = function(sequelize, DataTypes) {
           if (!found) {
             return null;
           }
+          var privacy = channel.privacy || found.get('privacy');
+          var channelACL = formatChannelACL(channel, privacy);
+
           return models.embed.update(Channel, {
-            id: channel.id,
+            id: id,
             name: channel.name,
             description: channel.description,
+            privacy,
             personal: channel.personal,
+            channelACL,
           }, [Acls]);
         });      
     };
 
     Channel.createChannel = function(channel) {
       var Acls = models.embed.util.helpers.mkInclude(Channel.ChannelACL);
-      var acls = channel.privacy === 'PRIVATE' ? channel.viewACL.map(function(acl) {
-        acl.access = 'VIEW';
-        return acl;
-      }) : [];
-      channel.manageACL.forEach(function(acl) {
-        var index = acls.findIndex(function(viewACL) {
-          return viewACL.id === acl.id && viewACL.type === acl.type;
-        });
-        if (index !== -1) {
-          acls[index].access = 'MANAGE';
-        }
-        else {
-          acl.access = 'MANAGE';
-          acls.push(acl);
-        }
-      });
+      var privacy = channel.privacy || 'PUBLIC';
+      var channelACL = formatChannelACL(channel, privacy);
 
       return models.embed.insert(Channel, {
         id: channel.id,
         name: channel.name,
         description: channel.description,
         personal: channel.personal,
-        channelACL: acls,
+        channelACL,
       }, [Acls])
     };
   }
 
   Channel.checkAuth = function(cahnnelId, userId, groups) {
-    return Channel.count(Channel.addAuthorizedFilter({
+    return Channel.scope(Channel.authorizedView(userId, groups)).count({
       where: {
         id: cahnnelId,
       },
-    }, userId, groups));
+    });
   };
 
   return Channel;
