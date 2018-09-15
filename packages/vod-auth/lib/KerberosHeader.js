@@ -16,11 +16,12 @@ var ad = new ActiveDirectory({
   }
 });
 
+// make sure to write lowercase headers.
 passport.use(new Strategy({
-  headers: ['REMOTE_USER'],
+  headers: ['remote_user'],
 }, function(headers, done) {
   var channel = null;
-  var id = headers.REMOTE_USER;
+  var id = headers.remote_user;
   ad.findUser(id, function(err, user) {
     if (err || !user) {
       return done(err || 'User not found');
@@ -39,7 +40,9 @@ passport.use(new Strategy({
 
       axios.post(`${config.api}/private/user-login`, channel)
         .then(function() {
-          channel.groups = groups;
+          channel.groups = groups.map(function(group) {
+            return group.dn;
+          });
           done(null, channel);
         })
         .catch(done);

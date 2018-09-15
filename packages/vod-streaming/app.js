@@ -5,27 +5,36 @@ var config = require('config');
 var axios = require('axios');
 var cors = require('cors');
 var compression = require('compression');
+var auth = require('vod-auth');
 
 var OSClient = require('vod-object-storage-client').S3Client();
 // var authCache = require('vod-redis-client')(config.cache.auth);
 
 var app = express();
 
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: ['http://localhost:3000', 'http://localhost:8000'],
+}));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser('cookie-secret'));
 app.use(compression());
+app.use(auth);
 
 function getUser(req) {
-  return 's7591665';
+  return req.user && req.user.id;
 }
 
 app.get('/:videoId/:object',
   function checkAuthorized(req, res, next) {
     // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    return axios.get(`${config.api}/videos/${req.params.videoId}/auth-check/${getUser(req)}`)
+    return axios.get(`${config.api}/private/authz/view-video/${req.params.videoId}/${getUser(req)}`, {
+      // headers: {
+      //   Authorization: `bearer ${req.cookies.jwt}`,
+      // },
+    })
       .then(function({ data }) {
         if (data.authorized) {
           return next();

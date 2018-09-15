@@ -330,5 +330,16 @@ module.exports = function(sequelize, DataTypes) {
     });
   };
 
+  Channel.userLogin = function(user) {
+    user.personal = true;
+    return Channel.findOrCreate({
+      where: {
+        id: user.id,
+      },
+      defaults: user,
+      attributes: ['id', 'name', 'description', 'personal'],
+    });
+  }
+
   return Channel;
 };

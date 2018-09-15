@@ -6,7 +6,7 @@ var ExtractJwt = require('passport-jwt').ExtractJwt;
 var requiredFields = [
   'id',
   'name',
-  'description',
+  // 'description',
   'groups',
 ];
 
@@ -24,8 +24,9 @@ passport.use(new JwtStrategy({
     },
   ]),
 }, function(jwt, done) {
-  var requiredExists = Object.keys(jwt).every(function(field) {
-    return requiredFields.indexOf(field) !== -1;
+  var fields = Object.keys(jwt);
+  var requiredExists = requiredFields.every(function(field) {
+    return fields.indexOf(field) !== -1;
   });
   // should maybe add second check that user exists
   done(null, requiredExists && jwt);

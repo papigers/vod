@@ -170,20 +170,4 @@ router.delete('/:id', function(req, res) {
     });
 });
 
-router.get('/:videoId/auth-check/:userId', function(req, res) {
-  res.setHeader('cache-control', 'public, max-age=86400');
-  Video.checkAuth(req.params.videoId, req.params.userId)
-    .then(function(count) {
-      res.json({
-        authorized: count > 0,
-      });
-    })
-    .catch(function(err) {
-      console.error(err);
-      res.json({
-        authorized: false,
-      });
-    });
-});
-
 module.exports = router;

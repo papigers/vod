@@ -5,6 +5,7 @@ var config = require('config');
 var logger = require('morgan');
 var compression = require('compression');
 var axios = require('axios');
+var auth = require('vod-auth');
 
 var OSClient = require('vod-object-storage-client').S3Client();
 // var authCache = require('vod-redis-client')(config.cache.auth);
@@ -16,16 +17,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser('cookie-secret'));
 app.use(compression());
-
+app.use(auth);
 
 function getUser(req) {
-  return 's7591665';
+  return req.user && req.user.id;
 }
 
 app.get('/profile/:channelId/:img',
   function checkAuthorized(req, res, next) {
     // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    return axios.get(`${config.api}/channels/${req.params.channelId}/auth-check/${getUser(req)}`)
+    return axios.get(`${config.api}/private/authz/view-channel/${req.params.channelId}/${getUser(req)}`, {
+      headers: {
+        Authorization: `bearer ${req.cookies.jwt}`,
+      },
+    })
       .then(function({ data }) {
         if (data.authorized) {
           return next();
@@ -34,7 +39,13 @@ app.get('/profile/:channelId/:img',
       })
       .catch(function(err) {
         console.error(err);
-        return res.status(500).send('Server Error');
+        if (err.response && ree.response.data) {
+          res.status(500).send(err.response.data);
+        }
+        else {
+          res.sendStatus(500);
+        }
+        // return res.status(500).send('Server Error');
       });
     // authCache.getAsync(cacheKey)
     //   .then(function(authorized) {
