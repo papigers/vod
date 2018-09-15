@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom';
 
 import { ThemeContext } from 'theme';
 import HeaderLogo from 'components/HeaderLogo';
-import { mapEnumByName } from '@uifabric/utilities';
 
 const PanelHost = styled(LayerHost)`
   position: fixed;
@@ -109,7 +108,7 @@ export default class Sidebar extends Component {
                         { name: 'ערוצים', to: '/channels', key: 'channels' },
                       ]
                     }, 
-                    {
+                    followedChannels && followedChannels.length && {
                       name: 'ערוצים במעקב',
                       links: followedChannels.map(channel => ({
                         name: channel.name,

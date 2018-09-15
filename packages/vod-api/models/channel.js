@@ -221,7 +221,6 @@ module.exports = function(sequelize, DataTypes) {
           id,
         },
       }).then(function(channel) {
-        console.log(id, channel);
         return Promise.all([
           channel,
           channel ? channel.hasFollower('s7591665') : false,

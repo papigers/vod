@@ -272,15 +272,21 @@ module.exports = function(sequelize, DataTypes) {
           id: videoId,
         },
       }).then(function(video) {
-        return Promise.all([
-          video,
-          video.getChannel({
-            attributes: ['id', 'name'],
-          }),
-          video.countViews(),
-          video.countLikes(),
-          video.hasLike('s7591665'),
-        ]);
+        if (!video) {
+          return [null];
+        }
+        return video.getChannel({
+          attributes: ['id', 'name'],
+        }).then(function(channel) {
+          return Promise.all([
+            video,
+            channel,
+            video.countViews(),
+            video.countLikes(),
+            video.hasLike('s7591665'),
+            channel.hasFollower('s7591665'),
+          ]);
+        })
       });
     }
 
