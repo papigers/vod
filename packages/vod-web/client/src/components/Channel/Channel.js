@@ -161,7 +161,7 @@ export default class Channel extends Component {
                     imageUrl={`/profile/${channel.id}/profile.png`}
                     primaryText={channel.name}
                     secondaryText={channel.description}
-                    size={PersonaSize.size72}
+                    size={PersonaSize.size100}
                   />
                   <Box ml={16}>
                     {channel && user.id !== channel.id ? (
