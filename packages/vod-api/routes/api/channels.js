@@ -30,7 +30,7 @@ var channelStorage = multer.diskStorage({
 var upload = multer({ storage: channelStorage });
 
 router.get('/managed', function(req, res) {
-  Channel.getManagedChannels(req.params.id)
+  Channel.getManagedChannels(req.user)
     .then(function(results) {
       return res.json(results);
     })
@@ -43,7 +43,7 @@ router.get('/managed', function(req, res) {
 });
 
 router.get('/:id', function(req, res) {
-  Channel.getChannel(req.params.id)
+  Channel.getChannel(req.user, req.params.id)
     .then(function([channel, isFollowing]) {
       if (channel) {
         var resChannel = channel.get({ plain: true });
@@ -63,7 +63,7 @@ router.get('/:id', function(req, res) {
 });
 
 router.put('/:id/follow', function(req, res) {
-  Channel.followChannel(req.params.id)
+  Channel.followChannel(req.user, req.params.id)
     .then(function() {
       res.json({});
     })
@@ -76,7 +76,7 @@ router.put('/:id/follow', function(req, res) {
 });
 
 router.put('/:id/unfollow', function(req, res) {
-  Channel.unfollowChannel(req.params.id)
+  Channel.unfollowChannel(req.user, req.params.id)
     .then(function() {
       res.json({});
     })
@@ -89,7 +89,7 @@ router.put('/:id/unfollow', function(req, res) {
 });
 
 router.get('/:id/followers', function(req, res) {
-  Channel.getFollowers(req.params.id)
+  Channel.getFollowers(req.user, req.params.id)
     .then(function(followers) {
       if (!followers) {
         return res.sendStatus(404);
@@ -109,7 +109,7 @@ router.get('/:id/followers', function(req, res) {
 });
 
 router.get('/:id/following', function(req, res) {
-  Channel.getFollowings(req.params.id)
+  Channel.getFollowings(req.user, req.params.id)
     .then(function(followings) {
       if (!followings) {
         return res.sendStatus(404);
@@ -129,7 +129,7 @@ router.get('/:id/following', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  Channel.editChannel(req.params.id, req.body)
+  Channel.editChannel(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
         return res.json({});
@@ -168,7 +168,7 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
       res.json({});
     })
     .catch(function(err) {
-      Channel.deleteChannel(req.params.id);
+      Channel.deleteChannelAdmin(req.params.id);
       console.error(err);
       res.status(500).json({
         error: 'Failed to upload channel images',
@@ -200,7 +200,7 @@ router.get('/:id/videos/:sort', function(req, res) {
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
-  Channel.getChannelVideos(req.params.id, limit, offset, sort)
+  Channel.getChannelVideos(req.user, req.params.id, limit, offset, sort)
     .then(function(result) {
       return res.json(result);
     })
@@ -208,22 +208,6 @@ router.get('/:id/videos/:sort', function(req, res) {
       console.error(err);
       return res.status(500).json({
         error: 'Failed to get channel videos',
-      });
-    });
-});
-
-router.get('/:channelId/auth-check/:userId', function(req, res) {
-  res.setHeader('cache-control', 'public, max-age=86400');
-  Channel.checkAuth(req.params.channelId, req.params.userId)
-    .then(function(count) {
-      res.json({
-        authorized: count > 0,
-      });
-    })
-    .catch(function(err) {
-      console.error(err);
-      res.json({
-        authorized: false,
       });
     });
 });

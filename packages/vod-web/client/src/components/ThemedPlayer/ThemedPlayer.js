@@ -259,6 +259,11 @@ class ThemedPlayer extends Component {
       controls: true,
       preload: 'auto',
       playbackRates: [0.5, 1, 1.5, 2],
+      html5: {
+        dash: {
+          setXHRWithCredentialsForType: [null, true],
+        },
+      },
     };
     this.player = videojs(this.videoNode, options, this.onPlayerReady);
     if (this.props.videoId) {

@@ -24,6 +24,7 @@
     "query-string": "^6.1.0",
     "react-router-scroll-4": "^1.0.0-beta.2",
     "redux-thunk": "^2.3.0",
+    "vod-auth": "^0.0.0",
     "vod-object-storage-client": "^0.0.0",
     "vod-redis-client": "^0.0.0"
   },
