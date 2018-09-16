@@ -36,20 +36,6 @@ const suggestionProps = {
   resultsMaximumNumber: 10,
 };
 
-// const mockPersons = [{
-//   text: 'גרשון ח פפיאשוילי',
-//   imageUrl: 'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
-//   secondaryText: 's7591665', 
-// }, {
-//   text: 'שגיא לוי',
-//   imageUrl: '/images/user.svg',
-//   secondaryText: 's7123112',
-// }, {
-//   text: 'תשתיות ליבה',
-//   imageUrl: '/images/group.svg',
-//   secondaryText: 'קבוצה',
-// }];
-
 class PeoplePicker extends Component {
   constructor(props) {
     super(props);

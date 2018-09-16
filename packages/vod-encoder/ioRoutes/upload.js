@@ -11,7 +11,6 @@ var rimraf = require('rimraf');
 var OSClient = require('vod-object-storage-client').S3Client();
 
 var CHUNK_SIZE = 1048576;
-var MOCK_USER = 's7591665';
 
 function getRootUploadFolder() {
   return os.tmpdir();
@@ -76,9 +75,13 @@ function UploadData(user, socket) {
 
   this.createUpload = function(data) {
     return axios.post(`${config.api}/videos`, {
-      creator: MOCK_USER,
-      channel: MOCK_USER,
+      creator: this.user.id,
+      channel: this.user.id,
       name: data.name.replace(/\.[^/.]+$/, ''),
+    }, {
+      headers: {
+        Authorization: `bearer ${this.socket.token}`,
+      },
     });
   };
 
@@ -632,10 +635,8 @@ function uploadVideoFile(id, filename, path, progressHandler, callback) {
 
 function ioUpload(io) {
   io.of('/upload').on('connection', function (socket) {
-    // files[MOCK_USER] = files[MOCK_USER] || {};
 
-    // var userFiles = files[MOCK_USER];
-    var uploadData = new UploadData(MOCK_USER, socket);
+    var uploadData = new UploadData(socket.user, socket);
 
     socket.on('uploadStart', uploadData.startUpload);
 

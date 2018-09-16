@@ -30,10 +30,10 @@ function getUser(req) {
 app.get('/:videoId/:object',
   function checkAuthorized(req, res, next) {
     // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    return axios.get(`${config.api}/private/authz/view-video/${req.params.videoId}/${getUser(req)}`, {
-      // headers: {
-      //   Authorization: `bearer ${req.cookies.jwt}`,
-      // },
+    return axios.get(`${config.api}/private/authz/view-video/${req.params.videoId}`, {
+      headers: {
+        Authorization: `bearer ${req.cookies.jwt}`,
+      },
     })
       .then(function({ data }) {
         if (data.authorized) {

@@ -31,9 +31,9 @@ module.exports = function(sequelize, DataTypes) {
           published: false,
         },
       },
-      authorizedManage: function(userId, groups) {
-        var userId = userId || 's7591665';
-        var groups = groups || [];
+      authorizedManage: function(user) {
+        var userId = user && user.id
+        var groups = user && user.groups || [];
         return {
           where: {
             [Op.or]: [{
@@ -66,9 +66,9 @@ module.exports = function(sequelize, DataTypes) {
           }],
         };
       },
-      authorizedView: function(userId, groups) {
-        var userId = userId || 's7591665';
-        var groups = groups || [];
+      authorizedView: function(user) {
+        var userId = user && user.id
+        var groups = user && user.groups || [];
         return {
           where: {
             [Op.or]: [{
@@ -164,11 +164,11 @@ module.exports = function(sequelize, DataTypes) {
   };
 
   Video.setClassMethods = function(models) {
-    Video.authorizedManage = function(userId, groups) {
-      return { method: ['authorizedManage', userId, groups] };
+    Video.authorizedManage = function(user) {
+      return { method: ['authorizedManage', user] };
     }
-    Video.authorizedView = function(userId, groups) {
-      return { method: ['authorizedView', userId, groups] };
+    Video.authorizedView = function(user) {
+      return { method: ['authorizedView', user] };
     }
 
     /**
@@ -179,7 +179,7 @@ module.exports = function(sequelize, DataTypes) {
      * @param {string} name - video's initial name: file name
      * @returns {Promise} Video creation promise
      */
-    Video.initialCreate = function(video) {
+    Video.initialCreate = function(user, video) {
       return Video.findOrCreate({
         where: {
           channelId: video.channel,
@@ -205,19 +205,19 @@ module.exports = function(sequelize, DataTypes) {
      * @param {string} id Video's id to publish
      * @param {Video} video video's attributes
      */
-    Video.edit = function(id, video) {
+    Video.edit = function(user, id, video) {
       if (video.privacy === 'public') {
         video.acl = [];
       }
 
-      return Video.scope(Video.authorizedManage(null, null)).findById(id)
+      return Video.scope(Video.authorizedManage(user)).findById(id)
         .then(function(found) {
           if (!found) {
             return null;
           }
           video.channelId = video.channel || found.get('channelId');
           var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
-          return models.embed.update(Video.scope(Video.authorizedManage(null, null)), {
+          return models.embed.update(Video.scope(Video.authorizedManage(user)), {
             id: id,
             videoACL: video.acl,
             name: video.name,
@@ -234,13 +234,13 @@ module.exports = function(sequelize, DataTypes) {
      * @param {string} id Video's id to publish
      * @param {Video} video Missing video's attributes
      */
-    Video.publish = function(id, video) {
+    Video.publish = function(user, id, video) {
       video.published = true;
-      return Video.edit(id, video);
+      return Video.edit(user, id, video);
     }
 
-    Video.delete = function(id) {
-      return Video.scope(Video.authorizedManage(null, null)).findById(id)
+    Video.delete = function(user, id) {
+      return Video.scope(Video.authorizedManage(user)).findById(id)
         .then(function(video) {
           if (video) {
             return video.destroy().then(function() {
@@ -251,16 +251,16 @@ module.exports = function(sequelize, DataTypes) {
         });
     }
 
-    Video.checkAuth = function(videoId, userId, groups) {
-      return Video.scope(Video.authorizedView(userId, groups)).count({
+    Video.checkAuth = function(videoId, user) {
+      return Video.scope(Video.authorizedView(user)).count({
         where: {
           id: videoId,
         },
       });
     };
 
-    Video.getVideo = function(videoId) {
-      return Video.scope(Video.authorizedView(null, null)).findOne({
+    Video.getVideo = function(user, videoId) {
+      return Video.scope(['defaultScope', Video.authorizedView(user)]).findOne({
         attributes: [
           'id',
           'createdAt',
@@ -283,21 +283,21 @@ module.exports = function(sequelize, DataTypes) {
             channel,
             video.countViews(),
             video.countLikes(),
-            video.hasLike('s7591665'),
-            channel.hasFollower('s7591665'),
+            video.hasLike(user && user.id),
+            channel.hasFollower(user && user.id),
           ]);
         })
       });
     }
 
-    Video.viewVideo = function(id) {
-      return Video.scope(Video.authorizedView(null, null)).findById(id, {
+    Video.viewVideo = function(user, id) {
+      return Video.scope(['defaultScope', Video.authorizedView(user)]).findById(id, {
         attributes: ['id'],
         include: [{
           model: models.Channel,
           attributes: ['id'],
           where: {
-            id: 's7591665',
+            id: user && user.id,
           },
           as: 'views',
           through: {
@@ -316,22 +316,22 @@ module.exports = function(sequelize, DataTypes) {
         }
         return models.VideoView.create({
           VideoId: id,
-          ChannelId: 's7591665', 
+          ChannelId: user && user.id, 
         });
       });
     }
 
-    Video.likeVideo = function(id) {
-      return Video.scope(Video.authorizedView(null, null)).findById(id)
+    Video.likeVideo = function(user, id) {
+      return Video.scope(Video.authorizedView(user)).findById(id)
         .then(function(video) {
-          return video.addLike('s7591665');
+          return video.addLike(user && user.id);
         });
     }
 
-    Video.dislikeVideo = function(id) {
-      return Video.scope(Video.authorizedView(null, null)).findById(id)
+    Video.dislikeVideo = function(user, id) {
+      return Video.scope(Video.authorizedView(user)).findById(id)
         .then(function(video) {
-          return video.removeLike('s7591665');
+          return video.removeLike(user && user.id);
         });
     }
 
@@ -356,8 +356,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     };
 
-    Video.getVideos =  function(limit, offset, sort) {
-      return Video.scope(Video.authorizedView(null, null)).findAll({
+    Video.getVideos =  function(user, limit, offset, sort) {
+      return Video.scope(['defaultScope', Video.authorizedView(user)]).findAll({
         attributes: ['id', 'createdAt', 'name', 'description', 'channelId'],
         limit: limit,
         offset: offset,

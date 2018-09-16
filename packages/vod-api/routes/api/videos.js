@@ -14,7 +14,7 @@ router.get('/:sort', function(req, res) {
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
-  Video.getVideos(limit, offset, sort)
+  Video.getVideos(req.user, limit, offset, sort)
     .then(function(videos) {
       res.json(videos.map(function([video, channel, viewCount]) {
         var res = video.get({ plain: true });
@@ -39,8 +39,8 @@ router.get('/:sort', function(req, res) {
  * channel: 
  */
 router.post('/', function(req, res, next) {
-  Video.initialCreate({
-    creator: req.body.creator,
+  Video.initialCreate(req.user, {
+    creator: req.user && req.user.id,
     channel: req.body.channel,
     name: req.body.name,
   }).then(function(video) {
@@ -56,7 +56,7 @@ router.post('/', function(req, res, next) {
 });
 
 router.get('/video/:id', function(req, res) {
-  Video.getVideo(req.params.id)
+  Video.getVideo(req.user, req.params.id)
     .then(function([video, channel, viewCount, likeCount, like, follow]) {
       if (video) {
         var result = video.get({ plain: true });
@@ -81,7 +81,7 @@ router.get('/video/:id', function(req, res) {
 });
 
 router.put('/video/:id/view', function(req, res) {
-  Video.viewVideo(req.params.id)
+  Video.viewVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -94,7 +94,7 @@ router.put('/video/:id/view', function(req, res) {
 });
 
 router.put('/video/:id/like', function(req, res) {
-  Video.likeVideo(req.params.id)
+  Video.likeVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -107,7 +107,7 @@ router.put('/video/:id/like', function(req, res) {
 });
 
 router.put('/video/:id/dislike', function(req, res) {
-  Video.dislikeVideo(req.params.id)
+  Video.dislikeVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -120,7 +120,7 @@ router.put('/video/:id/dislike', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  Video.edit(req.params.id, req.body)
+  Video.edit(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
         return res.json(result.get({ plain: true }));
@@ -139,7 +139,7 @@ router.put('/:id', function(req, res) {
 
 // finish video creation with all data.
 router.put('/publish/:id', function(req, res, next) {
-  Video.publish(req.params.id, req.body)
+  Video.publish(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
         return res.json(result.get({ plain: true }));
@@ -157,7 +157,7 @@ router.put('/publish/:id', function(req, res, next) {
 });
 
 router.delete('/:id', function(req, res) {
-  Video.delete(req.params.id)
+  Video.delete(req.user, req.params.id)
     .then(function(deleted) {
       if (deleted) {
         return res.json({});

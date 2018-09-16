@@ -26,7 +26,7 @@ function getUser(req) {
 app.get('/profile/:channelId/:img',
   function checkAuthorized(req, res, next) {
     // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    return axios.get(`${config.api}/private/authz/view-channel/${req.params.channelId}/${getUser(req)}`, {
+    return axios.get(`${config.api}/private/authz/view-channel/${req.params.channelId}`, {
       headers: {
         Authorization: `bearer ${req.cookies.jwt}`,
       },
@@ -39,7 +39,7 @@ app.get('/profile/:channelId/:img',
       })
       .catch(function(err) {
         console.error(err);
-        if (err.response && ree.response.data) {
+        if (err.response && err.response.data) {
           res.status(500).send(err.response.data);
         }
         else {

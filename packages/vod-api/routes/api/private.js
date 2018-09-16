@@ -15,9 +15,9 @@ router.post('/user-login', function(req, res) {
     });
 });
 
-router.get('/authz/view-channel/:channelId/:userId', function(req, res) {
+router.get('/authz/view-channel/:channelId', function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
-  Channel.checkAuth(req.params.channelId, req.params.userId)
+  Channel.checkAuth(req.params.channelId, req.user)
     .then(function(count) {
       res.json({
         authorized: count > 0,
@@ -31,9 +31,9 @@ router.get('/authz/view-channel/:channelId/:userId', function(req, res) {
     });
 });
 
-router.get('/authz/view-video/:videoId/:userId', function(req, res) {
+router.get('/authz/view-video/:videoId', function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
-  Video.checkAuth(req.params.videoId, req.params.userId)
+  Video.checkAuth(req.params.videoId, req.user)
     .then(function(count) {
       res.json({
         authorized: count > 0,

@@ -22,9 +22,9 @@ module.exports = function(sequelize, DataTypes) {
     },
   }, {
     scopes: {
-      authorizedManage: function(userId, groups) {
-        var userId = userId || 's7591665';
-        var groups = groups || [];
+      authorizedManage: function(user) {
+        var userId = user && user.id
+        var groups = user && user.groups || [];
 
         return {
           where: {
@@ -51,8 +51,8 @@ module.exports = function(sequelize, DataTypes) {
         };
       },
       authorizedView: function(userId, groups) {
-        var userId = userId || 's7591665';
-        var groups = groups || [];
+        var userId = user && user.id
+        var groups = user && user.groups || [];
 
         return {
           where: {
@@ -156,32 +156,21 @@ module.exports = function(sequelize, DataTypes) {
 
   Channel.setClassMethods = function(models) {
 
-    Channel.authorizedManage = function(userId, groups) {
-      return { method: ['authorizedManage', userId, groups] };
+    Channel.authorizedManage = function(user) {
+      return { method: ['authorizedManage', user] };
     }
-    Channel.authorizedView = function(userId, groups) {
-      return { method: ['authorizedView', userId, groups] };
+    Channel.authorizedView = function(user) {
+      return { method: ['authorizedView', user] };
     }
 
-    Channel.getManagedChannels = function() {
-      return Channel.scope(Channel.authorizedManage(null, null)).findAll({
+    Channel.getManagedChannels = function(user) {
+      return Channel.scope(Channel.authorizedManage(user)).findAll({
         attributes: ['id', 'name'],
       });
     }
 
-    Channel.getVideoFilterOrder = function(sort) {
-      var order = models.Video.getFilterOrder(sort).map(function(orderPart) {
-        if (!orderPart[0].fn) {
-          orderPart.unshift(Channel.associations.videos);
-        }
-        return orderPart;
-      });
-      console.log(order);
-      return order;
-    };
-
-    Channel.getChannelVideos = function(channelId, limit, offset, sort) {
-      return Channel.scope(Channel.authorizedView(null, null)).findOne({
+    Channel.getChannelVideos = function(user, channelId, limit, offset, sort) {
+      return Channel.scope(Channel.authorizedView(user)).findOne({
         attributes: ['id'],
         where: {
           id: channelId,
@@ -214,8 +203,8 @@ module.exports = function(sequelize, DataTypes) {
       });
     }
 
-    Channel.getChannel = function(id) {
-      return Channel.scope(Channel.authorizedView(null, null)).findOne({
+    Channel.getChannel = function(user, id) {
+      return Channel.scope(Channel.authorizedView(user)).findOne({
         attributes: ['id', 'personal', 'name', 'description'],
         where: {
           id,
@@ -223,35 +212,43 @@ module.exports = function(sequelize, DataTypes) {
       }).then(function(channel) {
         return Promise.all([
           channel,
-          channel ? channel.hasFollower('s7591665') : false,
+          channel ? channel.hasFollower(user && user.id) : false,
         ]);
       });
     }
 
-    Channel.deleteChannel = function(videoId) {
-      return Channel.scope(Channel.authorizedManage(null, null)).destroy({
+    Channel.deleteChannel = function(user, channelId) {
+      return Channel.scope(Channel.authorizedManage(user)).destroy({
         where: {
-          id: videoId,
+          id: channelId,
         },
       });
     }
 
-    Channel.followChannel = function(id) {
-      return Channel.scope(Channel.authorizedView(null, null)).findById(id)
+    Channel.deleteChannelAdmin = function(channelId) {
+      return Channel.destroy({
+        where: {
+          id: channelId,
+        },
+      });
+    }
+
+    Channel.followChannel = function(user, id) {
+      return Channel.scope(Channel.authorizedView(user)).findById(id)
         .then(function(channel) {
-          channel.addFollower('s7591665');
+          channel.addFollower(user && user.id);
         });
     };
 
-    Channel.unfollowChannel = function(id) {
-      return Channel.scope(Channel.authorizedView(null, null)).findById(id)
+    Channel.unfollowChannel = function(user, id) {
+      return Channel.scope(Channel.authorizedView(user)).findById(id)
         .then(function(channel) {
-          channel.removeFollower('s7591665');
+          channel.removeFollower(user && user.id);
         });
     };
 
-    Channel.getFollowers = function(id) {
-      return Channel.scope(Channel.authorizedView(null, null)).findOne({
+    Channel.getFollowers = function(user, id) {
+      return Channel.scope(Channel.authorizedView(user)).findOne({
         attributes: ['id'],
         where: {
           id: id,
@@ -262,14 +259,14 @@ module.exports = function(sequelize, DataTypes) {
         }
         
         return channel.getFollowers({
-          scope: Channel.authorizedView(null, null),
+          scope: Channel.authorizedView(user),
           attributes: ['id', 'name', 'description'],
         });
       });
     }
 
-    Channel.getFollowings = function(id) {
-      return Channel.scope(Channel.authorizedView(null, null)).findOne({    
+    Channel.getFollowings = function(user, id) {
+      return Channel.scope(Channel.authorizedView(user)).findOne({    
         attributes: ['id'],
         where: {
           id: id,
@@ -280,15 +277,15 @@ module.exports = function(sequelize, DataTypes) {
         }
 
         return channel.getFollowings({
-          scope: Channel.authorizedView(null, null),
+          scope: Channel.authorizedView(user),
           attributes: ['id', 'name', 'description'],
         });
       });
     }
 
-    Channel.editChannel = function(id, channel) {
+    Channel.editChannel = function(user, id, channel) {
       var Acls = models.embed.util.helpers.mkInclude(Channel.ChannelACL);
-      return Channel.scope(Channel.authorizedManage(null, null)).findById(id)
+      return Channel.scope(Channel.authorizedManage(user)).findById(id)
         .then(function(found) {
           if (!found) {
             return null;
@@ -322,8 +319,8 @@ module.exports = function(sequelize, DataTypes) {
     };
   }
 
-  Channel.checkAuth = function(cahnnelId, userId, groups) {
-    return Channel.scope(Channel.authorizedView(userId, groups)).count({
+  Channel.checkAuth = function(cahnnelId, user) {
+    return Channel.scope(Channel.authorizedView(user)).count({
       where: {
         id: cahnnelId,
       },
