@@ -97,7 +97,7 @@ export default class Channel extends Component {
   }
 
   render() {
-    const { channel, loading } = this.props;
+    const { channel, loading, user } = this.props;
     const { loading: loadingVideos, followDelta } = this.state;
 
     let userFollows = false;
@@ -164,11 +164,13 @@ export default class Channel extends Component {
                     size={PersonaSize.size72}
                   />
                   <Box ml={16}>
-                    <PrimaryButton
-                      text={userFollows ? 'עוקב' : 'עקוב'}
-                      iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}
-                      onClick={userFollows ? this.onUnfollow : this.onFollow}
-                    />
+                    {channel && user.id !== channel.id ? (
+                      <PrimaryButton
+                        text={userFollows ? 'עוקב' : 'עקוב'}
+                        iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}
+                        onClick={userFollows ? this.onUnfollow : this.onFollow}
+                      />
+                    ) : null}
                   </Box>
                 </Flex>
               )}
