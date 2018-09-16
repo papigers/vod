@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var auth = require('vod-auth');
 var Channel = require('../../models').Channel;
 var Video = require('../../models').Video;
 
@@ -15,7 +16,7 @@ router.post('/user-login', function(req, res) {
     });
 });
 
-router.get('/authz/view-channel/:channelId', function(req, res) {
+router.get('/authz/view-channel/:channelId', auth, function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
   Channel.checkAuth(req.params.channelId, req.user)
     .then(function(count) {
@@ -31,7 +32,7 @@ router.get('/authz/view-channel/:channelId', function(req, res) {
     });
 });
 
-router.get('/authz/view-video/:videoId', function(req, res) {
+router.get('/authz/view-video/:videoId', auth, function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
   Video.checkAuth(req.params.videoId, req.user)
     .then(function(count) {

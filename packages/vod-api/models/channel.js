@@ -50,7 +50,7 @@ module.exports = function(sequelize, DataTypes) {
           }],
         };
       },
-      authorizedView: function(userId, groups) {
+      authorizedView: function(user) {
         var userId = user && user.id
         var groups = user && user.groups || [];
 
@@ -176,18 +176,13 @@ module.exports = function(sequelize, DataTypes) {
           id: channelId,
         },
         include: [{
-          model: models.Video,
+          model: models.Video.scope(['defaultScope', models.Video.authorizedView(user)]),
           as: 'videos',
           limit,
           offset,
           order: models.Video.getFilterOrder(sort),
           separate: true,
           attributes: ['id', 'createdAt', 'name', 'description', 'channelId'],
-          include: [{
-            model: Channel,
-            as: 'channel',
-            attributes: ['id', 'name'],
-          }],
         }],
       }).then(function(channel) {
         var countMap = channel.videos.map(function(video) {
