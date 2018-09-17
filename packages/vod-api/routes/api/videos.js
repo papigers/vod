@@ -185,4 +185,38 @@ router.get('/:videoId/auth-check/:userId', function(req, res) {
     });
 });
 
+router.get('/:videoId/comments', function(req, res, next) {
+  var offset = req.query.offset || 0;
+  Video.getComments(req.params.videoId, offset)
+    .then(function(comments) {
+      res.json(comments.map(function(comment) {
+        return {
+          comment: comment['Comment.comment'],
+          id: comment['Comment.id'],
+          createdAt: comment['Comment.createdAt'],
+          updatedAt: comment['Comment.updatedAt'],
+          channel: {
+            id: comment.id,
+            name: comment.name,
+          },
+        };
+      }));
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
+    });
+});
+
+router.post('/:videoId/comments', function(req, res, next) {
+  Video.postComment(req.params.videoId, req.body.comment)
+    .then(function(result) {
+      res.sendStatus(200);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
+    });
+});
+
 module.exports = router;
