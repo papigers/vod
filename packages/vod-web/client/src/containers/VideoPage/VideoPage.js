@@ -8,7 +8,6 @@ import qs from 'query-string';
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 
 import createReduxContainer from 'utils/createReduxContainer';
@@ -16,8 +15,8 @@ import { makeSelectUser } from 'containers/ChannelPage/selectors';
 
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
+import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
-import Comment from 'components/VideoComment';
 import axios from 'utils/axios';
 
 const VideoContainer = styled.div`
@@ -43,33 +42,6 @@ const VideoDescription = styled.div`
   margin: 0 100px;
   margin-top: -16px;
   padding: 0 16px;
-`;
-
-const NewCommentSection = styled.div`
-  margin-top: -16px;
-  padding: 20px 25px;
-`;
-
-const CommentsSection = styled.div`
-  margin-top: -16px;
-  padding: 20px 25px;
-`;
-
-const CommentsTitle = styled.h2`
-  margin-top: -16px;
-`;
-
-const CommentButton = styled(DefaultButton)`
-  margin-right: 15px;
-  margin-top: 13px;
-`;
-
-const CommentPersona = styled(Persona)`
-  margin-top: 13px;
-`;
-
-const VideoComment = styled(Comment)`
-  margin-bottom: 1.5em;
 `;
 
 const VideoButton = styled(DefaultButton)`
@@ -108,9 +80,6 @@ class VideoPage extends Component {
       likeDelta: 0,
       followDelta: 0,
       viewed: false,
-      comment: "",
-      comments: [],
-      doneLoadingComments: false,
     };
   }
   
@@ -129,7 +98,6 @@ class VideoPage extends Component {
 
   componentDidMount() {
     this.fetchVideo();
-    this.fetchComments();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -173,22 +141,9 @@ class VideoPage extends Component {
     );
   }
 
-  fetchComments() {
-    axios.get(`/videos/${this.state.videoId}/comments`)
-      .then(({ data }) => {
-        this.setState({
-          comments: data,
-          doneLoadingComments: true,
-        });
-      })
-      .catch((err) => {
-        // TODO: do something
-        this.setState({
-          comments: [],
-          doneLoadingComments: true,
-        });
-      });
-  }
+  fetchComments = () => axios.get(`/videos/${this.state.videoId}/comments`);
+
+  postComment = comment => axios.post(`/videos/${this.state.video.id}/comments`, { comment });
 
   onRenderOverflowButton(overflowItems) {
     return (
@@ -220,21 +175,6 @@ class VideoPage extends Component {
   onUnfollow = () => {
     this.setState({ followDelta: this.state.followDelta - 1 });
     axios.put(`/channels/${this.state.video.channel.id}/unfollow`);
-  }
-
-  onCommentSubmit = ()  =>  {
-    axios.post(`/videos/${this.state.video.id}/comments`, {
-      comment: this.state.comment.trim(),
-    });
-    this.setState({ comment: "" });
-  }
-
-  onCommentCancel = ()  =>  {
-    this.setState({ comment: "" });
-  }
-
-  onCommentChange = ({ target: { value } }) => {
-    this.setState({ comment: value });
   }
 
   render() {
@@ -383,60 +323,12 @@ class VideoPage extends Component {
                     </VideoDescription>
                   </VideoSection>
                   <VideoSection>
-                    <CommentsTitle>תגובות:</CommentsTitle>
-                  
-                    <NewCommentSection>
-                    <Flex>
-                      <Box width={50}>
-                        <CommentPersona
-                            size={PersonaSize.size40}
-                            imageUrl={`/profile/${user.id}/profile.png`}
-                        />
-                      </Box>
-                      <Box width="100%">
-                        <TextField
-                        placeholder="הזן את התגובה פה"
-                        multiline
-                        resizable={false}
-                        onChange={this.onCommentChange}
-                        value={this.state.comment}
-                      />
-                      </Box>
-                      <CommentButton
-                        text="הגב"
-                        type="submit"
-                        primary={true}
-                        onClick={this.onCommentSubmit}
-                        disabled={!this.state.comment.length}
-                      />
-                      <CommentButton
-                        text="בטל"
-                        onClick={this.onCommentCancel}
-                      />
-                    </Flex>
-                    </NewCommentSection>
-                    <CommentsSection>
-                      <Shimmer
-                      customElementsGroup={(
-                        <ShimmerElementsGroup
-                          shimmerElements={[
-                            { type: ElemType.circle, height: 40 },
-                            { type: ElemType.gap, width: '2%', height: 18 },
-                            { type: ElemType.line, width: '18%', height: 45 },
-                            { type: ElemType.gap, width: '5%', height: 18 },
-                            { type: ElemType.line, width: '75%', height: 45 },
-                          ]}
-                        />
-                      )} 
-                      isDataLoaded={this.state.doneLoadingComments}>
-                        {this.state.comments.map(function(comment,index){
-                          return <VideoComment
-                              channel={comment.channel}
-                              createdAt={comment.createdAt}
-                              comment={comment.comment} />;
-                        })}
-                      </Shimmer>
-                    </CommentsSection>
+                    <CommentSection
+                      postComment={this.postComment}
+                      fetchComments={this.fetchComments}
+                      commentableId={this.state.videoId}
+                      user={this.props.user}
+                    />
                   </VideoSection>
                 </VideoContainer>
               </Box>
