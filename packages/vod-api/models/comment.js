@@ -2,9 +2,9 @@ var nanoid = require('nanoid');
 
 module.exports = function(sequelize, DataTypes) {
   var Comment = sequelize.define('Comment', {
-    content: DataTypes.STRING,
+    comment: DataTypes.STRING,
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.CHAR(10),
       defaultValue: nanoid.bind(this, 10),
       primaryKey: true,
     },

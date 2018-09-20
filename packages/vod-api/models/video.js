@@ -142,7 +142,13 @@ module.exports = function(sequelize, DataTypes) {
         unique: false,
       },
     });
-    Video.belongsToMany(models.Channel, { through: models.Comment });
+    Video.belongsToMany(models.Channel, {
+      as: 'comments',
+      through: {
+        model: models.Comment,
+        unique: false,
+      },
+    });
     // creator of video
     Video.belongsTo(models.Channel, {
       as: 'creator',
@@ -350,7 +356,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     };
 
-    Video.getVideos =  function(limit, offset, sort) {
+    Video.getVideos = function(limit, offset, sort) {
       return Video.scope(Video.authorizedView(null, null)).findAll({
         attributes: ['id', 'createdAt', 'name', 'description', 'channelId'],
         limit: limit,
@@ -364,6 +370,30 @@ module.exports = function(sequelize, DataTypes) {
         }));
       });
     };
+
+    Video.getComments = function(videoId, offset) {
+      return Video.scope(Video.authorizedView(null, null)).findById(videoId)
+        .then(function(video) {
+          return video.getComments({
+            scope: models.Channel.authorizedView(null, null),
+            offset,
+            attributes: ['id', 'name'],
+            order: [[sequelize.col('Comment.createdAt'), 'DESC']],
+            raw: true,
+          });
+        });
+    }
+
+    Video.postComment = function(videoId, comment) {
+      return Video.scope(Video.authorizedView(null, null)).findById(videoId)
+        .then(function(video) {
+          return models.Comment.create({
+            ChannelId: 's7591665',
+            VideoId: videoId,
+            comment,
+          });
+        });
+    }
   }
 
   return Video;
