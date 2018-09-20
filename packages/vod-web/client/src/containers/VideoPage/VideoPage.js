@@ -108,7 +108,9 @@ class VideoPage extends Component {
       likeDelta: 0,
       followDelta: 0,
       viewed: false,
-      comment: '',
+      comment: "",
+      comments: [],
+      doneLoadingComments: false,
     };
   }
   
@@ -127,6 +129,7 @@ class VideoPage extends Component {
 
   componentDidMount() {
     this.fetchVideo();
+    this.fetchComments();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -170,6 +173,23 @@ class VideoPage extends Component {
     );
   }
 
+  fetchComments() {
+    axios.get(`/videos/${this.state.videoId}/comments`)
+      .then(({ data }) => {
+        this.setState({
+          comments: data,
+          doneLoadingComments: true,
+        });
+      })
+      .catch((err) => {
+        // TODO: do something
+        this.setState({
+          comments: [],
+          doneLoadingComments: true,
+        });
+      });
+  }
+
   onRenderOverflowButton(overflowItems) {
     return (
       <VideoButton
@@ -201,15 +221,21 @@ class VideoPage extends Component {
     this.setState({ followDelta: this.state.followDelta - 1 });
     axios.put(`/channels/${this.state.video.channel.id}/unfollow`);
   }
+
   onCommentSubmit = ()  =>  {
-    console.log(this.state.comment);
+    axios.post(`/videos/${this.state.video.id}/comments`, {
+      comment: this.state.comment.trim(),
+    });
+    this.setState({ comment: "" });
   }
 
   onCommentCancel = ()  =>  {
-    this.setState({ comment: '' });
+    this.setState({ comment: "" });
   }
 
-  onCommentChange = ({ target: { value } }) => this.setState({ comment: value });
+  onCommentChange = ({ target: { value } }) => {
+    this.setState({ comment: value });
+  }
 
   render() {
     const { video, error, likeDelta, followDelta } = this.state;
@@ -377,31 +403,39 @@ class VideoPage extends Component {
                       />
                       </Box>
                       <CommentButton
-                        disabled={false}
                         text="הגב"
                         type="submit"
                         primary={true}
                         onClick={this.onCommentSubmit}
+                        disabled={!this.state.comment.length}
                       />
                       <CommentButton
-                        disabled={false}
                         text="בטל"
                         onClick={this.onCommentCancel}
                       />
                     </Flex>
                     </NewCommentSection>
                     <CommentsSection>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
-                      <VideoComment/>
+                      <Shimmer
+                      customElementsGroup={(
+                        <ShimmerElementsGroup
+                          shimmerElements={[
+                            { type: ElemType.circle, height: 40 },
+                            { type: ElemType.gap, width: '2%', height: 18 },
+                            { type: ElemType.line, width: '18%', height: 45 },
+                            { type: ElemType.gap, width: '5%', height: 18 },
+                            { type: ElemType.line, width: '75%', height: 45 },
+                          ]}
+                        />
+                      )} 
+                      isDataLoaded={this.state.doneLoadingComments}>
+                        {this.state.comments.map(function(comment,index){
+                          return <VideoComment
+                              channel={comment.channel}
+                              createdAt={comment.createdAt}
+                              comment={comment.comment} />;
+                        })}
+                      </Shimmer>
                     </CommentsSection>
                   </VideoSection>
                 </VideoContainer>
