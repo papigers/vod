@@ -134,6 +134,17 @@ module.exports = function(sequelize, DataTypes) {
         allowNull: false,
       },
     });
+    Video.VideoTag = Video.belongsToMany(models.Tag, {
+      through: {
+        model: models.ItemTag,
+        unique: false,
+        scope: {
+          taggable: 'video',
+        },
+      },
+      foreignKey: 'itemId',
+      constraints: false,
+    });
     Video.belongsToMany(models.Channel, { as: 'likes', through: 'VideoLikes' });
     Video.belongsToMany(models.Channel, {
       as: 'views',
