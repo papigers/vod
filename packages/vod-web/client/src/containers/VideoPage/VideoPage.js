@@ -45,13 +45,31 @@ const VideoDescription = styled.div`
   padding: 0 16px;
 `;
 
-const NewComment = styled.div`
+const NewCommentSection = styled.div`
   margin-top: -16px;
-  padding: 10px 16px;
+  padding: 20px 25px;
+`;
+
+const CommentsSection = styled.div`
+  margin-top: -16px;
+  padding: 20px 25px;
 `;
 
 const CommentsTitle = styled.h2`
   margin-top: -16px;
+`;
+
+const CommentButton = styled(DefaultButton)`
+  margin-right: 15px;
+  margin-top: 13px;
+`;
+
+const CommentPersona = styled(Persona)`
+  margin-top: 13px;
+`;
+
+const VideoComment = styled(Comment)`
+  margin-bottom: 1.5em;
 `;
 
 const VideoButton = styled(DefaultButton)`
@@ -90,6 +108,7 @@ class VideoPage extends Component {
       likeDelta: 0,
       followDelta: 0,
       viewed: false,
+      comment: '',
     };
   }
   
@@ -182,6 +201,15 @@ class VideoPage extends Component {
     this.setState({ followDelta: this.state.followDelta - 1 });
     axios.put(`/channels/${this.state.video.channel.id}/unfollow`);
   }
+  onCommentSubmit = ()  =>  {
+    console.log(this.state.comment);
+  }
+
+  onCommentCancel = ()  =>  {
+    this.setState({ comment: '' });
+  }
+
+  onCommentChange = ({ target: { value } }) => this.setState({ comment: value });
 
   render() {
     const { video, error, likeDelta, followDelta } = this.state;
@@ -331,22 +359,50 @@ class VideoPage extends Component {
                   <VideoSection>
                     <CommentsTitle>תגובות:</CommentsTitle>
                   
-                    <NewComment>
+                    <NewCommentSection>
                     <Flex>
                       <Box width={50}>
-                        <Persona
+                        <CommentPersona
                             size={PersonaSize.size40}
-                            imageUrl={null}
+                            imageUrl={`/profile/${user.id}/profile.png`}
                         />
                       </Box>
                       <Box width="100%">
-                        <TextField autoAdjustHeight placeholder="הזן את התגובה פה" />
+                        <TextField
+                        placeholder="הזן את התגובה פה"
+                        multiline
+                        resizable={false}
+                        onChange={this.onCommentChange}
+                        value={this.state.comment}
+                      />
                       </Box>
+                      <CommentButton
+                        disabled={false}
+                        text="הגב"
+                        type="submit"
+                        primary={true}
+                        onClick={this.onCommentSubmit}
+                      />
+                      <CommentButton
+                        disabled={false}
+                        text="בטל"
+                        onClick={this.onCommentCancel}
+                      />
                     </Flex>
-                    </NewComment>
-                  <Comment/>
-                  <Comment/>
-                  <Comment/>
+                    </NewCommentSection>
+                    <CommentsSection>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                      <VideoComment/>
+                    </CommentsSection>
                   </VideoSection>
                 </VideoContainer>
               </Box>
