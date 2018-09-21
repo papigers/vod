@@ -144,7 +144,13 @@ module.exports = function(sequelize, DataTypes) {
         unique: false,
       },
     });
-    Channel.belongsToMany(models.Video, { through: models.Comment });
+    Channel.belongsToMany(models.Video,  {
+      as: 'comments',
+      through: {
+        model: models.Comment,
+        unique: false,
+      },
+    });
     Channel.ChannelACL = Channel.hasMany(models.ChannelAccess, {
       as: 'channelACL',
       onDelete: "CASCADE",

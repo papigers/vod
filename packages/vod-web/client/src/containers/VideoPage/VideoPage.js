@@ -16,6 +16,7 @@ import { makeSelectUser } from 'containers/ChannelPage/selectors';
 
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
+import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 import { followChannel, unfollowChannel } from 'containers/ChannelPage/actions';
 
@@ -41,8 +42,7 @@ const SpreadItems = styled.div`
 `;
 
 const VideoDescription = styled.div`
-  margin: 0 100px;
-  margin-top: -16px;
+  margin: 0 72px;
   padding: 0 16px;
 `;
 
@@ -142,6 +142,10 @@ class VideoPage extends Component {
       />
     );
   }
+
+  fetchComments = () => axios.get(`/videos/${this.state.videoId}/comments`);
+
+  postComment = comment => axios.post(`/videos/${this.state.video.id}/comments`, { comment });
 
   onRenderOverflowButton(overflowItems) {
     return (
@@ -285,7 +289,7 @@ class VideoPage extends Component {
                             imageUrl={video && video.channel && `/profile/${video.channel.id}/profile.png`}
                             text={video && video.channel && video.channel.name}
                             secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
-                            size={PersonaSize.size100}
+                            size={PersonaSize.size72}
                           />
                         </LinkOnLoad>
                         {video && user.id !== video.channel.id ? (
@@ -319,6 +323,14 @@ class VideoPage extends Component {
                         {video && video.description}
                       </Shimmer>
                     </VideoDescription>
+                  </VideoSection>
+                  <VideoSection>
+                    <CommentSection
+                      postComment={this.postComment}
+                      fetchComments={this.fetchComments}
+                      commentableId={this.state.videoId}
+                      user={this.props.user}
+                    />
                   </VideoSection>
                 </VideoContainer>
               </Box>

@@ -142,7 +142,13 @@ module.exports = function(sequelize, DataTypes) {
         unique: false,
       },
     });
-    Video.belongsToMany(models.Channel, { through: models.Comment });
+    Video.belongsToMany(models.Channel, {
+      as: 'comments',
+      through: {
+        model: models.Comment,
+        unique: false,
+      },
+    });
     // creator of video
     Video.belongsTo(models.Channel, {
       as: 'creator',
@@ -370,6 +376,30 @@ module.exports = function(sequelize, DataTypes) {
         }));
       });
     };
+
+    Video.getComments = function(user, videoId, offset) {
+      return Video.scope(Video.authorizedView(user)).findById(videoId)
+        .then(function(video) {
+          return video.getComments({
+            scope: models.Channel.authorizedView(user),
+            offset,
+            attributes: ['id', 'name'],
+            order: [[sequelize.col('Comment.createdAt'), 'DESC']],
+            raw: true,
+          });
+        });
+    }
+
+    Video.postComment = function(user, videoId, comment) {
+      return Video.scope(Video.authorizedView(user)).findById(videoId)
+        .then(function() {
+          return models.Comment.create({
+            ChannelId: user.id,
+            VideoId: videoId,
+            comment,
+          });
+        });
+    }
   }
 
   return Video;
