@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
+import { bindActionCreators } from 'redux';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
@@ -17,6 +18,8 @@ import { makeSelectUser } from 'containers/ChannelPage/selectors';
 import Player from 'components/ThemedPlayer';
 import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
+import { followChannel, unfollowChannel } from 'containers/ChannelPage/actions';
+
 import axios from 'utils/axios';
 
 const VideoContainer = styled.div`
@@ -169,11 +172,11 @@ class VideoPage extends Component {
   }
   onFollow = () => {
     this.setState({ followDelta: this.state.followDelta + 1 });
-    axios.put(`/channels/${this.state.video.channel.id}/follow`);
+    this.props.followChannel(this.state.video.channel.id);
   }
   onUnfollow = () => {
     this.setState({ followDelta: this.state.followDelta - 1 });
-    axios.put(`/channels/${this.state.video.channel.id}/unfollow`);
+    this.props.unfollowChannel(this.state.video.channel.id);
   }
 
   render() {
@@ -347,4 +350,11 @@ const mapStateToProps = createStructuredSelector({
   user: makeSelectUser(),
 });
 
-export default createReduxContainer(VideoPage, mapStateToProps);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({
+    followChannel,
+    unfollowChannel,
+  }, dispatch);
+};
+
+export default createReduxContainer(VideoPage, mapStateToProps, mapDispatchToProps);

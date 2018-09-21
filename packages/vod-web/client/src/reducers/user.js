@@ -13,13 +13,13 @@ const userInitialState = fromJS(initial);
 export default function userReducer(state = userInitialState, action) {
   switch (action.type) {
     case SET_USER:
-      return state.mergeIn(['profile'], action.user);
+      return state.setIn(['user'], fromJS(action.user));
     case SET_MANAGED_CHANNELS:
-      return state.setIn(['user', 'managedChannels'], action.managed.filter(
-        channel => channel.id !== state.get('id'),
-      ));
+      return state.setIn(['user', 'managedChannels'], fromJS(action.managed.filter(
+        channel => channel.id !== state.getIn(['user','id']),
+      )));
     case SET_FOLLOWED_CHANNELS:
-      return state.set('followedChannels', action.followed);
+      return state.set('followedChannels', fromJS(action.followed));
     default:
       return state;
   }

@@ -2,6 +2,7 @@ module.exports = {
   server: {
     port: process.env.PORT || 9090,
   },
+  api: 'http://localhost:9090/api',
   db: {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'Aa123123',

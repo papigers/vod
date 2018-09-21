@@ -18,6 +18,11 @@ class VideoPreloader extends Component {
       autoplay: false,
       muted: true,
       preload: true,
+      html5: {
+        dash: {
+          setXHRWithCredentialsForType: [null, true],
+        },
+      },
     });
     this.preloadVideoData();
   }
