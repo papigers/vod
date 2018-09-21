@@ -3,25 +3,11 @@ import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 
 import Comment from 'components/VideoComment';
-
-const NewCommentSection = styled.div`
-  margin-top: -16px;
-  padding: 20px 25px;
-`;
-
-const CommentsSection = styled.div`
-  margin-top: -16px;
-  padding: 20px 25px;
-`;
-
-const CommentsTitle = styled.h2`
-  margin-top: -16px;
-`;
 
 const CommentButton = styled(DefaultButton)`
   margin-right: 15px;
@@ -36,6 +22,16 @@ const VideoComment = styled(Comment)`
   margin-bottom: 1.5em;
 `;
 
+const Section = styled(Box).attrs({
+  px: 20,
+  py: '8px',
+})``;
+
+const NoComments = styled.div`
+  text-align: center;
+  font-size: 1.1em;
+`
+
 class CommentSection extends Component {
   constructor() {
     super();
@@ -43,6 +39,7 @@ class CommentSection extends Component {
       comment: "",
       comments: [],
       loading: true,
+      newComments: [],
     };
   }
 
@@ -78,7 +75,10 @@ class CommentSection extends Component {
 
   onCommentSubmit = ()  =>  {
     this.props.postComment(this.state.comment);
-    this.setState({ comment: '' });
+    this.setState({
+      comment: '',
+      newComments: this.state.newComments.concat([this.state.comment]),
+    });
   }
 
   onCommentCancel = ()  =>  {
@@ -91,12 +91,12 @@ class CommentSection extends Component {
 
   render() {
     const { user } = this.props;
-    const { comment, comments, loading } = this.state;
+    const { comment, comments, loading, newComments } = this.state;
 
     return (
       <Fragment>
-        <CommentsTitle>תגובות:</CommentsTitle>
-        <NewCommentSection>
+        <span className="ms-fontSize-l">תגובות:</span>
+        <Section>
           <Flex>
             <Box width={50}>
               <CommentPersona
@@ -125,30 +125,78 @@ class CommentSection extends Component {
               onClick={this.onCommentCancel}
             />
           </Flex>
-        </NewCommentSection>
-        <CommentsSection>
+        </Section>
+        <Section>
           <Shimmer
-          customElementsGroup={(
-            <ShimmerElementsGroup
-              shimmerElements={[
-                { type: ElemType.circle, height: 40 },
-                { type: ElemType.gap, width: '2%', height: 18 },
-                { type: ElemType.line, width: '18%', height: 45 },
-                { type: ElemType.gap, width: '5%', height: 18 },
-                { type: ElemType.line, width: '75%', height: 45 },
-              ]}
-            />
-          )} 
-          isDataLoaded={!loading}>
-            {comments.map((comment) => (
-              <VideoComment
-                channel={comment.channel}
-                createdAt={comment.createdAt}
-                comment={comment.comment}
-              />
-            ))}
+            customElementsGroup={(
+              <Box>
+                {Array.apply(null, {length: 10}).map(Number.call, Number).map(i => (
+                  <Box key={i} width={1}>
+                    <Flex>
+                      <ShimmerElementsGroup
+                        shimmerElements={[
+                          { type: ElemType.circle, height: 40 },
+                          { type: ElemType.gap, width: 10, height: 40 }
+                        ]}
+                      />
+                      <ShimmerElementsGroup
+                        flexWrap
+                        width={150}
+                        shimmerElements={[
+                          { type: ElemType.gap, width: '100%', height: 8 },
+                          { type: ElemType.line, width: '100%', height: 5.5, verticalAlign: 'bottom' },
+                          { type: ElemType.line, width: '100%', height: 5.5, verticalAlign: 'top' },
+                          { type: ElemType.line, width: '60%', height: 8 },
+                          { type: ElemType.gap, width: '40%', height: 8 },
+                          { type: ElemType.gap, width: '100%', height: 8 },
+                        ]}
+                      />
+                      <ShimmerElementsGroup
+                        shimmerElements={[
+                          { type: ElemType.gap, width: 20, height: 40 }
+                        ]}
+                      />
+                      <ShimmerElementsGroup
+                        flexWrap
+                        width={'calc(100% - 200px'}
+                        shimmerElements={[
+                          { type: ElemType.line, width: '100%', height: 14 },
+                          { type: ElemType.line, width: '70%', height: 14 },
+                          { type: ElemType.gap, width: '30%', height: 20 },
+                        ]}
+                      />
+                    </Flex>
+                    <ShimmerElementsGroup
+                      shimmerElements={[
+                        { type: ElemType.gap, width: '100%', height: 15 }
+                      ]}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+            isDataLoaded={!loading}
+          >
+            {comments.length + newComments.length ? (
+              <Fragment>
+                {newComments.map((comment) => (
+                  <VideoComment
+                    channel={user}
+                    createdAt={Date.now()}
+                    comment={comment}
+                  />
+                ))}
+                {comments.map((comment) => (
+                  <VideoComment
+                    channel={comment.channel}
+                    createdAt={comment.createdAt}
+                    comment={comment.comment}
+                  />
+                ))}
+              </Fragment>
+            ) : <NoComments>אין תגובות</NoComments>}
           </Shimmer>
-        </CommentsSection>
+        </Section>
       </Fragment>
     );
   }

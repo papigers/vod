@@ -39,8 +39,7 @@ const SpreadItems = styled.div`
 `;
 
 const VideoDescription = styled.div`
-  margin: 0 100px;
-  margin-top: -16px;
+  margin: 0 72px;
   padding: 0 16px;
 `;
 

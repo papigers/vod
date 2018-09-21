@@ -9,10 +9,6 @@ const CommentText = styled.p`
   margin: 5px;
 `;
 
-const CommentSection = styled.div`
-  margin-bottom: 15px;
-`;
-
 class VideoComment extends Component {
 
     postTimeCalculate = (createdAt)  =>  {
@@ -41,27 +37,25 @@ class VideoComment extends Component {
         comment,
        } = this.props;
 
-       console.log(this.props);
-
-        return(
-          <CommentSection>
-            <Flex>
-                <Box width={200}>
-                  <Link to={`/channel/${channel.id}`}>
-                    <Persona
-                        size={PersonaSize.size40}
-                        imageUrl={`/profile/${channel.id}/profile.png`}
-                        text={channel.name}
-                        secondaryText={this.postTimeCalculate(createdAt)}
-                    />
-                  </Link>
-                </Box>
-                <Box>
-                  <CommentText>{comment}</CommentText>
-                </Box>
-            </Flex>
-          </CommentSection>
-        );
+      return (
+        <Box mb={15}>
+          <Flex>
+              <Box width={200}>
+                <Link to={`/channel/${channel.id}`}>
+                  <Persona
+                    size={PersonaSize.size40}
+                    imageUrl={`/profile/${channel.id}/profile.png`}
+                    text={channel.name}
+                    secondaryText={this.postTimeCalculate(createdAt)}
+                  />
+                </Link>
+              </Box>
+              <Box>
+                <CommentText>{comment}</CommentText>
+              </Box>
+          </Flex>
+        </Box>
+      );
     }
 }
 
