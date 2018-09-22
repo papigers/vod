@@ -377,12 +377,18 @@ module.exports = function(sequelize, DataTypes) {
       });
     };
 
-    Video.getComments = function(user, videoId, offset) {
+    Video.getComments = function(user, videoId, { page, before }) {
       return Video.scope(Video.authorizedView(user)).findById(videoId)
         .then(function(video) {
           return video.getComments({
+            where: {
+              '$Comment.createdAt$': {
+                [Op.lt]: before,
+              },
+            },
             scope: models.Channel.authorizedView(user),
-            offset,
+            offset: page * 20,
+            limit: 20,
             attributes: ['id', 'name'],
             order: [[sequelize.col('Comment.createdAt'), 'DESC']],
             raw: true,

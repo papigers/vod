@@ -38,7 +38,7 @@ class VideoComment extends Component {
        } = this.props;
 
       return (
-        <Box mb={15}>
+        <Box mb={18}>
           <Flex>
               <Box width={200}>
                 <Link to={`/channel/${channel.id}`}>

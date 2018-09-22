@@ -143,7 +143,7 @@ class VideoPage extends Component {
     );
   }
 
-  fetchComments = () => axios.get(`/videos/${this.state.videoId}/comments`);
+  fetchComments = (before) => axios.get(`/videos/${this.state.videoId}/comments?before=${before}`);
 
   postComment = comment => axios.post(`/videos/${this.state.video.id}/comments`, { comment });
 

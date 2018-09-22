@@ -171,8 +171,9 @@ router.delete('/:id', function(req, res) {
 });
 
 router.get('/:videoId/comments', function(req, res, next) {
-  var offset = req.query.offset || 0;
-  Video.getComments(req.user, req.params.videoId, offset)
+  var page = req.query.page || 0;
+  var before = req.query.before ? new Date(req.query.before) : new Date();
+  Video.getComments(req.user, req.params.videoId, { page, before })
     .then(function(comments) {
       res.json(comments.map(function(comment) {
         return {
