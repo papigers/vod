@@ -177,9 +177,9 @@ export default class Header extends Component {
         <StyledChannelButton {...other}>
           <Link to={to}>
             <Persona
-              imageUrl={`/profile/${this.props.user.id}/profile.png`}
+              imageUrl={`/profile/${this.props.user && this.props.user.id}/profile.png`}
               size={PersonaSize.size32}
-              text={this.props.user.name}
+              text={this.props.user && this.props.user.name}
             />
           </Link>
         </StyledChannelButton>

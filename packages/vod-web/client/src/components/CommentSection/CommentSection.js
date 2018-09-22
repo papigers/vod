@@ -1,11 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
+import Waypoint from 'react-waypoint';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
+
 
 import Comment from 'components/VideoComment';
 
@@ -30,7 +32,9 @@ const Section = styled(Box).attrs({
 const NoComments = styled.div`
   text-align: center;
   font-size: 1.1em;
-`
+
+  display: ${({ loading }) => loading ? 'none' : 'block'};
+`;
 
 class CommentSection extends Component {
   constructor() {
@@ -44,7 +48,7 @@ class CommentSection extends Component {
   }
 
   componentDidMount() {
-    this.fetchComments();
+    // this.fetchComments();
   }
 
   componentDidUpdate(prevProps) {
@@ -52,32 +56,37 @@ class CommentSection extends Component {
       this.setState({
         comments: [],
         loading: true,
-      }, this.fetchComments);
+      });
+      // }, this.fetchComments);
     }
   }
 
-  fetchComments() {
-    this.props.fetchComments()
-      .then(({ data }) =>
-        this.setState({
-          comments: data,
-          loading: false,
-        })
-      )
-      .catch((err) =>
-        // TODO: do something
-        this.setState({
-          comments: [],
-          loading: false,
-        })
-      );
+  fetchComments = () => {
+    const { comments } = this.state;
+    this.setState({ loading: true }, () => {
+      const lastCommentTime = comments.length ? comments[comments.length - 1].createdAt : '';
+      this.props.fetchComments(lastCommentTime)
+        .then(({ data }) =>
+          this.setState({
+            comments: comments.concat(data),
+            loading: false,
+          })
+        )
+        .catch((err) =>
+          // TODO: do something
+          this.setState({
+            comments: [],
+            loading: false,
+          })
+        );
+    });
   }
 
   onCommentSubmit = ()  =>  {
     this.props.postComment(this.state.comment);
     this.setState({
       comment: '',
-      newComments: this.state.newComments.concat([this.state.comment]),
+      newComments: [this.state.comment].concat(this.state.newComments),
     });
   }
 
@@ -93,6 +102,8 @@ class CommentSection extends Component {
     const { user } = this.props;
     const { comment, comments, loading, newComments } = this.state;
 
+    const lastComment = comments.length ? comments[comments.length - 1] : null;
+
     return (
       <Fragment>
         <span className="ms-fontSize-l">תגובות:</span>
@@ -101,7 +112,7 @@ class CommentSection extends Component {
             <Box width={50}>
               <CommentPersona
                 size={PersonaSize.size40}
-                imageUrl={`/profile/${user.id}/profile.png`}
+                imageUrl={`/profile/${user && user.id}/profile.png`}
               />
             </Box>
             <Box width="100%">
@@ -127,7 +138,7 @@ class CommentSection extends Component {
           </Flex>
         </Section>
         <Section>
-          <Shimmer
+          {/* <Shimmer
             customElementsGroup={(
               <Box>
                 {Array.apply(null, {length: 10}).map(Number.call, Number).map(i => (
@@ -176,7 +187,7 @@ class CommentSection extends Component {
               </Box>
             )}
             isDataLoaded={!loading}
-          >
+          > */}
             {comments.length + newComments.length ? (
               <Fragment>
                 {newComments.map((comment) => (
@@ -194,8 +205,12 @@ class CommentSection extends Component {
                   />
                 ))}
               </Fragment>
-            ) : <NoComments>אין תגובות</NoComments>}
-          </Shimmer>
+            ) : <NoComments loading={loading}>אין תגובות</NoComments>}
+            <Waypoint key={lastComment} onEnter={this.fetchComments} />
+            {loading ? (
+              <Spinner size={SpinnerSize.large} label="טוען תגובות..." />
+            ) : null}
+          {/* </Shimmer> */}
         </Section>
       </Fragment>
     );
