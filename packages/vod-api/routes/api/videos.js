@@ -142,7 +142,7 @@ router.put('/publish/:id', function(req, res, next) {
   Video.publish(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
-        return res.json(result.get({ plain: true }));
+        return res.json(result);
       }
       return res.status(404).json({
         error: 'No such video',

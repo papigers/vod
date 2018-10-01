@@ -10,6 +10,7 @@ import {
   SET_UPLOAD_VIDEO_DESCRIPTION,
   SET_UPLOAD_VIDEO_PRIVACY,
   SET_UPLOAD_VIDEO_ACL,
+  SET_UPLOAD_VIDEO_TAGS,
   SET_UPLOAD_VIDEO_CHANNEL,
   SET_UPLOAD_ERROR,
 } from 'constants/actionTypes';
@@ -95,6 +96,13 @@ export function setUploadVideoACL(acl) {
   return {
     type: SET_UPLOAD_VIDEO_ACL,
     acl,
+  };
+}
+
+export function setUploadVideoTags(tags) {
+  return {
+    type: SET_UPLOAD_VIDEO_TAGS,
+    tags,
   };
 }
 
