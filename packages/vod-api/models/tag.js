@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
         unique: false,
       },
       foreignKey: 'tagId',
-      constraints: false,
+      // constraints: false,
     });
   };
 

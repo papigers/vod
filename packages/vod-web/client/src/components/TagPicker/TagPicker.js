@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { TagPicker as Picker } from 'office-ui-fabric-react/lib/Pickers';
+import { Label } from 'office-ui-fabric-react/lib/Label';
 
 const TagItem = styled.div`
   position: relative;
@@ -61,7 +62,7 @@ class TagPicker extends Component {
   
   addItem = (item) => {
     if (this.state.selected.findIndex(sel => sel.key === item.key) === -1) {
-      this.setState({ selected: this.state.selected.concat([item])});
+      this.setState({ selected: this.state.selected.concat([item])}, this.onChange);
     }
   }
 
@@ -83,14 +84,14 @@ class TagPicker extends Component {
 
   onChange = () => {
     if (this.props.onChange) {
-      this.props.onChange(this.state.selected);
+      this.props.onChange(this.state.selected.map(tag => tag.name));
     }
   }
 
   removeItem = item => {
     this.setState({
       selected: this.state.selected.filter(sel => sel.key !== item.key),
-    });
+    }, this.onChange);
   }
 
   onRenderItem = (item) => (
@@ -108,19 +109,20 @@ class TagPicker extends Component {
   
   render() {
     return (
-      <StyledPicker
-        className={this.props.className}
-        pickerSuggestionsProps={{
-          noResultsFoundText: 'תיוג קיים'
-        }}
-        getTextFromItem={item => item.name}
-        selectedItems={this.state.selected}
-        onInputChange={this.onInputChange}
-        onItemSelected={this.addItem}
-        onResolveSuggestions={this.onResolveSuggestions}
-        onChange={this.onChange}
-        onRenderItem={this.onRenderItem}
-      />
+      <div className={this.props.className}>
+        <Label>{this.props.label}</Label>
+        <StyledPicker
+          pickerSuggestionsProps={{
+            noResultsFoundText: 'תיוג קיים'
+          }}
+          getTextFromItem={item => item.name}
+          selectedItems={this.state.selected}
+          onInputChange={this.onInputChange}
+          onItemSelected={this.addItem}
+          onResolveSuggestions={this.onResolveSuggestions}
+          onRenderItem={this.onRenderItem}
+        />
+      </div>
     );
   }
 }

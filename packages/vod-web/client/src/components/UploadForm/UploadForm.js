@@ -12,6 +12,7 @@ import { ActivityItem } from 'office-ui-fabric-react/lib/ActivityItem';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 
 import PeoplePicker from 'components/PeoplePicker';
+import TagPicker from 'components/TagPicker';
 import VideoThumbnail from 'components/VideoThumbnail';
 
 const Progress = styled(ProgressIndicator)`
@@ -151,6 +152,7 @@ class UploadForm extends Component {
       type: acl.type,
     })));
   }
+  onChangeTags = tags => this.props.onChangeTags(tags);
 
   onChangeChannel = (e, item) => {
     this.props.onChangeChannel(item.key);
@@ -293,6 +295,7 @@ class UploadForm extends Component {
               {privacy !== 'public' ? (
                 <PeoplePicker label="הסרטון משותף עם:" onChange={this.onChangeACL} />
               ) :  null}
+              <TagPicker label="תגיות:" onChange={this.onChangeTags} />
               {metadata ? (
                 <Metadata>
                   <ActivityItem

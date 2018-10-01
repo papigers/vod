@@ -127,14 +127,14 @@ module.exports = function(sequelize, DataTypes) {
   });
 
   Video.associate = function(models) {
-    Video.VideoACL = Video.hasMany(models.VideoAccess, {
+    Video.VideoACLs = Video.hasMany(models.VideoAccess, {
       as: 'videoACL',
       onDelete: "CASCADE",
       foreignKey: {
         allowNull: false,
       },
     });
-    Video.VideoTag = Video.belongsToMany(models.Tag, {
+    Video.VideoTags = Video.belongsToMany(models.Tag, {
       through: {
         model: models.ItemTag,
         unique: false,
@@ -143,7 +143,7 @@ module.exports = function(sequelize, DataTypes) {
         },
       },
       foreignKey: 'itemId',
-      constraints: false,
+      // constraints: false,
     });
     Video.belongsToMany(models.Channel, { as: 'likes', through: 'VideoLikes' });
     Video.belongsToMany(models.Channel, {
@@ -221,23 +221,56 @@ module.exports = function(sequelize, DataTypes) {
         video.acl = [];
       }
 
-      return Video.scope(Video.authorizedManage(user)).findById(id)
-        .then(function(found) {
-          if (!found) {
-            return null;
-          }
-          video.channelId = video.channel || found.get('channelId');
-          var Acls = models.embed.util.helpers.mkInclude(Video.VideoACL);
-          return models.embed.update(Video.scope(Video.authorizedManage(user)), {
-            id: id,
-            videoACL: video.acl,
-            name: video.name,
-            description: video.description,
-            privacy: video.privacy,
-            published: video.published,
-            channelId: video.channelId,
-          }, [Acls]);
-        });
+      return sequelize.transaction(function(transaction) {
+        return Video.scope(Video.authorizedManage(user)).findById(id, { transaction })
+          .then(function(found) {
+            if (!found) {
+              return null;
+            }
+            video.channelId = video.channel || found.get('channelId');
+            var Acls = models.embed.util.helpers.mkInclude(Video.VideoACLs);
+            return models.embed.update(Video.scope(Video.authorizedManage(user)), {
+              id: id,
+              videoACL: video.acl,
+              name: video.name,
+              description: video.description,
+              privacy: video.privacy,
+              published: video.published,
+              channelId: video.channelId,
+            }, [Acls], { transaction })
+          }).then(function(updated) {
+            if (!updated) {
+              return updated;
+            }
+            return Promise.all(video.tags.map(function(tag) {
+              return models.Tag.findOrCreate({
+                where: {
+                  name: tag,
+                },
+                transaction,
+              });
+            })).then(function() {
+              return updated;
+            });
+          }).then(function(updated) {
+            return updated.setTags(video.tags, {
+              transaction,
+            }).then(function() {
+              return sequelize.query('DELETE FROM "Tags" WHERE NOT EXISTS (SELECT 1 FROM "ItemTags" WHERE "ItemTags"."tagId" = "Tags".name)', {
+                type: sequelize.QueryTypes.DELETE,
+                transaction,
+              });
+            }).then(function() {
+              return Promise.all([updated.get({ plain: true }), updated.getTags()]);
+            });
+          })
+          .then(function([updated, tags]) {
+            updated.tags = tags.map(function(tag) {
+              return tag.get('name');
+            });
+            return updated;
+          });
+      });
     }
 
     /**

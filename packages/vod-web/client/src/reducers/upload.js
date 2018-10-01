@@ -11,6 +11,7 @@ import {
   SET_UPLOAD_VIDEO_DESCRIPTION,
   SET_UPLOAD_VIDEO_PRIVACY,
   SET_UPLOAD_VIDEO_ACL,
+  SET_UPLOAD_VIDEO_TAGS,
   SET_UPLOAD_VIDEO_CHANNEL,
   SET_UPLOAD_ERROR,
 } from 'constants/actionTypes';
@@ -35,6 +36,7 @@ const uploadInitialState = fromJS({
     description: '',
     privacy: 'private',
     acl: [],
+    tags: [],
   },
   step: 'upload',
 });
@@ -87,6 +89,8 @@ export default function uploadReducer(state = uploadInitialState, action) {
       return state.setIn(['video', 'privacy'], action.privacy);
     case SET_UPLOAD_VIDEO_ACL:
       return state.setIn(['video', 'acl'], fromJS(action.acl));
+    case SET_UPLOAD_VIDEO_TAGS:
+      return state.setIn(['video', 'tags'], fromJS(action.tags));
     case SET_UPLOAD_VIDEO_CHANNEL:
       return state.setIn(['video', 'channel'], action.channel)
     case SET_UPLOAD_ERROR:

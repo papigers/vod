@@ -182,6 +182,7 @@ class UploadPage extends Component {
       description,
       acl,
       channel,
+      tags,
       selectedThumbnail,
     } = this.props.upload.video;
     this.props.setUploadStep('form_submit');
@@ -192,6 +193,7 @@ class UploadPage extends Component {
       description,
       channel,
       acl,
+      tags,
     }).then(({ data }) => {
       if (!data.error) {
         return this.props.push(`/watch?v=${this.id}`);
@@ -234,6 +236,7 @@ class UploadPage extends Component {
             onChangeACL={this.props.setUploadVideoACL}
             onChangePrivacy={this.props.setUploadVideoPrivacy}
             onChangeThumbnail={this.props.selectUploadVideoThumbnail}
+            onChangeTags={this.props.setUploadVideoTags}
             setUploadError={this.props.setUploadError}
             onSubmit={this.onSubmit}
             user={this.props.user}
