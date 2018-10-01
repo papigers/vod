@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
   var Tag = sequelize.define('Tag', {
-    name: {
+    id: {
       type: DataTypes.STRING,
       primaryKey: true,
     },
@@ -8,6 +8,7 @@ module.exports = function(sequelize, DataTypes) {
 
   Tag.associate = function(models) {
     Tag.belongsToMany(models.Video, {
+      as: 'items',
       through: {
         model: models.ItemTag,
         unique: false,

@@ -135,6 +135,7 @@ module.exports = function(sequelize, DataTypes) {
       },
     });
     Video.VideoTags = Video.belongsToMany(models.Tag, {
+      as: 'tags',
       through: {
         model: models.ItemTag,
         unique: false,
@@ -315,6 +316,14 @@ module.exports = function(sequelize, DataTypes) {
         where: {
           id: videoId,
         },
+        include: [{
+          model: models.Tag,
+          as: 'tags',
+          attributes: ['id'],
+          through: {
+            attributes: [],
+          },
+        }],
       }).then(function(video) {
         if (!video) {
           return [null];

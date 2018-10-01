@@ -10,6 +10,7 @@ import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
+import { Label } from 'office-ui-fabric-react/lib/Label';
 
 import createReduxContainer from 'utils/createReduxContainer';
 import { makeSelectUser } from 'containers/ChannelPage/selectors';
@@ -20,6 +21,7 @@ import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 import { followChannel, unfollowChannel } from 'containers/ChannelPage/actions';
 
 import axios from 'utils/axios';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 const VideoContainer = styled.div`
   display: flex;
@@ -69,6 +71,22 @@ const VideoButton = styled(DefaultButton)`
     margin-left: 6px;
     position: relative;
     top: -1px;
+  }
+`;
+
+const TagsContainer = styled(Box)`
+  .ms-Label i {
+    color: ${({theme}) => theme.palette.themePrimary};
+  }
+`;
+
+const VideoTag = styled.span`
+  background: ${({theme}) => theme.palette.neutralLight};
+  border-radius: 4px;
+  padding: 4px 9px;
+
+  & + & {
+    margin-right: 5px;
   }
 `;
 
@@ -317,6 +335,12 @@ class VideoPage extends Component {
                         isDataLoaded={!!video}
                       >
                         {video && video.description}
+                        <TagsContainer>
+                          <Label><Icon iconName="Tag" /> תגיות:</Label>
+                          <Flex>
+                            {video && video.tags.map(tag => <VideoTag>{tag.id}</VideoTag>)}
+                          </Flex>
+                        </TagsContainer>
                       </Shimmer>
                     </VideoDescription>
                   </VideoSection>
