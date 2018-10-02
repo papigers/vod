@@ -19,11 +19,13 @@ class VideoComment extends Component {
       var daysDiff = Math.floor(milisecDiff / 1000 / 60 / (60 * 24));
       
       switch(daysDiff){
-        case (daysDiff > 365):
+        case (daysDiff > 730):
           return `פורסם לפני ${Math.floor(daysDiff / 365)} שנים`;
-        case (daysDiff > 30):
+        case (daysDiff >= 365):
+          return `פורסם לפני שנה`;
+        case (daysDiff > 60):
           return `פורסם לפני ${Math.floor(daysDiff / 30)} חודשים`;
-        case (daysDiff):
+        case (!daysDiff):
           return `פורסם היום`;
         default:
          return `פורסם לפני ${daysDiff} ימים`;
