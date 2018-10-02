@@ -5,4 +5,9 @@ export const apiAxios = axios.create({
   withCredentials: true,
 });
 
+export const ldapAxios = axios.create({
+  baseURL: `${process.env.REACT_APP_API_HOSTNAME}/ldap`,
+  withCredentials: true,
+});
+
 export default apiAxios;
