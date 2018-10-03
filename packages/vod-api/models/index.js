@@ -1,19 +1,18 @@
 var fs = require("fs");
 var path = require("path");
-var Sequelize = require("sequelize");
-var embed = require("sequelize-embed");
-var config = require('config');
 var debug = require('debug')('vod:db');
+var knexfile = require('../knexfile');
+var knex = require('knex')(knexfile);
+var knexnest = require('knexnest');
 
-var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db.config, { operatorsAliases: false });
 var db = {};
 
-sequelize
-  .authenticate()
-  .catch(err => {
-    console.error('Database connection failed:', err);
-    throw err;
-  });
+knex.raw("SELECT 'test connection';").then(function(message) {
+  debug('DB Connection successful');
+}).catch(function(err) {
+  debug('DB Connection failure');
+  throw err;
+});
 
 // Export all models in the current directory
 debug('Exporting models...');
@@ -24,22 +23,15 @@ try {
       return (file.indexOf(".") !== 0) && (file !== "index.js");
     })
     .forEach(function(file) {
-      var model = sequelize.import(path.join(__dirname, file));
-      db[model.name] = model;
+      var model = require(path.join(__dirname, file))(db);
+      db[model.table] = model;
     });
 
-  Object.keys(db).forEach(function(modelName) {
-    if ("associate" in db[modelName]) {
-      db[modelName].associate(db);
-    }
-  });
-
-  db.sequelize = sequelize;
-  db.Sequelize = Sequelize;
-  db.embed = embed(sequelize);
+  db.knex = knex;
+  db.knexnest = knexnest;
 }
 catch(e) {
-  console.log('Database connector initialization failed...');
+  debug('Database connector initialization failed...');
   console.error(e);
 }
 
