@@ -320,8 +320,18 @@ module.exports = function(sequelize, DataTypes) {
     };
   }
 
-  Channel.checkAuth = function(cahnnelId, user) {
+  Channel.checkAuthView = function(cahnnelId, user) {
+    console.log(Channel.authorizedView(user));
     return Channel.scope(Channel.authorizedView(user)).count({
+      where: {
+        id: cahnnelId,
+      },
+    });
+  };
+
+  Channel.checkAuthManage = function(cahnnelId, user) {
+    console.log(user);
+    return Channel.scope(Channel.authorizedManage(user)).count({
       where: {
         id: cahnnelId,
       },

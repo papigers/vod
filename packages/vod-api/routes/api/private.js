@@ -18,7 +18,23 @@ router.post('/user-login', function(req, res) {
 
 router.get('/authz/view-channel/:channelId', auth, function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
-  Channel.checkAuth(req.params.channelId, req.user)
+  Channel.checkAuthView(req.params.channelId, req.user)
+    .then(function(count) {
+      res.json({
+        authorized: count > 0,
+      });
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.json({
+        authorized: false,
+      });
+    });
+});
+
+router.get('/authz/manage-channel/:channelId', auth, function(req, res) {
+  res.setHeader('cache-control', 'public, max-age=86400');
+  Channel.checkAuthManage(req.params.channelId, req.user)
     .then(function(count) {
       res.json({
         authorized: count > 0,
