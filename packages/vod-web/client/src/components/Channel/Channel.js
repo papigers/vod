@@ -11,6 +11,7 @@ import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'o
 
 import VideoList from 'components/VideoList';
 import axios from 'utils/axios';
+import ChannelSettings from 'components/ChannelSettings';
 
 const ContentBox = styled(Box).attrs({
   pr: 100,
@@ -57,16 +58,25 @@ export default class Channel extends Component {
       uploads: [],
       loading: true,
       followDelta: 0,
+      activeTab: 'home',
+      authorized: false,
     };
   }
 
   componentDidMount() {
     this.fetchUploads();
+    this.setState({
+      authorized: this.props.authorized,
+    });
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.channel && (this.props.channel.id !== (prevProps.channel && prevProps.channel.id))) {
       this.fetchUploads();
+      this.setState({
+        authorized: this.props.authorized,
+        activeTab: 'home',
+      });
     }
   }
 
@@ -81,11 +91,10 @@ export default class Channel extends Component {
           loading: false,
         });
       })
-      .catch(console.error); 
+      .catch(console.error);
     }
   };
 
-  
   onFollow = () => {
     this.setState({ followDelta: this.state.followDelta + 1 });
     this.props.followChannel(this.props.channel.id);
@@ -95,11 +104,49 @@ export default class Channel extends Component {
     this.setState({ followDelta: this.state.followDelta - 1 });
     this.props.unfollowChannel(this.props.channel.id);
   }
+  
+  onLinkClick = (item)  => {
+    this.setState({ activeTab: item.props.itemKey });
+  }
+
+  renderTab() {
+    const { loading, user } = this.props;
+    const { loading: loadingVideos, activeTab , uploads} = this.state;
+    
+    switch (activeTab) {
+      case 'home':
+        return (
+          <VideoList category="העלאות" loading={loading || loadingVideos} videos={uploads} />
+        );
+      case 'videos':
+      console.log(this.props.channel);
+        return (
+          <span>videos</span>
+        );
+      case 'playlists':
+        return (
+          <span>playlists</span>
+        );
+      case 'search':
+        return (
+          <span>search</span>
+        );
+      case 'settings':
+      console.log(user);
+        return (
+          <ChannelSettings user={user} />
+        );
+      default:
+          return (
+            <span>404</span>
+          );
+    }
+  }
 
   render() {
-    const { channel, loading, user } = this.props;
-    const { loading: loadingVideos, followDelta } = this.state;
-
+    const { channel, user  } = this.props;
+    const { followDelta , authorized} = this.state;
+    
     let userFollows = false;
     if (channel) {
       userFollows = (channel.isFollowing && followDelta >= 0) || (!channel.isFollowing && followDelta > 0);
@@ -176,15 +223,16 @@ export default class Channel extends Component {
               )}
             </Shimmer>
           </Box>
-          <ChannelPivot linkSize={PivotLinkSize.large} headersOnly>
-            <PivotItem linkText="בית" />
-            <PivotItem linkText="סרטונים" />
-            <PivotItem linkText="פלייליסטים" />
-            <PivotItem itemIcon="Search" />
+          <ChannelPivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
+            <PivotItem linkText="בית" itemKey='home' />
+            <PivotItem linkText="סרטונים" itemKey='videos' />
+            <PivotItem linkText="פלייליסטים" itemKey='playlists' />
+            <PivotItem itemIcon="Search" itemKey="search" />
+            {authorized ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div/>}
           </ChannelPivot>
         </TitleBox>
         <ContentBox>
-          <VideoList category="העלאות" loading={loading || loadingVideos} videos={this.state.uploads} />
+          {this.renderTab()}
         </ContentBox>
       </Fragment>
     );
