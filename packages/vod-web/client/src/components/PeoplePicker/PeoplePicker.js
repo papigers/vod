@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { ldapAxios } from 'utils/axios';
 
-import { ListPeoplePicker } from 'office-ui-fabric-react/lib/Pickers';
+import { CompactPeoplePicker } from 'office-ui-fabric-react/lib/Pickers';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 
 const PickerContainer = styled.div`
@@ -63,7 +63,7 @@ class PeoplePicker extends Component {
     return (
       <PickerContainer className={this.props.className} selectedItems={this.state.currentSelectedItems}>
         <Label>{this.props.label}</Label>
-        <ListPeoplePicker
+        <CompactPeoplePicker
           onResolveSuggestions={this.onFilterChanged}
           getTextFromItem={this.getTextFromItem}
           selectedItems={this.state.currentSelectedItems}
