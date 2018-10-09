@@ -74,6 +74,10 @@ export default class Channel extends Component {
 
   fetchUploads = () => {
     const { channel, loading } = this.props;
+    this.setState({
+      uploads: [],
+      loading: true,
+    });
 
     if (channel && !loading) {
       axios.get(`/channels/${channel.id}/videos`)

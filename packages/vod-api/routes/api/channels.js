@@ -4,7 +4,7 @@ var qs = require('querystring');
 var path = require('path');
 var express = require('express');
 var multer = require('multer');
-var Channel = require('../../models').Channel;
+var db = require('../../models');
 var router = express.Router();
 
 var OSClient = require('vod-object-storage-client').S3Client();
@@ -30,7 +30,7 @@ var channelStorage = multer.diskStorage({
 var upload = multer({ storage: channelStorage });
 
 router.get('/managed', function(req, res) {
-  Channel.getManagedChannels(req.user)
+  db.channels.getManagedChannels(req.user)
     .then(function(results) {
       return res.json(results);
     })
@@ -43,12 +43,10 @@ router.get('/managed', function(req, res) {
 });
 
 router.get('/:id', function(req, res) {
-  Channel.getChannel(req.user, req.params.id)
-    .then(function([channel, isFollowing]) {
+  db.channels.getChannel(req.user, req.params.id)
+    .then(function(channel) {
       if (channel) {
-        var resChannel = channel.get({ plain: true });
-        resChannel.isFollowing = isFollowing;
-        return res.json(resChannel);
+        return res.json(channel);
       }
       return res.status(404).json({
         error: 'No such channel',
@@ -63,7 +61,7 @@ router.get('/:id', function(req, res) {
 });
 
 router.put('/:id/follow', function(req, res) {
-  Channel.followChannel(req.user, req.params.id)
+  db.channels.followChannel(req.user, req.params.id)
     .then(function() {
       res.json({});
     })
@@ -76,7 +74,7 @@ router.put('/:id/follow', function(req, res) {
 });
 
 router.put('/:id/unfollow', function(req, res) {
-  Channel.unfollowChannel(req.user, req.params.id)
+  db.channels.unfollowChannel(req.user, req.params.id)
     .then(function() {
       res.json({});
     })
@@ -89,16 +87,12 @@ router.put('/:id/unfollow', function(req, res) {
 });
 
 router.get('/:id/followers', function(req, res) {
-  Channel.getFollowers(req.user, req.params.id)
+  db.channels.getFollowers(req.user, req.params.id)
     .then(function(followers) {
       if (!followers) {
         return res.sendStatus(404);
       }
-      return res.json(followers.map(function(follower) {
-        var res = follower.get({ plain: true });
-        delete res.ChannelFollowers;
-        return res;
-      }));
+      return res.json(followers);
     })
     .catch(function(err) {
       console.error(err);
@@ -109,16 +103,12 @@ router.get('/:id/followers', function(req, res) {
 });
 
 router.get('/:id/following', function(req, res) {
-  Channel.getFollowings(req.user, req.params.id)
+  db.channels.getFollowings(req.user, req.params.id)
     .then(function(followings) {
       if (!followings) {
         return res.sendStatus(404);
       }
-      return res.json(followings.map(function(following) {
-        var res = following.get({ plain: true });
-        delete res.ChannelFollowers;
-        return res;
-      }));
+      return res.json(followings);
     })
     .catch(function(err) {
       console.error(err);
@@ -129,7 +119,7 @@ router.get('/:id/following', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  Channel.editChannel(req.user, req.params.id, req.body)
+  db.channels.editChannel(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
         return res.json({});
@@ -168,7 +158,7 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
       res.json({});
     })
     .catch(function(err) {
-      Channel.deleteChannelAdmin(req.params.id);
+      db.channels.deleteChannelAdmin(req.params.id);
       console.error(err);
       res.status(500).json({
         error: 'Failed to upload channel images',
@@ -177,9 +167,9 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
 });
 
 router.post('/', channelImagesUpload, function(req, res) {
-  Channel.createChannel(req.body)
+  db.channels.createChannel(req.body)
     .then(function(result) {
-      return res.json({ id: result.get('id') });
+      return res.json(result);
     })
     .catch(function (err) {
       console.error(err);
@@ -200,7 +190,7 @@ router.get('/:id/videos/:sort', function(req, res) {
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
-  Channel.getChannelVideos(req.user, req.params.id, limit, offset, sort)
+  db.channels.getChannelVideos(req.user, req.params.id, limit, offset, sort)
     .then(function(result) {
       return res.json(result);
     })

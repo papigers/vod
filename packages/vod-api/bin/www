@@ -11,10 +11,6 @@ var models = require('../models');
 var debug = require('debug')('vod:api');
 var http = require('http');
 
-if (!models.sequelize) {
-  process.exit(1);
-}
-
 /**
  * Get port from environment and store in Express.
  */
@@ -32,26 +28,7 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-models.sequelize.sync({ force: false })
-  .then(function() {
-    return models.Channel.findById(config.admin.id);
-  })
-  .then(function(admin) {
-    if (!admin) {
-      models.Channel.create({
-        id: config.admin.id,
-        type: config.admin.type,
-        isAdmin: config.admin.isAdmin,
-        access: config.admin.access,
-        type: config.admin.type,
-        personal: config.admin.personal,
-        // picture: config.admin.picture,
-        // cover: config.admin.cover,
-        name: config.admin.name,
-        description: config.admin.description,
-      });
-    }
-  })
+models.knex.migrate.latest()
   .then(function() {
     server.listen(port);
     server.on('error', onError);
@@ -61,7 +38,7 @@ models.sequelize.sync({ force: false })
     throw e;
   });
 
-/**
+/**rs
  * Normalize a port into a number, string, or false.
  */
 
