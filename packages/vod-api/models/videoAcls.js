@@ -18,7 +18,8 @@ module.exports = function() {
       notNullable: true,
     },
     videoId: {
-      type: 'string',
+      type: 'char',
+      length: 12,
       primaryKey: true,
       notNullable: true,
       references: {

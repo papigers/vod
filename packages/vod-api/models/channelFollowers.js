@@ -9,6 +9,7 @@ module.exports = function() {
   channelFollowers.attributes = {
     followerId: {
       type: 'string',
+      primaryKey: true,
       references: {
         column: 'id',
         table: 'channels',
@@ -18,6 +19,7 @@ module.exports = function() {
     },
     followeeId: {
       type: 'string',
+      primaryKey: true,
       references: {
         column: 'id',
         table: 'channels',
@@ -26,9 +28,6 @@ module.exports = function() {
       },
     },
   };
-  channelFollowers.indices = [
-    { type: 'primary', attributes: ['followerId', 'followeeId'] },
-  ];
   channelFollowers.createdAt = true;
   channelFollowers.updatedAt = true;
 

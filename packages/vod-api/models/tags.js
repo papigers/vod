@@ -25,7 +25,7 @@ module.exports = function() {
     },
   };
   tags.indices = [
-    { type: 'unique', attributes: ['tag', 'taggable', 'itemId']},
+    { type: 'unique', columns: ['tag', 'taggable', 'itemId']},
   ];
   tags.createdAt = true;
   tags.updatedAt = true;

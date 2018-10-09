@@ -29,9 +29,6 @@ module.exports = function() {
       },
     },
   };
-  videoLikes.indices = [
-    { type: 'primary', attributes: ['channelId', 'videoId'] },
-  ];
   videoLikes.createdAt = true;
   videoLikes.updatedAt = true;
 

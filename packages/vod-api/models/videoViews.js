@@ -29,7 +29,7 @@ module.exports = function() {
     },
   };
   videoViews.indices = [
-    { type: 'primary', attributes: ['createdAt'] },
+    { type: 'primary', columns: ['createdAt'] },
   ];
   videoViews.createdAt = true;
   videoViews.updatedAt = false;

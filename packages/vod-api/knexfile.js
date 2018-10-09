@@ -11,5 +11,5 @@ module.exports = {
   pool: config.config.pool,
   migrations: {
     tableName: 'knex_migrations'
-  }
+  },
 };

@@ -1,6 +1,6 @@
 var express = require('express');
 var qs = require('querystring');
-var Video = require('../../models').Video;
+var db = require('../../models');
 var router = express.Router();
 
 // default redirect to random
@@ -14,15 +14,9 @@ router.get('/:sort', function(req, res) {
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
-  Video.getVideos(req.user, limit, offset, sort)
+  db.videos.getVideos(req.user, limit, offset, sort)
     .then(function(videos) {
-      res.json(videos.map(function([video, channel, viewCount]) {
-        var res = video.get({ plain: true });
-        delete res.channelId;
-        res.channel = channel;
-        res.viewCount = viewCount;
-        return res;
-      }));
+      res.json(videos);
     })
     .catch(function(err) {
       console.error(err);
@@ -39,14 +33,12 @@ router.get('/:sort', function(req, res) {
  * channel: 
  */
 router.post('/', function(req, res, next) {
-  Video.initialCreate(req.user, {
+  db.videos.initialCreate(req.user, {
     creator: req.user && req.user.id,
     channel: req.body.channel,
     name: req.body.name,
   }).then(function(video) {
-    res.json({
-      id: video.get('id'),
-    });
+    res.json(video.id);
   }).catch(function(err) {
     console.error(err);
     res.status(500).json({
@@ -56,17 +48,10 @@ router.post('/', function(req, res, next) {
 });
 
 router.get('/video/:id', function(req, res) {
-  Video.getVideo(req.user, req.params.id)
-    .then(function([video, channel, viewCount, likeCount, like, follow]) {
+  db.videos.getVideo(req.user, req.params.id)
+    .then(function(video) {
       if (video) {
-        var result = video.get({ plain: true });
-        delete result.channelId;
-        result.channel = channel.get({ plain: true });
-        result.viewCount = viewCount;
-        result.likeCount = likeCount;
-        result.userLikes = like;
-        result.channel.userFollows = follow;
-        return res.json(result);
+        return res.json(video);
       }
       return res.status(404).json({
         error: 'No such video',
@@ -81,7 +66,7 @@ router.get('/video/:id', function(req, res) {
 });
 
 router.put('/video/:id/view', function(req, res) {
-  Video.viewVideo(req.user, req.params.id)
+  db.videos.viewVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -94,7 +79,7 @@ router.put('/video/:id/view', function(req, res) {
 });
 
 router.put('/video/:id/like', function(req, res) {
-  Video.likeVideo(req.user, req.params.id)
+  db.videos.likeVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -107,7 +92,7 @@ router.put('/video/:id/like', function(req, res) {
 });
 
 router.put('/video/:id/dislike', function(req, res) {
-  Video.dislikeVideo(req.user, req.params.id)
+  db.videos.dislikeVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -120,29 +105,28 @@ router.put('/video/:id/dislike', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  Video.edit(req.user, req.params.id, req.body)
+  db.videos.edit(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
-        return res.json(result.get({ plain: true }));
+        return res.sendStatus(200);
       }
       return res.status(404).json({
         error: 'No such video',
       });
     })
     .catch(function (err) {
-      console.error(err);
-      res.status(500).json({
-        error: 'Video edit failed',
+      res.status(err.code).json({
+        error: err.message || 'Video edit failed',
       });
     });
 });
 
 // finish video creation with all data.
 router.put('/publish/:id', function(req, res, next) {
-  Video.publish(req.user, req.params.id, req.body)
+  db.videos.publish(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
-        return res.json(result);
+        return res.sendStatus(200);
       }
       return res.status(404).json({
         error: 'No such video',
@@ -157,7 +141,7 @@ router.put('/publish/:id', function(req, res, next) {
 });
 
 router.delete('/:id', function(req, res) {
-  Video.delete(req.user, req.params.id)
+  db.videos.delete(req.user, req.params.id)
     .then(function(deleted) {
       if (deleted) {
         return res.json({});
@@ -173,20 +157,9 @@ router.delete('/:id', function(req, res) {
 router.get('/:videoId/comments', function(req, res, next) {
   var page = req.query.page || 0;
   var before = req.query.before ? new Date(req.query.before) : new Date();
-  Video.getComments(req.user, req.params.videoId, { page, before })
+  db.comments.getComments(req.user, req.params.videoId, { page, before })
     .then(function(comments) {
-      res.json(comments.map(function(comment) {
-        return {
-          comment: comment['Comment.comment'],
-          id: comment['Comment.id'],
-          createdAt: comment['Comment.createdAt'],
-          updatedAt: comment['Comment.updatedAt'],
-          channel: {
-            id: comment.id,
-            name: comment.name,
-          },
-        };
-      }));
+      res.json(comments);
     })
     .catch(function(err) {
       console.error(err);
@@ -195,7 +168,7 @@ router.get('/:videoId/comments', function(req, res, next) {
 });
 
 router.post('/:videoId/comments', function(req, res, next) {
-  Video.postComment(req.user, req.params.videoId, req.body.comment)
+  db.comments.postComment(req.user, req.params.videoId, req.body.comment)
     .then(function() {
       res.sendStatus(200);
     })

@@ -18,7 +18,7 @@ module.exports = function(db) {
       notNullable: true,
     },
     privacy: {
-      type: enu,
+      type: 'enu',
       values: ['PUBLIC', 'PRIVATE'],
       default: 'PUBLIC',
       notNullable: true,
@@ -57,8 +57,9 @@ module.exports = function(db) {
       });
   };
 
-  channels.authorizedManageSubquery = function(queryBuilder, user, options) {
-    return queryBuilder.whereIn('id', function() {
+  channels.authorizedManageSubquery = function(queryBuilder, user, options = {}) {
+    var tableName = options.table || channels.table;
+    return queryBuilder.whereIn(`${tableName}.id`, function() {
       this.select(`${channels.table}.id`).from(channels.table).modify(channels.authorizedManage, user, options);
     });
   }
@@ -67,7 +68,7 @@ module.exports = function(db) {
     var userId = user && user.id;
     var groups = user && user.groups || [];
     var tableName = options.table || channels.table;
-    var aclName = options.table ? `${db.channelAcls.table}_${options.table}` : 'db.channelAcls.table';
+    var aclName = options.table ? `${db.channelAcls.table}_${options.table}` : db.channelAcls.table;
 
     return queryBuilder.leftJoin(`${db.channelAcls.table} as ${aclName}`, `${tableName}.id`, `${aclName}.channelId`)
       .where(function() {
@@ -89,38 +90,48 @@ module.exports = function(db) {
       });
   };
 
-  channels.authorizedViewSubquery = function(queryBuilder, user, options) {
-    return queryBuilder.whereIn('id', function() {
+  channels.authorizedViewSubquery = function(queryBuilder, user, options = {}) {
+    var tableName = options.table || channels.table;
+    return queryBuilder.whereIn(`${tableName}.id`, function() {
       this.select(`${channels.table}.id`).from(channels.table).modify(channels.authorizedView, user, options);
     });
   }
 
   channels.getManagedChannels = function(user) {
-    return db.knex.select('id', 'name').from(channels.table).modify(channels.authorizedManage, user);
+    return db.knex.select(`${channels.table}.id`, `${channels.table}.name`).from(channels.table).modify(channels.authorizedManageSubquery, user);
   };
 
   channels.getChannelVideos = function(user, channelId, limit, offset, sort) {
-    return db.knex.table(channels.table).innerJoin(db.videos.table, `${channels.table}.id`, `${db.videos.table}.channelId`)
-      .select(`${db.videos.table}.id`, `${db.videos.table}.createdAt`, `${db.videos.table}.name`, `${db.videos.table}.description`)
-      .select(knex.raw('COUNT(??) as ??', [`${db.videoViewss.table}.channelId`, 'views']))
+    return db.knexnest(
+      db.knex.table(channels.table).innerJoin(db.videos.table, `${channels.table}.id`, `${db.videos.table}.channelId`)
+      .select(`${db.videos.table}.id as _id`, `${db.videos.table}.createdAt as _createdAt`, `${db.videos.table}.name as _name`, `${db.videos.table}.description as _description`, `${channels.table}.id as _channel_id`, `${channels.table}.name as _channel_name`)
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewCount']))
       .where(`${channels.table}.id`, channelId)
       .limit(limit)
       .offset(offset)
       .leftJoin(`${db.videoViews.table}`, `${db.videos.table}.id`, `${db.videoViews.table}.videoId`)
-      .groupBy(`${db.videos.table}.id`)
+      .groupBy(`${db.videos.table}.id`, `${channels.table}.id`)
       .modify(db.videos.order, sort)
-      .modify(channels.authorizedView, user)
-      .modify(db.videos.authorizedView, user);
+      .modify(channels.authorizedViewSubquery, user)
+      .modify(db.videos.authorizedViewSubquery, user),
+      true
+    );
   };
 
   channels.getChannel = function(user, id) {
-    return db.knex.select('id', 'personal', 'name', 'description').from(channels.table)
-      .select(knex.raw('EXISTS(?) as ??', [
+    return db.knexnest(
+      db.knex.select(`${channels.table}.id`, `${channels.table}.personal`, `${channels.table}.name`, `${channels.table}.description`).from(channels.table)
+      .select(db.knex.raw('EXISTS(?) as ??', [
         db.knex.table(db.channelFollowers.table).select(1).where('followerId', user && user.id).andWhere('followeeId', id).limit(1),
         'isFollowing',
       ]))
-      .where('id', id)
-      .modify(channels.authorizedView, user)
+      .select(db.knex.raw('EXISTS(?) as ??', [
+        db.knex.table(channels.table).select(1).where('id', id).modify(channels.authorizedManageSubquery, user).limit(1),
+        'canManage',
+      ]))
+      .where(`${channels.table}.id`, id)
+      .modify(channels.authorizedViewSubquery, user)
+    );
   }
 
   channels.deleteChannel = function(user, channelId) {
@@ -134,7 +145,7 @@ module.exports = function(db) {
   channels.followChannel = function(user, id) {
     return db.knex(db.knex.raw('?? (??, ??)', [`${db.channelFollowers.table}`, 'followerId', 'followeeId'])).insert(
       db.knex.select(db.knex.raw('?, ?', [user && user.id, id])).from(channels.table)
-        .where(`${channels.table}.id`, id).modify(channels.authorizedView, user)
+        .where(`${channels.table}.id`, id).modify(channels.authorizedViewSubquery, user)
     );
   };
 
@@ -147,36 +158,25 @@ module.exports = function(db) {
 
   channels.getFollowers = function(user, id) {
     return db.knex.select('c2.id', 'c2.name', 'c2.description').from(`${channels.table} as c1`)
-      .leftJoin(`${channelFollowers.table}`, `${channelFollowers.table}.followeeId`, 'c1.id')
-      .leftJoin(`${channels.table} as c2`, `${channelFollowers.table}.followerId`, 'c2.id')
+      .leftJoin(`${db.channelFollowers.table}`, `${db.channelFollowers.table}.followeeId`, 'c1.id')
+      .leftJoin(`${channels.table} as c2`, `${db.channelFollowers.table}.followerId`, 'c2.id')
       .where('c1.id', id)
-      .modify(channels.authorizedView, user, { table: 'c1' })
-      .modify(channels.authorizedView, user, { table: 'c2' });
+      .modify(channels.authorizedViewSubquery, user, { table: 'c1' })
+      .modify(channels.authorizedViewSubquery, user, { table: 'c2' });
   };
 
   channels.getFollowings = function(user, id) {
     return db.knex.select('c2.id', 'c2.name', 'c2.description').from(`${channels.table} as c1`)
-      .leftJoin(`${channelFollowers.table}`, `${channelFollowers.table}.followerId`, 'c1.id')
-      .leftJoin(`${channels.table} as c2`, `${channelFollowers.table}.followeeId`, 'c2.id')
+      .leftJoin(`${db.channelFollowers.table}`, `${db.channelFollowers.table}.followerId`, 'c1.id')
+      .leftJoin(`${channels.table} as c2`, `${db.channelFollowers.table}.followeeId`, 'c2.id')
       .where('c1.id', id)
-      .modify(channels.authorizedView, user, { table: 'c1' })
-      .modify(channels.authorizedView, user, { table: 'c2' });
+      .modify(channels.authorizedViewSubquery, user, { table: 'c1' })
+      .modify(channels.authorizedViewSubquery, user, { table: 'c2' });
   };
 
   channels.editChannel = function(user, id, channel) {
     return db.knex.transaction(function(trx) {
-      return trx(channels.table)
-        .update({
-          name: channel.name,
-          description: channel.description,
-          privacy: channel.privacy,
-          personal: channel.personal,
-        })
-        .where('id', id)
-        .modify(channels.authorizedManageSubquery, user)
-        .then(function() {
-          return trx(db.channelAcls.table).where('channelId', id).del();
-        })
+      return trx(db.channelAcls.table).where('channelId', id).del()
         .then(function() {
           var acls = formatChannelACL(channel);
           return Promise.all(acls.map(function(acl) {
@@ -187,8 +187,18 @@ module.exports = function(db) {
               type: acl.type,
             });
           }));
+        })
+        .then(function() {
+          return trx(channels.table)
+            .update({
+              name: channel.name,
+              description: channel.description,
+              privacy: channel.privacy,
+            })
+            .where('id', id)
+            .modify(channels.authorizedManageSubquery, user)
         });
-    });
+    }).debug();
   }
 
   channels.createChannel = function(channel) {
@@ -201,7 +211,7 @@ module.exports = function(db) {
           privacy: channel.privacy,
           personal: channel.personal,
         })
-        .then(function() {
+        .then(function(created) {
           var acls = formatChannelACL(channel);
           return Promise.all(acls.map(function(acl) {
             return trx(db.channelAcls.table).insert({
@@ -210,13 +220,17 @@ module.exports = function(db) {
               access: acl.access,
               type: acl.type,
             });
-          }));
+          })).then(function() {
+            return created;
+          });
         });
     });
   };
 
   channels.checkAuth = function(channelId, user) {
-    return db.knex(channels.table).count('*').where('id', channelId).modify(channels.authorizedView, user);
+    return db.knexnest(
+      db.knex(channels.table).count('*').where(`${channels.table}.id`, channelId).modify(channels.authorizedViewSubquery, user)
+    );
   }
 
   channels.userLogin = function(user) {
@@ -239,11 +253,11 @@ module.exports = function(db) {
   }
 
   function formatChannelACL(channel) {
-    var channelACL = channel.privacy === 'PUBLIC' ? [] : channel.viewACL.map(function(acl) {
+    var channelACL = channel.privacy === 'PUBLIC' ? [] : (channel.viewACL || []).map(function(acl) {
       acl.access = 'VIEW';
       return acl;
     });
-    channel.manageACL.forEach(function(acl) {
+    (channel.manageACL || []).forEach(function(acl) {
       var index = channelACL.findIndex(function(cAcl) {
         return cAcl.id === acl.id && cAcl.type === acl.type;
       });

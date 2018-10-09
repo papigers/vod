@@ -18,6 +18,7 @@ knex.raw("SELECT 'test connection';").then(function(message) {
 debug('Exporting models...');
 
 try {
+  var models = {};
   fs.readdirSync(__dirname)
     .filter(function(file) {
       return (file.indexOf(".") !== 0) && (file !== "index.js");
@@ -25,8 +26,10 @@ try {
     .forEach(function(file) {
       var model = require(path.join(__dirname, file))(db);
       db[model.table] = model;
+      models[model.table] = model;
     });
 
+  db.models = models;
   db.knex = knex;
   db.knexnest = knexnest;
 }
