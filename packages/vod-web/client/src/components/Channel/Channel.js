@@ -59,24 +59,16 @@ export default class Channel extends Component {
       loading: true,
       followDelta: 0,
       activeTab: 'home',
-      authorized: false,
     };
   }
 
   componentDidMount() {
     this.fetchUploads();
-    this.setState({
-      authorized: this.props.authorized,
-    });
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.channel && (this.props.channel.id !== (prevProps.channel && prevProps.channel.id))) {
       this.fetchUploads();
-      this.setState({
-        authorized: this.props.authorized,
-        activeTab: 'home',
-      });
     }
   }
 
@@ -110,7 +102,7 @@ export default class Channel extends Component {
   }
 
   renderTab() {
-    const { loading, user } = this.props;
+    const { loading, channel, user } = this.props;
     const { loading: loadingVideos, activeTab , uploads} = this.state;
     
     switch (activeTab) {
@@ -119,7 +111,6 @@ export default class Channel extends Component {
           <VideoList category="העלאות" loading={loading || loadingVideos} videos={uploads} />
         );
       case 'videos':
-      console.log(this.props.channel);
         return (
           <span>videos</span>
         );
@@ -132,9 +123,8 @@ export default class Channel extends Component {
           <span>search</span>
         );
       case 'settings':
-      console.log(user);
         return (
-          <ChannelSettings user={user} />
+          <ChannelSettings user={user} channel={channel} />
         );
       default:
           return (
@@ -145,7 +135,7 @@ export default class Channel extends Component {
 
   render() {
     const { channel, user  } = this.props;
-    const { followDelta , authorized} = this.state;
+    const { followDelta } = this.state;
     
     let userFollows = false;
     if (channel) {
@@ -228,7 +218,7 @@ export default class Channel extends Component {
             <PivotItem linkText="סרטונים" itemKey='videos' />
             <PivotItem linkText="פלייליסטים" itemKey='playlists' />
             <PivotItem itemIcon="Search" itemKey="search" />
-            {authorized ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div/>}
+            {channel && channel.canManage ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div/>}
           </ChannelPivot>
         </TitleBox>
         <ContentBox>

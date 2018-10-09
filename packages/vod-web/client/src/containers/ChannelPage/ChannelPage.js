@@ -17,7 +17,6 @@ class ChannelPage extends Component {
       channel: null,
       loading: true,
       error: null,
-      authorized: false,
     };
   }
 
@@ -44,13 +43,11 @@ class ChannelPage extends Component {
 
   componentDidMount() {
     this.fetchChannel();
-    this.fetchEditAuthorization();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.channelId !== prevState.channelId) {
       this.fetchChannel();
-      this.fetchEditAuthorization();
     }
   }
 
@@ -69,25 +66,14 @@ class ChannelPage extends Component {
       });
   }
 
-  fetchEditAuthorization() {
-    axios.get(`/private/authz/manage-channel/${this.state.channelId}`)
-      .then(({ data }) => {
-        this.setState({
-          authorized: data.authorized,
-        });
-      })
-      .catch(console.error);
-  }
-
   render() {
     const {
       channel,
       loading,
-      authorized,
     } = this.state;
 
     return (
-      <Channel {...this.props} channel={channel} loading={loading} authorized={authorized}/>
+      <Channel {...this.props} channel={channel} loading={loading} />
     );
   }
 }

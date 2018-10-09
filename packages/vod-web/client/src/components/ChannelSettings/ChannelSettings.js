@@ -35,19 +35,7 @@ const InputButton = styled(DefaultButton)`
 `;
 
 const Form = styled.form`
-  margin-bottom: 40px;
-
-  .ms-BasePicker {
-    max-width: 350px;
-  }
-
-  .ms-TextField {
-    width: 250px;
-
-    &.ms-TextField--multiline {
-      min-width: 350px;
-    }
-  }
+  margin: 1em 17em;
 `;
 
 const DropdownOption = styled.div`
@@ -80,14 +68,20 @@ const ErrorMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
+const successMsg = styled(Box)`
+  color: #008000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
+
 class ChannelSettings extends Component{
     
     constructor(props) {
         super();
         this.state = {
-          name: '',
-          channel : null,
           id: '',
+          name: '',
           description: '',
           privacy: 'public',
           viewACL: [],
@@ -95,9 +89,45 @@ class ChannelSettings extends Component{
           profile: null,
           cover: null,
           error: null,
+          done: null,
         };
       }
       
+      static getDerivedStateFromProps(props, state, reset = false) {
+        const propsId = props.channel.id
+        if (reset || !state.id || (state.id !== propsId)) {
+          const tempACL = {
+            id: "s7591665",
+            name: "גרשון ח פפיאשוילי",
+            profile: "/images/user.svg",
+            type: "USER"
+          };
+          return {
+            id: propsId,
+            name: props.channel.name,
+            description: props.channel.description,
+            privacy: 'public',
+            viewACL: [],
+            manageACL: [tempACL],
+            profile: {
+              preview: `/profile/${propsId}/profile.png`,
+              file: null,
+            },
+            cover: {
+              preview: `/profile/${propsId}/cover.png`,
+              file: null,
+            },
+            loading: true,
+            error: null,
+          };
+        } 
+        return null;
+      }
+
+      resetForm = () => {
+        this.setState(ChannelSettings.getDerivedStateFromProps(this.props, this.state, true));
+      }
+
       onRenderPrivacyOption = (item) => {
         const option = item[0] || item;
         
@@ -141,13 +171,12 @@ class ChannelSettings extends Component{
         }).filter(acl => !!acl);
       }
     
-      onChangeName = ({ target }) => this.setState({ name: target.value });
-      onChangeId = ({ target }) => this.setState({ id: target.value });
-      onChangeDescription = ({ target }) => this.setState({ description: target.value });
-      onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
+      onChangeName = ({ target }) => this.setState({name: target.value});
+      onChangeDescription = ({ target }) => this.setState({description: target.value});
+      onChangePrivacy = (e, { key: privacy }) => {this.setState({ privacy })};
       onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
       onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
-      onChangeViewACL = (acls) => this.setState({ viewACL: this.formatACL(acls) });
+      onChangeViewACL = (acls) => this.setState({viewACL: this.formatACL(acls)});
       onChangeManageACL = (acls) => this.setState({ manageACL: this.formatACL(acls) });
     
       setError(error) {
@@ -187,44 +216,45 @@ class ChannelSettings extends Component{
       onSubmit = () => {
         this.setError(null);
         if (this.validate()) {
+          const user = this.props.user;
           const {
-            name,
             id,
+            name,
+            description,
+            privacy,
+            viewACL,
+            manageACL,
             profile,
             cover,
-            privacy,
-            description,
-            viewACL,
-            manageACL
           } = this.state;
-    
+
+          const channel = {
+            id: {id},
+            name: {name},
+            description: {description},
+            privacy: {privacy},
+            viewACL: {viewACL},
+            manageACL: {manageACL}
+          };
+          
           const data = new FormData();
-          if (profile && profile.file) {
+          if (channel.profile && channel.profile.file) {
             data.append('profile', profile.file);
           }
-          if (cover && cover.file) {
+          if (channel.cover && channel.cover.file) {
             data.append('cover', cover.file);
           }
-          axios.post('/channels', {
+          axios.post(`/channels/${id}`, {
+            user,
             id,
-            name,
-            description,
-            viewACL,
-            manageACL: manageACL.concat(this.getCurrentUser()),
-            privacy,
+            channel,
           }).then(response => {
             return axios.post(`channels/images/${response.data.id}`, data, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
-          })
-          .then(() => {
-            this.props.onDismiss();
-            if (this.props.onSubmit) {
-              this.props.onSubmit();
-            }
-            this.props.history.push(`/channel/${id}`);
+          }).then( () => {
+            this.setState({done: 'הערוץ התעדכן בהצלחה'});
           }).catch(error => {
-            console.error(error);
             this.setError('עלתה שגיאה ביצירת הערוץ');
           });
         }
@@ -242,17 +272,15 @@ class ChannelSettings extends Component{
       render(){
         const {
           name,
-          id,
-          profile,
-          cover,
-          privacy,
           description,
-          error,
+          privacy,
           viewACL,
           manageACL,
+          profile,
+          cover,
+          error,
+          done,
         } = this.state;
-    
-        const currentUser = this.getCurrentUser();
     
         return(
           <Form onSubmit={this.onSubmit}>
@@ -261,14 +289,11 @@ class ChannelSettings extends Component{
                 {error}
               </ErrorMsg>
             )}
-            <TextField
-              label="מזהה הערוץ"
-              required
-              placeholder='לדוגמה: tikshuv'
-              value={id}
-              onChange = {this.onChangeId}
-              disabled = {true}
-            />
+            {done && (
+              <successMsg width={1}>
+                {done}
+              </successMsg>
+            )}
             <TextField
               label="שם הערוץ"
               required
@@ -297,11 +322,11 @@ class ChannelSettings extends Component{
                 onChange={this.onChangeViewACL}
                 selectedItems={viewACL}
               />
-            ) :  null}
+            ) :  null }
             <PeoplePicker
               label="הרשאות ניהול"
               onChange={this.onChangeManageACL}
-              selectedItems={manageACL.concat([currentUser])}
+              selectedItems={manageACL.concat(this.getCurrentUser())}
             />
             <TextField
               label="תיאור"
@@ -319,7 +344,7 @@ class ChannelSettings extends Component{
                   <input type="file" accept="image/*" onChange={this.onChangeProfile} />
                 </InputButton>
               </Box>
-              <Persona size={PersonaSize.size48} imageUrl={(profile && profile.preview) || '/images/user.svg'} />
+              <Persona size={PersonaSize.size100} imageUrl={(profile && profile.preview) || '/images/user.svg'} />
             </Flex>
     
             <Label>בחר תמונת נושא:</Label>
@@ -337,7 +362,7 @@ class ChannelSettings extends Component{
               <Flex>
                 <PrimaryButton text="שמור" onClick={this.onSubmit} />
                 <Box mx={3} />
-                <DefaultButton text="ביטול" onClick={this.props.onDismiss} />
+                <DefaultButton text="אפס" onClick={this.resetForm} />
               </Flex>
             </Buttons>
           </Form>
