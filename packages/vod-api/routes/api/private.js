@@ -1,12 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var auth = require('vod-auth');
-var Channel = require('../../models').Channel;
-var Video = require('../../models').Video;
+var db = require('../../models');
 
 router.post('/user-login', function(req, res) {
   var user = req.body;
-  Channel.userLogin(user)
+  db.channels.userLogin(user)
     .spread(function(user) {
       res.json(user);
     })
@@ -18,8 +17,8 @@ router.post('/user-login', function(req, res) {
 
 router.get('/authz/view-channel/:channelId', auth, function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
-  Channel.checkAuth(req.params.channelId, req.user)
-    .then(function(count) {
+  db.channels.checkAuth(req.params.channelId, req.user)
+    .then(function({ count }) {
       res.json({
         authorized: count > 0,
       });
@@ -34,8 +33,8 @@ router.get('/authz/view-channel/:channelId', auth, function(req, res) {
 
 router.get('/authz/view-video/:videoId', auth, function(req, res) {
   res.setHeader('cache-control', 'public, max-age=86400');
-  Video.checkAuth(req.params.videoId, req.user)
-    .then(function(count) {
+  db.videos.checkAuth(req.params.videoId, req.user)
+    .then(function({ count }) {
       res.json({
         authorized: count > 0,
       });

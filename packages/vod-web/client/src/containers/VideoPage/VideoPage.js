@@ -342,7 +342,7 @@ class VideoPage extends Component {
                         <TagsContainer>
                           <Label><Icon iconName="Tag" /> תגיות:</Label>
                           <Flex>
-                            {video && video.tags.map(tag => <VideoTag>{tag.id}</VideoTag>)}
+                            {video && video.tags.map(tag => <VideoTag>{tag.tag}</VideoTag>)}
                           </Flex>
                         </TagsContainer>
                       </Shimmer>
