@@ -122,6 +122,7 @@ router.get('/:id/following', function(req, res) {
 router.put('/:id', function(req, res) {
   db.channels.editChannel(req.user, req.params.id, req.body.channel)
     .then(function(result) {
+      console.log(result);
       if (!!result) {
         return res.json({});
       }
