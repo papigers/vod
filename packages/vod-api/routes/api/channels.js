@@ -5,6 +5,7 @@ var path = require('path');
 var express = require('express');
 var multer = require('multer');
 var db = require('../../models');
+var adFilter = require('../ldap').adFilter;
 var router = express.Router();
 
 var OSClient = require('vod-object-storage-client').S3Client();
@@ -119,8 +120,9 @@ router.get('/:id/following', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  db.channels.editChannel(req.user, req.params.id, req.body)
+  db.channels.editChannel(req.user, req.params.id, req.body.channel)
     .then(function(result) {
+      console.log(result);
       if (!!result) {
         return res.json({});
       }
@@ -201,5 +203,49 @@ router.get('/:id/videos/:sort', function(req, res) {
       });
     });
 });
+
+router.get('/:channelId/permissions', function(req, res) {
+  db.channelAcls.getChannelAcls(req.params.channelId, req.user)
+    .then(function(permissions) {
+      var viewACL =[];
+      var manageACL =[];
+      return Promise.all(permissions.map(function(perm) {
+        return adFilter(perm.id, perm.type === 'USER' ? 'user' : 'group')
+        .then(function([adObject]) {
+          if (adObject) {
+            var obj = {
+              id: adObject.sAMAccountName || adObject.dn,
+              name: adObject.displayName || adObject.cn,
+              type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
+              profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
+            }
+            switch(perm.access) {
+              case 'VIEW':
+                viewACL.push(obj);
+                break;
+              case 'MANAGE':
+                manageACL.push(obj);
+                break;
+            }
+          }
+          return Promise.resolve();
+        });
+      })).then(function() {
+        res.json({
+          viewACL,
+          manageACL,
+        });
+      })
+    })
+    .catch(function(err) {
+      console.error(err);
+      var viewACL =[];
+      var manageACL =[];
+      res.json({
+        viewACL,
+        manageACL,
+      });
+    });
+  });
 
 module.exports = router;

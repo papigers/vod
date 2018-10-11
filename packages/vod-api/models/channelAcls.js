@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var channelAcls = function ChannelACL() {
     if (!(this instanceof ChannelACL)) {
       return new ChannelACL();
@@ -37,5 +37,13 @@ module.exports = function() {
   channelAcls.createdAt = true;
   channelAcls.updatedAt = true;
 
+  channelAcls.getChannelAcls = function(channelId, user) {
+    return db.knex
+      .select(`${channelAcls.table}.id`, `${channelAcls.table}.type`, `${channelAcls.table}.access`)
+      .from(channelAcls.table)
+      .leftJoin(db.channels.table, `${channelAcls.table}.channelId`, `${db.channels.table}.id`)
+      .where(`${channelAcls.table}.channelId`, channelId)
+      .modify(db.channels.authorizedManageSubquery, user);
+  }  
   return channelAcls;
 };

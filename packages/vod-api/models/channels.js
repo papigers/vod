@@ -188,7 +188,7 @@ module.exports = function(db) {
             });
           }));
         })
-        .then(function() {
+        .then(function() {          
           return trx(channels.table)
             .update({
               name: channel.name,
@@ -198,7 +198,7 @@ module.exports = function(db) {
             .where('id', id)
             .modify(channels.authorizedManageSubquery, user)
         });
-    }).debug();
+    });
   }
 
   channels.createChannel = function(channel) {
@@ -247,7 +247,7 @@ module.exports = function(db) {
               return trx.select('id', 'name', 'description', 'personal').from(channels.table).where('id', user.id);
             });
           }
-          return res[0];
+          return res;
         });
     });
   }

@@ -83,7 +83,7 @@ class ChannelSettings extends Component{
           id: '',
           name: '',
           description: '',
-          privacy: 'public',
+          privacy: 'PUBLIC',
           viewACL: [],
           manageACL: [],
           profile: null,
@@ -93,22 +93,29 @@ class ChannelSettings extends Component{
         };
       }
       
+      componentDidMount() {
+        this.fetchACL();
+      }
+
+      componentDidUpdate(prevProps, prevState) {
+        if (this.state.id !== prevState.id) {
+          this.fetchACL();
+        }
+      }
+
       static getDerivedStateFromProps(props, state, reset = false) {
         const propsId = props.channel.id
         if (reset || !state.id || (state.id !== propsId)) {
-          const tempACL = {
-            id: "s7591665",
-            name: "גרשון ח פפיאשוילי",
-            profile: "/images/user.svg",
-            type: "USER"
-          };
+          // const tempACL = {
+          //   id: "s7591665",
+          //   name: "גרשון ח פפיאשוילי",
+          //   profile: "/images/user.svg",
+          //   type: "USER"
+          // };
           return {
             id: propsId,
             name: props.channel.name,
             description: props.channel.description,
-            privacy: 'public',
-            viewACL: [],
-            manageACL: [tempACL],
             profile: {
               preview: `/profile/${propsId}/profile.png`,
               file: null,
@@ -126,6 +133,7 @@ class ChannelSettings extends Component{
 
       resetForm = () => {
         this.setState(ChannelSettings.getDerivedStateFromProps(this.props, this.state, true));
+        this.fetchACL();
       }
 
       onRenderPrivacyOption = (item) => {
@@ -156,12 +164,24 @@ class ChannelSettings extends Component{
           reader.readAsDataURL(input.files[0]);
         }
       }
+
+      fetchACL = () => {
+        axios.get(`channels/${this.state.id}/permissions`)
+          .then(({ data }) => {
+            this.setState({
+              viewACL: data.viewACL,
+              privacy: data.viewACL.length ? 'PRIVATE' : 'PUBLIC',
+              manageACL: data.manageACL,
+            });
+
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     
       formatACL = (acls) => {
         return acls.map(acl => {
-          if (acl.secondaryText === this.props.user.id) {
-            return null;
-          }
           return {
             id: acl.secondaryText,
             name: acl.text,
@@ -229,14 +249,13 @@ class ChannelSettings extends Component{
           } = this.state;
 
           const channel = {
-            id: {id},
-            name: {name},
-            description: {description},
-            privacy: {privacy},
-            viewACL: {viewACL},
-            manageACL: {manageACL}
+            id,
+            name,
+            description,
+            privacy,
+            viewACL,
+            manageACL,
           };
-          
           const data = new FormData();
           if (channel.profile && channel.profile.file) {
             data.append('profile', profile.file);
@@ -244,11 +263,12 @@ class ChannelSettings extends Component{
           if (channel.cover && channel.cover.file) {
             data.append('cover', cover.file);
           }
-          axios.post(`/channels/${id}`, {
+          axios.put(`/channels/${id}`, {
             user,
             id,
             channel,
           }).then(response => {
+            console.log(`images res = ${response}`);
             return axios.post(`channels/images/${response.data.id}`, data, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
@@ -258,15 +278,6 @@ class ChannelSettings extends Component{
             this.setError('עלתה שגיאה ביצירת הערוץ');
           });
         }
-      }
-    
-      getCurrentUser() {
-        return {
-          id: this.props.user.id,
-          name: this.props.user.name,
-          profile: '/images/user.svg',
-          type: 'USER',
-        };
       }
       
       render(){
@@ -311,12 +322,12 @@ class ChannelSettings extends Component{
                 onRenderOption={this.onRenderPrivacyOption}
                 placeHolder="בחר/י גישה לערוץ"
                 options={[
-                  { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
-                  { key: 'private', text: 'פרטי', data: { icon: 'Contact' } },
+                  { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                  { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
                 ]}
               />
             </DropdownContainer>
-            {privacy !== 'public' ? (
+            {privacy !== 'PUBLIC' ? (
               <PeoplePicker
                 label="הרשאות צפייה"
                 onChange={this.onChangeViewACL}
@@ -326,7 +337,7 @@ class ChannelSettings extends Component{
             <PeoplePicker
               label="הרשאות ניהול"
               onChange={this.onChangeManageACL}
-              selectedItems={manageACL.concat(this.getCurrentUser())}
+              selectedItems={manageACL}
             />
             <TextField
               label="תיאור"
