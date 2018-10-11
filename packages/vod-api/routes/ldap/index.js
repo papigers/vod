@@ -6,7 +6,7 @@ var ad = new ActiveDirectory(config.ad);
 var router = express.Router();
 
 function adFilter(filter, objectClass) {
-  var ldapFilter = !!objectClass ? `(&(objectClass=${objectClass})(anr=${filter}))` : `(anr=${filter})`;
+  var ldapFilter = !!objectClass ? `(&(objectClass=${objectClass})(|(distinguishedName=${filter})(anr=${filter})))` : `(|(distinguishedName=${filter})(anr=${filter}))`;
   return new Promise(function (resolve, reject) {
     ad.find(ldapFilter, function(err, res) {
       if (err) {
@@ -51,3 +51,4 @@ router.post('/search/:type', function(req, res) {
 
 
 module.exports = router;
+module.exports.adFilter = adFilter;
