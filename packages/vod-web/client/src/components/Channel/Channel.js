@@ -100,7 +100,7 @@ export default class Channel extends Component {
     this.setState({ followDelta: this.state.followDelta - 1 });
     this.props.unfollowChannel(this.props.channel.id);
   }
-  
+
   onLinkClick = (item)  => {
     this.setState({ activeTab: item.props.itemKey });
   }
@@ -222,7 +222,7 @@ export default class Channel extends Component {
             <PivotItem linkText="סרטונים" itemKey='videos' />
             <PivotItem linkText="פלייליסטים" itemKey='playlists' />
             <PivotItem itemIcon="Search" itemKey="search" />
-            {channel && channel.canManage ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div/>}
+            {(channel && (channel.canManage || user.id === channel.id)) ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div/>}
           </ChannelPivot>
         </TitleBox>
         <ContentBox>

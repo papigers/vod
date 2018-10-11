@@ -68,7 +68,7 @@ const ErrorMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
-const successMsg = styled(Box)`
+const SuccessMsg = styled(Box)`
   color: #008000;
   text-align: center;
   font-weight: 600;
@@ -86,6 +86,7 @@ class ChannelSettings extends Component{
           privacy: 'PUBLIC',
           viewACL: [],
           manageACL: [],
+          personal: false,
           profile: null,
           cover: null,
           error: null,
@@ -110,6 +111,7 @@ class ChannelSettings extends Component{
             id: propsId,
             name: props.channel.name,
             description: props.channel.description,
+            personal: props.channel.personal,
             profile: {
               preview: `/profile/${propsId}/profile.png`,
               file: null,
@@ -157,6 +159,7 @@ class ChannelSettings extends Component{
            }});
           reader.readAsDataURL(input.files[0]);
         }
+        console.log(input.files[0]);
       }
 
       fetchACL = () => {
@@ -262,14 +265,18 @@ class ChannelSettings extends Component{
             id,
             channel,
           }).then(response => {
-            console.log(response.data);
-            return axios.post(`channels/images/${response.data.id}`, data, {
+            console.log(id);
+            // TO DO : remove old picture
+            return axios.post(`channels/images/${id}`, data, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
           }).then( () => {
-            this.setState({done: 'הערוץ התעדכן בהצלחה'});
+            this.setState({
+              done: 'הערוץ התעדכן בהצלחה'
+            });
           }).catch(error => {
-            this.setError('עלתה שגיאה ביצירת הערוץ');
+            this.setError('עלתה שגיאה בעריכת הערוץ');
+            console.log(error);
           });
         }
       }
@@ -285,6 +292,7 @@ class ChannelSettings extends Component{
           cover,
           error,
           done,
+          personal,
         } = this.state;
     
         return(
@@ -295,17 +303,19 @@ class ChannelSettings extends Component{
               </ErrorMsg>
             )}
             {done && (
-              <successMsg width={1}>
+              <SuccessMsg width={1}>
                 {done}
-              </successMsg>
+              </SuccessMsg>
             )}
-            <TextField
-              label="שם הערוץ"
-              required
-              placeholder='לדוגמה: אג"ף התקשוב'
-              value={name}
-              onChange={this.onChangeName}
-            />
+            {personal === false ? (
+              <TextField
+                label="שם הערוץ"
+                required
+                placeholder='לדוגמה: אג"ף התקשוב'
+                value={name}
+                onChange={this.onChangeName}
+              />
+            ) :  null }
             <DropdownContainer>
               <Dropdown
                 required
@@ -328,11 +338,13 @@ class ChannelSettings extends Component{
                 selectedItems={viewACL}
               />
             ) :  null }
-            <PeoplePicker
-              label="הרשאות ניהול"
-              onChange={this.onChangeManageACL}
-              selectedItems={manageACL}
-            />
+            {personal === false ? (
+              <PeoplePicker
+                label="הרשאות ניהול"
+                onChange={this.onChangeManageACL}
+                selectedItems={manageACL}
+              />
+            ) :  null }
             <TextField
               label="תיאור"
               required
