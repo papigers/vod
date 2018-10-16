@@ -205,6 +205,8 @@ class NewChannelForm extends Component{
       if (cover && cover.file) {
         data.append('cover', cover.file);
       }
+      // Form type
+      data.set("formType", "edit");
       axios.post('/channels', {
         id,
         name,
@@ -213,7 +215,7 @@ class NewChannelForm extends Component{
         manageACL: manageACL.concat(this.getCurrentUser()),
         privacy,
       }).then(response => {
-        return axios.post(`channels/images/${response.data.id}`, data, {
+        return axios.post(`channels/images/${response.data.id}`, data,{
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       })

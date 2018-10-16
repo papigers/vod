@@ -122,7 +122,6 @@ router.get('/:id/following', function(req, res) {
 router.put('/:id', function(req, res) {
   db.channels.editChannel(req.user, req.params.id, req.body.channel)
     .then(function(result) {
-      console.log(result);
       if (!!result) {
         return res.json({});
       }
@@ -148,6 +147,7 @@ var channelImagesUpload = upload.fields([{
 
 router.post('/images/:id', channelImagesUpload, function(req, res) {
   // TO DO check auth
+  console.log(req.body.formType);
   var promises = [];
   if (req.files.profile) {
     promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
@@ -156,11 +156,14 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
     promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
   }
   Promise.all(promises)
-    .then(function() {
+    .then(function(data) {
       res.json({});
     })
     .catch(function(err) {
-      db.channels.deleteChannelAdmin(req.params.id);
+      // Check Form type
+      if (req.body.formType === "create") {
+        db.channels.deleteChannelAdmin(req.params.id);
+      }      
       console.error(err);
       res.status(500).json({
         error: 'Failed to upload channel images',

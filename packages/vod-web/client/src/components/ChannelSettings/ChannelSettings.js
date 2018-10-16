@@ -159,7 +159,6 @@ class ChannelSettings extends Component{
            }});
           reader.readAsDataURL(input.files[0]);
         }
-        console.log(input.files[0]);
       }
 
       fetchACL = () => {
@@ -254,19 +253,21 @@ class ChannelSettings extends Component{
             manageACL,
           };
           const data = new FormData();
-          if (channel.profile && channel.profile.file) {
+          console.log(profile, cover)
+          if (profile && profile.file) {
             data.append('profile', profile.file);
           }
-          if (channel.cover && channel.cover.file) {
+          if (cover && cover.file) {
             data.append('cover', cover.file);
           }
+          // Form type
+          data.set("formType", "edit");
+          console.log(data);
           axios.put(`/channels/${id}`, {
             user,
             id,
             channel,
           }).then(response => {
-            console.log(id);
-            // TO DO : remove old picture
             return axios.post(`channels/images/${id}`, data, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
