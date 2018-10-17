@@ -290,6 +290,8 @@ module.exports = function(db) {
 
   videos.order = function(queryBuilder, sort) {
     switch(sort) {
+      case 'relevance':
+        return queryBuilder.orderBy('search.rank', 'desc');
       case 'new':
         return queryBuilder.orderBy(`${videos.table}.createdAt`, 'desc');
       case 'trending':
@@ -318,6 +320,28 @@ module.exports = function(db) {
       true,
     );
   }
+
+  videos.searchVideos = function(user, query) {
+    return this.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`, db.knex.raw('search.rank as _rank'))
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewCount']))
+      .from(videos.table)
+      .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
+      .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
+      .innerJoin(
+        db.knex(`${videos.table}`)
+          .select(db.knex.raw(`ts_rank(??, to_tsquery('english', ''' ' || ? || ' ''')) as rank`, [`${videos.table}.tsv`, query]))
+          .select(`${videos.table}.id as search_id`)
+          .where('tsv', '@@', db.knex.raw(`to_tsquery('english', ''' ' || ? || ' ''')`, [query]))
+          .as('search'),
+        `${videos.table}.id`,
+        'search.search_id',
+      )
+      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, 'search.rank')
+      .modify(videos.order, 'relevance')
+      .modify(videos.authorizedViewSubquery, user, { channelsName: 'c2' });
+  }
+  videos.search = videos.searchVideos.bind(db.knex);
+
 
   return videos;
 };

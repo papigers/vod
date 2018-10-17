@@ -18,6 +18,9 @@ knex.raw("SELECT 'test connection';").then(function(message) {
 debug('Exporting models...');
 
 try {
+  db.knex = knex;
+  db.knexnest = knexnest;
+
   var models = {};
   fs.readdirSync(__dirname)
     .filter(function(file) {
@@ -30,8 +33,6 @@ try {
     });
 
   db.models = models;
-  db.knex = knex;
-  db.knexnest = knexnest;
 }
 catch(e) {
   debug('Database connector initialization failed...');
