@@ -3,7 +3,7 @@ var router = express.Router();
 var db = require('../../models');
 
 router.get('/', function(req, res) {
-  var limit = req.query.limit || 12;
+  var limit = req.query.limit || 20;
   var offset = req.query.offset || 0;
   var query = req.query.query;
   limit = Math.min(limit, 60);

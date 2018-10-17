@@ -272,7 +272,15 @@ module.exports = function(db) {
   channels.searchChannels = function(user, query) {
     return this.select(`${channels.table}.id as _id`, `${channels.table}.createdAt as _createdAt`, `${channels.table}.name as _name`, `${channels.table}.description as _description`, db.knex.raw('NULL as _channel_id'), db.knex.raw('NULL as _channel_name'), db.knex.raw('search.rank as _rank'))
       .select(db.knex.raw('NULL as ??', ['_viewCount']))
+      .select(db.knex.raw('?? IS NOT NULL as ??', [
+        `${db.channelFollowers.table}.followerId`,
+        '_isFollowing',
+      ]))
+      .select(db.knex.raw('? as ??', ['channel', '_type']))
       .from(channels.table)
+      .leftJoin(db.channelFollowers.table, function() {
+        this.on('followerId', db.knex.raw('?', [user && user.id])).on('followeeId', `${channels.table}.id`);
+      })
       .innerJoin(
         db.knex(`${channels.table}`)
           .select(db.knex.raw(`ts_rank(??, to_tsquery('english', ''' ' || ? || ' ''')) as rank`, [`${channels.table}.tsv`, query]))
@@ -282,7 +290,7 @@ module.exports = function(db) {
         `${channels.table}.id`,
         'search.search_id',
       )
-      .groupBy(`${channels.table}.id`, 'search.rank')
+      .groupBy(`${channels.table}.id`, 'search.rank', `${db.channelFollowers.table}.followerId`)
       .modify(channels.order, 'relevance')
       .modify(channels.authorizedViewSubquery, user, { channelsName: 'c2' });
   }
