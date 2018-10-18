@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var channelAcls = function ChannelACL() {
     if (!(this instanceof ChannelACL)) {
       return new ChannelACL();

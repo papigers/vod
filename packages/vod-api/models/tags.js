@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var tags = function Tag() {
     if (!(this instanceof Tag)) {
       return new Tag();

@@ -1,7 +1,6 @@
 var nanoid = require('nanoid');
 
 var generateId = nanoid.bind(this, 12);
-var generateCommentId = nanoid.bind(this, 10);
 
 function VideoError(message, code) {
   this.message = message;

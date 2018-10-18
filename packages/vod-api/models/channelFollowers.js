@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var channelFollowers = function ChannelFollower() {
     if (!(this instanceof ChannelFollower)) {
       return new ChannelFollower();

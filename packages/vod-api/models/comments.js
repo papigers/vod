@@ -1,4 +1,8 @@
-module.exports = function() {
+var nanoid = require('nanoid');
+
+var generateId = nanoid.bind(this, 10);
+
+module.exports = function(db) {
   var comments = function Comment() {
     if (!(this instanceof Comment)) {
       return new Comment();
@@ -63,7 +67,7 @@ module.exports = function() {
 
   comments.postComment = function(user, videoId, comment) {
     return db.knex(db.knex.raw('?? (??, ??, ??, ??)', [comments.table, 'id', 'comment', 'videoId', 'channelId'])).insert(
-      db.knex.select(db.knex.raw('?, ?, ?, ?', [generateCommentId(), comment, videoId, user && user.id])).from(db.videos.table)
+      db.knex.select(db.knex.raw('?, ?, ?, ?', [generateId(), comment, videoId, user && user.id])).from(db.videos.table)
         .where(`${db.videos.table}.id`, videoId).modify(db.videos.authorizedViewSubquery, user)
     );
   }

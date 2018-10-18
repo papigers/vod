@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var videoViews = function VideoView() {
     if (!(this instanceof VideoView)) {
       return new VideoView();
