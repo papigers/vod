@@ -241,7 +241,7 @@ module.exports = function(db) {
       .select(db.knex.raw('COUNT(??) as ??', [`${db.videoLikes.table}.channelId`, 'likeCount']))
       .select(db.knex.raw('EXISTS(?) as ??', [
         db.knex.table(db.channelFollowers.table).select(1).where('followerId', user && user.id).andWhere('followeeId', db.knex.raw('??', `${db.channels.table}.id`)).limit(1),
-        'channel_userFollows',
+        'channel_isFollowing',
       ])).select(db.knex.raw('EXISTS(?) as ??', [
         db.knex.table(db.videoLikes.table).select(1).where(`${db.videoLikes.table}.channelId`, user && user.id).andWhere(`${db.videoLikes.table}.videoId`, videoId).limit(1),
         'userLikes',
@@ -290,6 +290,8 @@ module.exports = function(db) {
 
   videos.order = function(queryBuilder, sort) {
     switch(sort) {
+      case 'relevance':
+        return queryBuilder.orderBy('search.rank', 'desc');
       case 'new':
         return queryBuilder.orderBy(`${videos.table}.createdAt`, 'desc');
       case 'trending':
@@ -318,6 +320,32 @@ module.exports = function(db) {
       true,
     );
   }
+
+  videos.searchVideos = function(user, query) {
+    return this.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`, db.knex.raw('search.rank as _rank'))
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewCount']))
+      .select(db.knex.raw('NULL as ??', ['_isFollowing']))
+      .select(db.knex.raw('? as ??', ['video', '_type']))
+      .from(videos.table)
+      .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
+      .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
+      .innerJoin(
+        db.knex(`${videos.table}`)
+          .select(db.knex.raw(`ts_rank(?? || setweight(??, 'D'), to_tsquery('english', ''' ' || ? || ' ''')) as rank`, [`${videos.table}.tsv`, `${db.channels.table}.tsv`, query]))
+          .select(`${videos.table}.id as search_id`)
+          .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
+          .where(`${videos.table}.tsv`, '@@', db.knex.raw(`to_tsquery('english', ''' ' || ? || ' ''')`, [query]))
+          .orWhere(`${db.channels.table}.tsv`, '@@', db.knex.raw(`to_tsquery('english', ''' ' || ? || ' ''')`, [query]))
+          .as('search'),
+        `${videos.table}.id`,
+        'search.search_id',
+      )
+      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, 'search.rank')
+      .modify(videos.order, 'relevance')
+      .modify(videos.authorizedViewSubquery, user, { channelsName: 'c2' });
+  }
+  videos.search = videos.searchVideos.bind(db.knex);
+
 
   return videos;
 };

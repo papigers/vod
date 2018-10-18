@@ -42,6 +42,29 @@ router.get('/managed', function(req, res) {
     });
 });
 
+router.get('/search', function(req, res) {
+  var limit = req.query.limit || 12;
+  var offset = req.query.offset || 0;
+  var query = req.query.query;
+  limit = Math.min(limit, 60);
+
+  db.knexnest(
+    db.channels.search(req.user, query)
+    .limit(limit)
+    .offset(offset)
+    .modify(db.channels.order, 'relevance')
+    .modify(db.channels.order, 'new'),
+    true,
+  ).then(function(videos) {
+    res.json(videos);
+  }).catch(function(err) {
+    console.error(err);
+    res.status(500).json({
+      error: 'Couldn\'t fetch videos',
+    });
+  });
+});
+
 router.get('/:id', function(req, res) {
   db.channels.getChannel(req.user, req.params.id)
     .then(function(channel) {

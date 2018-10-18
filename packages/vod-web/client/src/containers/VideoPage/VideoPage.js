@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
-import { bindActionCreators } from 'redux';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 import qs from 'query-string';
 
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 
@@ -19,7 +16,7 @@ import { makeSelectUser } from 'containers/ChannelPage/selectors';
 import Player from 'components/ThemedPlayer';
 import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
-import { followChannel, unfollowChannel } from 'containers/ChannelPage/actions';
+import ChannelRow from 'containers/ChannelRow';
 
 import axios from 'utils/axios';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
@@ -98,7 +95,6 @@ class VideoPage extends Component {
       error: null,
       video: null,
       likeDelta: 0,
-      followDelta: 0,
       viewed: false,
     };
   }
@@ -182,34 +178,23 @@ class VideoPage extends Component {
     this.setState({ likeDelta: this.state.likeDelta - 1 });
     axios.put(`/videos/video/${this.state.video.id}/dislike`);
   }
+
   onTimeUpdate = (time, duration) => {
     if (!this.state.viewed && (time > 120 || (time / duration >= 0.4))) {
       this.setState({ viewed: true });
       axios.put(`/videos/video/${this.state.video.id}/view`);
     }
   }
-  onFollow = () => {
-    this.setState({ followDelta: this.state.followDelta + 1 });
-    this.props.followChannel(this.state.video.channel.id);
-  }
-  onUnfollow = () => {
-    this.setState({ followDelta: this.state.followDelta - 1 });
-    this.props.unfollowChannel(this.state.video.channel.id);
-  }
 
   render() {
-    const { video, error, likeDelta, followDelta } = this.state;
+    const { video, error, likeDelta } = this.state;
     const { user } = this.props;
     let likeCount = 0;
     let userLikes = false;
-    let userFollows = false;
     if (video) {
-      likeCount = video.likeCount + likeDelta;
+      likeCount = +video.likeCount + likeDelta;
       userLikes = (video.userLikes && likeDelta >= 0) || (!video.userLikes && likeDelta > 0);
-      userFollows = (video.channel.userFollows && followDelta >= 0) || (!video.channel.userFollows && followDelta > 0);
     }
-
-    const LinkOnLoad = video ? Link : 'div';
 
     return (
       <Box px={20} pt={24}>
@@ -264,62 +249,7 @@ class VideoPage extends Component {
                     </Shimmer>
                   </VideoSection>
                   <VideoSection>
-                    <Shimmer
-                      customElementsGroup={(
-                        <Box width={1}>
-                          <Flex>
-                            <ShimmerElementsGroup
-                              shimmerElements={[
-                                { type: ElemType.circle, height: 100 },
-                                { type: ElemType.gap, width: 16, height: 100 }
-                              ]}
-                            />
-                            <ShimmerElementsGroup
-                              flexWrap
-                              width={'calc(100% - 200px)'}
-                              shimmerElements={[
-                                { type: ElemType.gap, width: '100%', height: 25 },
-                                { type: ElemType.line, width: '50%', height: 20 },
-                                { type: ElemType.gap, width: '50%', height: 20 },
-                                { type: ElemType.line, width: '30%', height: 16 },
-                                { type: ElemType.gap, width: '70%', height: 16 },
-                                { type: ElemType.gap, width: '100%', height: 25 },
-                              ]}
-                            />
-                            <ShimmerElementsGroup
-                              flexWrap
-                              width={100}
-                              shimmerElements={[
-                                { type: ElemType.gap, width: '100%', height: 33.333 },
-                                { type: ElemType.line, width: '100%', height: 24 },
-                                { type: ElemType.gap, width: '100%', height: 33.333 },
-                              ]}
-                            />
-                          </Flex>
-                        </Box>
-                      )}
-                      width='100%'
-                      isDataLoaded={!!video}
-                    >
-                      <SpreadItems>
-                        <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
-                          <Persona
-                            imageUrl={video && video.channel && `/profile/${video.channel.id}/profile.png`}
-                            text={video && video.channel && video.channel.name}
-                            secondaryText={video ? `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}` : ''}
-                            size={PersonaSize.size72}
-                          />
-                        </LinkOnLoad>
-                        {video && user.id !== video.channel.id ? (
-                          <DefaultButton
-                            text={userFollows ? 'עוקב' : 'עקוב'}
-                            iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}
-                            primary
-                            onClick={userFollows ? this.onUnfollow : this.onFollow}
-                          />
-                        ) : null}
-                      </SpreadItems>
-                    </Shimmer>
+                    <ChannelRow size={72} channel={video && video.channel} user={user} />
                     <VideoDescription className="ms-font-s-plus">
                       <Shimmer
                         customElementsGroup={(
@@ -374,11 +304,4 @@ const mapStateToProps = createStructuredSelector({
   user: makeSelectUser(),
 });
 
-const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({
-    followChannel,
-    unfollowChannel,
-  }, dispatch);
-};
-
-export default createReduxContainer(VideoPage, mapStateToProps, mapDispatchToProps);
+export default createReduxContainer(VideoPage, mapStateToProps);

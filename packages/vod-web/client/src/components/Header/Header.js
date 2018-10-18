@@ -213,6 +213,7 @@ export default class Header extends Component {
       </Link>
     );
   }
+
   renderLoadingSpinner(props) {
     return (
       <StyledSpinnerContainer p="1px" py="2px">
@@ -220,6 +221,13 @@ export default class Header extends Component {
         <Label>טוען ערוצים... </Label>
       </StyledSpinnerContainer>
     );
+  }
+
+  onSearch = (query) => {
+    const trimmed = `${query}`.trim();
+    if (trimmed.length) {
+      this.props.onSearch(trimmed);
+    }
   }
 
   render() {
@@ -250,7 +258,7 @@ export default class Header extends Component {
           <HeaderLogo toggleSidebar={toggleSidebar} />
         </HeaderGroup>
         <SearchGroup>
-          <StyledSearchBox placeholder="חיפוש" />
+          <StyledSearchBox placeholder="חיפוש" onSearch={this.onSearch} />
         </SearchGroup>
         <HeaderGroup>
           <ThemeContext.Consumer>

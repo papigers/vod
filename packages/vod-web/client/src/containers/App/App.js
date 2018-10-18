@@ -5,6 +5,7 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
 import Header from 'components/Header';
+import Results from 'components/Results';
 import Sidebar from 'components/Sidebar';
 import Modal from 'components/Modal';
 import NewChannelForm from 'components/NewChannelForm';
@@ -35,12 +36,17 @@ const Content = styled.div`
 `;
 
 class App extends Component {
+  
   componentDidMount() {
     this.props.getUser()
       .then(() => {
         this.props.getManagedChannels();
         this.props.getFollowedChannels();
       });
+  }
+
+  onSearch = query => {
+    this.props.history.push(`/results?query=${query}`);
   }
 
   render() {
@@ -63,6 +69,7 @@ class App extends Component {
           toggleSidebar={toggleSidebarOpen}
           toggleChannelModalOpen={toggleChannelModalOpen}
           user={user}
+          onSearch={this.onSearch}
         />
         <Container>
           <Sidebar followedChannels={followed} isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} onDismissed={toggleSidebarOpen} />
@@ -73,6 +80,7 @@ class App extends Component {
               <Route exact path="/channel/:channelId" component={ChannelPage} />
               <Route exact path="/watch" component={VideoPage} />
               <Route exact path="/upload" component={UploadPage} />
+              <Route exact path="/results" component={Results} />
               <Redirect to="/" />
             </Switch>
           </Content>

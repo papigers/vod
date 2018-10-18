@@ -15,6 +15,9 @@ router.use('/videos', videos);
 var channels = require('./channels');
 router.use('/channels', channels);
 
+var search = require('./search');
+router.use('/search', search);
+
 router.get('/profile', function(req, res) {
   res.json(req.user);
 });
