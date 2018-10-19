@@ -147,7 +147,6 @@ var channelImagesUpload = upload.fields([{
 
 router.post('/images/:id', channelImagesUpload, function(req, res) {
   // TO DO check auth
-  console.log(req.body.formType);
   var promises = [];
   if (req.files.profile) {
     promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
@@ -242,12 +241,7 @@ router.get('/:channelId/permissions', function(req, res) {
     })
     .catch(function(err) {
       console.error(err);
-      var viewACL =[];
-      var manageACL =[];
-      res.json({
-        viewACL,
-        manageACL,
-      });
+      res.sendStatus(500);
     });
   });
 

@@ -26,7 +26,6 @@ class ChannelPage extends Component {
       if (propsId === undefined) {
         return {
           channelId: props.user.id,
-          // channel: props.user,
           loading: false,
           error: null,
         };

@@ -188,7 +188,7 @@ module.exports = function(db) {
             });
           }));
         })
-        .then(function() {          
+        .then(function() {
           return trx(channels.table)
             .update({
               name: channel.name,

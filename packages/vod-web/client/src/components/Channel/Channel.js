@@ -222,7 +222,9 @@ export default class Channel extends Component {
             <PivotItem linkText="סרטונים" itemKey='videos' />
             <PivotItem linkText="פלייליסטים" itemKey='playlists' />
             <PivotItem itemIcon="Search" itemKey="search" />
-            {(channel && (channel.canManage || user.id === channel.id)) ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div/>}
+            {(channel && (channel.canManage || user.id === channel.id)) ? (
+            <PivotItem itemIcon="Settings" itemKey="settings" />
+            ) : null}
           </ChannelPivot>
         </TitleBox>
         <ContentBox>

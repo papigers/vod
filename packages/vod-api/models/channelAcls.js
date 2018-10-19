@@ -44,6 +44,7 @@ module.exports = function(db) {
       .leftJoin(db.channels.table, `${channelAcls.table}.channelId`, `${db.channels.table}.id`)
       .where(`${channelAcls.table}.channelId`, channelId)
       .modify(db.channels.authorizedManageSubquery, user);
-  }  
+  }
+  
   return channelAcls;
 };
