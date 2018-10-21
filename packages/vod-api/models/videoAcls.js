@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var videoAcls = function VideoACL() {
     if (!(this instanceof VideoACL)) {
       return new VideoACL();

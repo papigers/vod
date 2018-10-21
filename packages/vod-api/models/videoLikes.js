@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(db) {
   var videoLikes = function VideoLike() {
     if (!(this instanceof VideoLike)) {
       return new VideoLike();

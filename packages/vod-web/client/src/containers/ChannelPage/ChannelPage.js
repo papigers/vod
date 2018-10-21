@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
-import { bindActionCreators } from 'redux';
 
 import Channel from 'components/Channel';
 import axios from 'utils/axios';
@@ -8,7 +7,6 @@ import axios from 'utils/axios';
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectUser } from './selectors';
-import * as actions from './actions';
 
 class ChannelPage extends Component {
   constructor() {
@@ -81,8 +79,4 @@ const mapStateToProps = createStructuredSelector({
   user: makeSelectUser(),
 });
 
-const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators(actions, dispatch);
-};
-
-export default createReduxContainer(ChannelPage, mapStateToProps, mapDispatchToProps);
+export default createReduxContainer(ChannelPage, mapStateToProps);

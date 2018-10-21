@@ -4,11 +4,11 @@ var db = require('../../models');
 var router = express.Router();
 
 // default redirect to random
-router.get('/', function(req, res) {
+router.get('/list', function(req, res) {
   res.redirect(`${req.baseUrl}/random?${qs.stringify(req.query)}`);
 });
 
-router.get('/:sort', function(req, res) {
+router.get('/list/:sort', function(req, res) {
   var limit = req.query.limit || 12;
   var offset = req.query.offset || 0;
   var sort = req.params && req.params.sort;
@@ -24,6 +24,28 @@ router.get('/:sort', function(req, res) {
         error: 'Couldn\'t fetch videos',
       });
     });
+});
+
+router.get('/search', function(req, res) {
+  var limit = req.query.limit || 12;
+  var offset = req.query.offset || 0;
+  var query = req.query.query;
+  limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
+
+  db.knexnest(
+    db.videos.search(req.user, query)
+    .limit(limit)
+    .offset(offset)
+    .modify(db.videos.order, 'relevance')
+    .modify(db.videos.order, 'new')
+  ).then(function(videos) {
+    res.json(videos);
+  }).catch(function(err) {
+    console.error(err);
+    res.status(500).json({
+      error: 'Couldn\'t fetch videos',
+    });
+  });
 });
 
 // create new video - initial request.

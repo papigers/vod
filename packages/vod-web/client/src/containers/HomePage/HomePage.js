@@ -7,19 +7,19 @@ import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 const VIDEO_LISTS_DATA = {
   new: {
     label: 'חדשים',
-    endpoint: '/videos/new',
+    endpoint: '/videos/list/new',
   },
   top: {
     label: 'הנצפים ביותר',
-    endpoint: '/videos/top',
+    endpoint: '/videos/list/top',
   },
   trending: {
     label: 'חמים',
-    endpoint: '/videos/trending',
+    endpoint: '/videos/list/trending',
   },
   random: {
     label: 'רנדומלי',
-    endpoint: '/videos/random',    
+    endpoint: '/videos/list/random',    
   },
 };
 

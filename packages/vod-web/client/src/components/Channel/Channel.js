@@ -1,15 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { transitions } from 'polished';
-import { Box, Flex } from 'grid-styled';
+import { Box } from 'grid-styled';
 
-import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
-import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivot';
-import { Shimmer, ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
+import { Shimmer, ShimmerElementType as ElemType } from 'office-ui-fabric-react/lib/Shimmer';
 
 import VideoList from 'components/VideoList';
+import ChannelRow from 'containers/ChannelRow';
 import axios from 'utils/axios';
 import ChannelSettings from 'components/ChannelSettings';
 
@@ -91,16 +90,6 @@ export default class Channel extends Component {
     }
   };
 
-  onFollow = () => {
-    this.setState({ followDelta: this.state.followDelta + 1 });
-    this.props.followChannel(this.props.channel.id);
-  }
-
-  onUnfollow = () => {
-    this.setState({ followDelta: this.state.followDelta - 1 });
-    this.props.unfollowChannel(this.props.channel.id);
-  }
-
   onLinkClick = (item)  => {
     this.setState({ activeTab: item.props.itemKey });
   }
@@ -139,12 +128,6 @@ export default class Channel extends Component {
 
   render() {
     const { channel, user  } = this.props;
-    const { followDelta } = this.state;
-    
-    let userFollows = false;
-    if (channel) {
-      userFollows = (channel.isFollowing && followDelta >= 0) || (!channel.isFollowing && followDelta > 0);
-    }
 
     return (
       <Fragment>
@@ -159,63 +142,7 @@ export default class Channel extends Component {
         </Shimmer>
         <TitleBox>
           <Box py={20}>
-            <Shimmer
-              customElementsGroup={(
-                <Box width={1}>
-                  <Flex>
-                    <ShimmerElementsGroup
-                      shimmerElements={[
-                        { type: ElemType.circle, height: 100 },
-                        { type: ElemType.gap, width: 16, height: 100 }
-                      ]}
-                    />
-                    <ShimmerElementsGroup
-                      flexWrap
-                      width={'calc(100% - 200px)'}
-                      shimmerElements={[
-                        { type: ElemType.gap, width: '100%', height: 25 },
-                        { type: ElemType.line, width: '50%', height: 20 },
-                        { type: ElemType.gap, width: '50%', height: 20 },
-                        { type: ElemType.line, width: '30%', height: 16 },
-                        { type: ElemType.gap, width: '70%', height: 16 },
-                        { type: ElemType.gap, width: '100%', height: 25 },
-                      ]}
-                    />
-                    <ShimmerElementsGroup
-                      width={100}
-                      flexWrap
-                      shimmerElements={[
-                        { type: ElemType.gap, width: '100%', height: 33.5 },
-                        { type: ElemType.line, width: '100%', height: 30 },
-                        { type: ElemType.gap, width: '100%', height: 33.5 }
-                      ]}
-                    />
-                  </Flex>
-                </Box>
-              )}
-              width="100%"
-              isDataLoaded={!!channel}
-            >
-              {channel && (
-                <Flex alignItems="center" justifyContent="space-between">
-                  <Persona
-                    imageUrl={`/profile/${channel.id}/profile.png`}
-                    primaryText={channel.name}
-                    secondaryText={channel.description}
-                    size={PersonaSize.size100}
-                  />
-                  <Box ml={16}>
-                    {channel && user.id !== channel.id ? (
-                      <PrimaryButton
-                        text={userFollows ? 'עוקב' : 'עקוב'}
-                        iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}
-                        onClick={userFollows ? this.onUnfollow : this.onFollow}
-                      />
-                    ) : null}
-                  </Box>
-                </Flex>
-              )}
-            </Shimmer>
+            <ChannelRow channel={channel} user={user} />
           </Box>
           <ChannelPivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
             <PivotItem linkText="בית" itemKey='home' />
