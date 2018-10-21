@@ -146,28 +146,33 @@ var channelImagesUpload = upload.fields([{
 }]);
 
 router.post('/images/:id', channelImagesUpload, function(req, res) {
-  // TO DO check auth
-  var promises = [];
-  if (req.files.profile) {
-    promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
-  }
-  if (req.files.cover) {
-    promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
-  }
-  Promise.all(promises)
-    .then(function(data) {
-      res.json({});
-    })
-    .catch(function(err) {
-      // Check Form type
-      if (req.body.formType === "create") {
-        db.channels.deleteChannelAdmin(req.params.id);
-      }      
-      console.error(err);
-      res.status(500).json({
-        error: 'Failed to upload channel images',
-      });
+  db.channels.checkAuthManage(req.params.id, req.user)
+  .then(function({ count }) {
+    if (count == 0) {
+      return res.sendStatus(403);
+    }
+    var promises = [];
+    if (req.files.profile) {
+      promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
+    }
+    if (req.files.cover) {
+      promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
+    }
+    return Promise.all(promises);
+  })
+  .then(function() {
+    res.json({});
+  })
+  .catch(function(err) {
+    // Check Form type
+    if (req.body.formType === "create") {
+      db.channels.deleteChannelAdmin(req.params.id);
+    }      
+    console.error(err);
+    res.status(500).json({
+      error: 'Failed to upload channel images',
     });
+  });
 });
 
 router.post('/', channelImagesUpload, function(req, res) {

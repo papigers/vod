@@ -233,6 +233,12 @@ module.exports = function(db) {
     );
   }
 
+  channels.checkAuthManage = function(channelId, user) {
+    return db.knexnest(
+      db.knex(channels.table).count('*').where(`${channels.table}.id`, channelId).modify(channels.authorizedManageSubquery, user)
+    );
+  }
+
   channels.userLogin = function(user) {
     return db.knex.transaction(function(trx) {
       return trx.select('id', 'name', 'description', 'personal').from(channels.table).where('id', user.id)
