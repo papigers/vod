@@ -5,6 +5,7 @@ var path = require('path');
 var express = require('express');
 var multer = require('multer');
 var db = require('../../models');
+var adFilter = require('../ldap').adFilter;
 var router = express.Router();
 
 var OSClient = require('vod-object-storage-client').S3Client();
@@ -142,7 +143,7 @@ router.get('/:id/following', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  db.channels.editChannel(req.user, req.params.id, req.body)
+  db.channels.editChannel(req.user, req.params.id, req.body.channel)
     .then(function(result) {
       if (!!result) {
         return res.json({});
@@ -168,25 +169,33 @@ var channelImagesUpload = upload.fields([{
 }]);
 
 router.post('/images/:id', channelImagesUpload, function(req, res) {
-  // TO DO check auth
-  var promises = [];
-  if (req.files.profile) {
-    promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
-  }
-  if (req.files.cover) {
-    promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
-  }
-  Promise.all(promises)
-    .then(function() {
-      res.json({});
-    })
-    .catch(function(err) {
+  db.channels.checkAuthManage(req.params.id, req.user)
+  .then(function({ count }) {
+    if (count == 0) {
+      return res.sendStatus(403);
+    }
+    var promises = [];
+    if (req.files.profile) {
+      promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
+    }
+    if (req.files.cover) {
+      promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
+    }
+    return Promise.all(promises);
+  })
+  .then(function() {
+    res.json({});
+  })
+  .catch(function(err) {
+    // Check Form type
+    if (req.body.formType === "create") {
       db.channels.deleteChannelAdmin(req.params.id);
-      console.error(err);
-      res.status(500).json({
-        error: 'Failed to upload channel images',
-      });
+    }      
+    console.error(err);
+    res.status(500).json({
+      error: 'Failed to upload channel images',
     });
+  });
 });
 
 router.post('/', channelImagesUpload, function(req, res) {
@@ -224,5 +233,44 @@ router.get('/:id/videos/:sort', function(req, res) {
       });
     });
 });
+
+router.get('/:channelId/permissions', function(req, res) {
+  db.channelAcls.getChannelAcls(req.params.channelId, req.user)
+    .then(function(permissions) {
+      var viewACL =[];
+      var manageACL =[];
+      return Promise.all(permissions.map(function(perm) {
+        return adFilter(perm.id, perm.type === 'USER' ? 'user' : 'group')
+        .then(function([adObject]) {
+          if (adObject) {
+            var obj = {
+              id: adObject.sAMAccountName || adObject.dn,
+              name: adObject.displayName || adObject.cn,
+              type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
+              profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
+            }
+            switch(perm.access) {
+              case 'VIEW':
+                viewACL.push(obj);
+                break;
+              case 'MANAGE':
+                manageACL.push(obj);
+                break;
+            }
+          }
+          return Promise.resolve();
+        });
+      })).then(function() {
+        res.json({
+          viewACL,
+          manageACL,
+        });
+      })
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.sendStatus(500);
+    });
+  });
 
 module.exports = router;

@@ -10,6 +10,7 @@ import { Shimmer, ShimmerElementType as ElemType } from 'office-ui-fabric-react/
 import VideoList from 'components/VideoList';
 import ChannelRow from 'containers/ChannelRow';
 import axios from 'utils/axios';
+import ChannelSettings from 'components/ChannelSettings';
 
 const ContentBox = styled(Box).attrs({
   pr: 100,
@@ -56,6 +57,7 @@ export default class Channel extends Component {
       uploads: [],
       loading: true,
       followDelta: 0,
+      activeTab: 'home',
     };
   }
 
@@ -84,13 +86,48 @@ export default class Channel extends Component {
           loading: false,
         });
       })
-      .catch(console.error); 
+      .catch(console.error);
     }
   };
 
+  onLinkClick = (item)  => {
+    this.setState({ activeTab: item.props.itemKey });
+  }
+
+  renderTab() {
+    const { loading, channel, user } = this.props;
+    const { loading: loadingVideos, activeTab , uploads} = this.state;
+    
+    switch (activeTab) {
+      case 'home':
+        return (
+          <VideoList category="העלאות" loading={loading || loadingVideos} videos={uploads} />
+        );
+      case 'videos':
+        return (
+          <span>videos</span>
+        );
+      case 'playlists':
+        return (
+          <span>playlists</span>
+        );
+      case 'search':
+        return (
+          <span>search</span>
+        );
+      case 'settings':
+        return (
+          <ChannelSettings user={user} channel={channel} />
+        );
+      default:
+          return (
+            <span>404</span>
+          );
+    }
+  }
+
   render() {
-    const { channel, loading, user } = this.props;
-    const { loading: loadingVideos } = this.state;
+    const { channel, user  } = this.props;
 
     return (
       <Fragment>
@@ -107,15 +144,18 @@ export default class Channel extends Component {
           <Box py={20}>
             <ChannelRow channel={channel} user={user} />
           </Box>
-          <ChannelPivot linkSize={PivotLinkSize.large} headersOnly>
-            <PivotItem linkText="בית" />
-            <PivotItem linkText="סרטונים" />
-            <PivotItem linkText="פלייליסטים" />
-            <PivotItem itemIcon="Search" />
+          <ChannelPivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
+            <PivotItem linkText="בית" itemKey='home' />
+            <PivotItem linkText="סרטונים" itemKey='videos' />
+            <PivotItem linkText="פלייליסטים" itemKey='playlists' />
+            <PivotItem itemIcon="Search" itemKey="search" />
+            {(channel && (channel.canManage || user.id === channel.id)) ? (
+              <PivotItem itemIcon="Settings" itemKey="settings" />
+            ) : null}
           </ChannelPivot>
         </TitleBox>
         <ContentBox>
-          <VideoList category="העלאות" loading={loading || loadingVideos} videos={this.state.uploads} />
+          {this.renderTab()}
         </ContentBox>
       </Fragment>
     );

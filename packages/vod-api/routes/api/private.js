@@ -6,7 +6,7 @@ var db = require('../../models');
 router.post('/user-login', function(req, res) {
   var user = req.body;
   db.channels.userLogin(user)
-    .spread(function(user) {
+    .then(function([user]) {
       res.json(user);
     })
     .catch(function(err) {

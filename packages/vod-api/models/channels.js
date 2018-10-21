@@ -215,7 +215,7 @@ module.exports = function(db) {
             .where('id', id)
             .modify(channels.authorizedManageSubquery, user)
         });
-    }).debug();
+    });
   }
 
   channels.createChannel = function(channel) {
@@ -250,6 +250,12 @@ module.exports = function(db) {
     );
   }
 
+  channels.checkAuthManage = function(channelId, user) {
+    return db.knexnest(
+      db.knex(channels.table).count('*').where(`${channels.table}.id`, channelId).modify(channels.authorizedManageSubquery, user)
+    );
+  }
+
   channels.userLogin = function(user) {
     return db.knex.transaction(function(trx) {
       return trx.select('id', 'name', 'description', 'personal').from(channels.table).where('id', user.id)
@@ -264,7 +270,7 @@ module.exports = function(db) {
               return trx.select('id', 'name', 'description', 'personal').from(channels.table).where('id', user.id);
             });
           }
-          return res[0];
+          return res;
         });
     });
   }

@@ -35,19 +35,7 @@ const InputButton = styled(DefaultButton)`
 `;
 
 const Form = styled.form`
-  margin-bottom: 40px;
-
-  .ms-BasePicker {
-    max-width: 350px;
-  }
-
-  .ms-TextField {
-    width: 250px;
-
-    &.ms-TextField--multiline {
-      min-width: 350px;
-    }
-  }
+  margin: 1em 17em;
 `;
 
 const DropdownOption = styled.div`
@@ -66,7 +54,6 @@ const DropdownOption = styled.div`
 `;
 
 const Buttons = styled(Box)`
-  position: absolute;
   bottom: 0;
   right: 0;
   width: 100%;
@@ -81,23 +68,70 @@ const ErrorMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
-class NewChannelForm extends Component{
+const SuccessMsg = styled(Box)`
+  color: #008000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
 
+class ChannelSettings extends Component{
+    
   constructor(props) {
     super();
     this.state = {
-      name: '',
       id: '',
+      name: '',
       description: '',
-      privacy: 'public',
+      privacy: 'PUBLIC',
       viewACL: [],
       manageACL: [],
+      personal: false,
       profile: null,
       cover: null,
       error: null,
+      done: null,
     };
   }
-  
+    
+  componentDidMount() {
+    this.fetchACL();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.id !== prevState.id) {
+      this.fetchACL();
+    }
+  }
+
+  static getDerivedStateFromProps(props, state, reset = false) {
+    const propsId = props.channel.id
+    if (reset || !state.id || (state.id !== propsId)) {
+      return {
+        id: propsId,
+        name: props.channel.name,
+        description: props.channel.description,
+        personal: props.channel.personal,
+        profile: {
+          preview: `/profile/${propsId}/profile.png`,
+          file: null,
+        },
+        cover: {
+          preview: `/profile/${propsId}/cover.png`,
+          file: null,
+        },
+        loading: true,
+        error: null,
+      };
+    } 
+    return null;
+  }
+
+  resetForm = () => {
+    this.setState(ChannelSettings.getDerivedStateFromProps(this.props, this.state, true));
+    this.fetchACL();
+  }
+
   onRenderPrivacyOption = (item) => {
     const option = item[0] || item;
     
@@ -122,16 +156,28 @@ class NewChannelForm extends Component{
       reader.onload = (e) => this.setState({ [field]: {
         preview: e.target.result,
         file: input.files[0],
-       }});
+        }});
       reader.readAsDataURL(input.files[0]);
     }
   }
 
+  fetchACL = () => {
+    axios.get(`channels/${this.state.id}/permissions`)
+      .then(({ data }) => {
+        this.setState({
+          viewACL: data.viewACL,
+          privacy: data.viewACL.length ? 'PRIVATE' : 'PUBLIC',
+          manageACL: data.manageACL,
+        });
+
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   formatACL = (acls) => {
     return acls.map(acl => {
-      if (acl.secondaryText === this.props.user.id) {
-        return null;
-      }
       return {
         id: acl.secondaryText,
         name: acl.text,
@@ -141,13 +187,12 @@ class NewChannelForm extends Component{
     }).filter(acl => !!acl);
   }
 
-  onChangeName = ({ target }) => this.setState({ name: target.value });
-  onChangeId = ({ target }) => this.setState({ id: target.value });
-  onChangeDescription = ({ target }) => this.setState({ description: target.value });
-  onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
+  onChangeName = ({ target }) => this.setState({name: target.value});
+  onChangeDescription = ({ target }) => this.setState({description: target.value});
+  onChangePrivacy = (e, { key: privacy }) => {this.setState({ privacy })};
   onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
   onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
-  onChangeViewACL = (acls) => this.setState({ viewACL: this.formatACL(acls) });
+  onChangeViewACL = (acls) => this.setState({viewACL: this.formatACL(acls)});
   onChangeManageACL = (acls) => this.setState({ manageACL: this.formatACL(acls) });
 
   setError(error) {
@@ -187,17 +232,26 @@ class NewChannelForm extends Component{
   onSubmit = () => {
     this.setError(null);
     if (this.validate()) {
+      const user = this.props.user;
       const {
-        name,
         id,
+        name,
+        description,
+        privacy,
+        viewACL,
+        manageACL,
         profile,
         cover,
-        privacy,
-        description,
-        viewACL,
-        manageACL
       } = this.state;
 
+      const channel = {
+        id,
+        name,
+        description,
+        privacy,
+        viewACL,
+        manageACL,
+      };
       const data = new FormData();
       if (profile && profile.file) {
         data.append('profile', profile.file);
@@ -207,54 +261,37 @@ class NewChannelForm extends Component{
       }
       // Form type
       data.set("formType", "edit");
-      axios.post('/channels', {
+      axios.put(`/channels/${id}`, {
+        user,
         id,
-        name,
-        description,
-        viewACL,
-        manageACL: manageACL.concat(this.getCurrentUser()),
-        privacy,
+        channel,
       }).then(response => {
-        return axios.post(`channels/images/${response.data.id}`, data, {
+        return axios.post(`channels/images/${id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-      })
-      .then(() => {
-        this.props.onDismiss();
-        if (this.props.onSubmit) {
-          this.props.onSubmit();
-        }
-        this.props.history.push(`/channel/${id}`);
+      }).then( () => {
+        this.setState({
+          done: 'הערוץ התעדכן בהצלחה'
+        });
       }).catch(error => {
-        console.error(error);
-        this.setError('עלתה שגיאה ביצירת הערוץ');
+        this.setError('עלתה שגיאה בעריכת הערוץ');
       });
     }
-  }
-
-  getCurrentUser() {
-    return {
-      id: this.props.user.id,
-      name: this.props.user.name,
-      profile: '/images/user.svg',
-      type: 'USER',
-    };
   }
   
   render(){
     const {
       name,
-      id,
-      profile,
-      cover,
-      privacy,
       description,
-      error,
+      privacy,
       viewACL,
       manageACL,
+      profile,
+      cover,
+      error,
+      done,
+      personal,
     } = this.state;
-
-    const currentUser = this.getCurrentUser();
 
     return(
       <Form onSubmit={this.onSubmit}>
@@ -263,20 +300,20 @@ class NewChannelForm extends Component{
             {error}
           </ErrorMsg>
         )}
-        <TextField
-          label="מזהה הערוץ"
-          required
-          placeholder='לדוגמה: tikshuv'
-          value={id}
-          onChange={this.onChangeId}
-        />
-        <TextField
-          label="שם הערוץ"
-          required
-          placeholder='לדוגמה: אג"ף התקשוב'
-          value={name}
-          onChange={this.onChangeName}
-        />
+        {done && (
+          <SuccessMsg width={1}>
+            {done}
+          </SuccessMsg>
+        )}
+        {personal === false ? (
+          <TextField
+            label="שם הערוץ"
+            required
+            placeholder='לדוגמה: אג"ף התקשוב'
+            value={name}
+            onChange={this.onChangeName}
+          />
+        ) :  null }
         <DropdownContainer>
           <Dropdown
             required
@@ -287,23 +324,25 @@ class NewChannelForm extends Component{
             onRenderOption={this.onRenderPrivacyOption}
             placeHolder="בחר/י גישה לערוץ"
             options={[
-              { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
-              { key: 'private', text: 'פרטי', data: { icon: 'Contact' } },
+              { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+              { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
             ]}
           />
         </DropdownContainer>
-        {privacy !== 'public' ? (
+        {privacy !== 'PUBLIC' ? (
           <PeoplePicker
             label="הרשאות צפייה"
             onChange={this.onChangeViewACL}
             selectedItems={viewACL}
           />
-        ) :  null}
-        <PeoplePicker
-          label="הרשאות ניהול"
-          onChange={this.onChangeManageACL}
-          selectedItems={manageACL.concat([currentUser])}
-        />
+        ) :  null }
+        {personal === false ? (
+          <PeoplePicker
+            label="הרשאות ניהול"
+            onChange={this.onChangeManageACL}
+            selectedItems={manageACL}
+          />
+        ) :  null }
         <TextField
           label="תיאור"
           required
@@ -320,7 +359,7 @@ class NewChannelForm extends Component{
               <input type="file" accept="image/*" onChange={this.onChangeProfile} />
             </InputButton>
           </Box>
-          <Persona size={PersonaSize.size48} imageUrl={(profile && profile.preview) || '/images/user.svg'} />
+          <Persona size={PersonaSize.size100} imageUrl={(profile && profile.preview) || '/images/user.svg'} />
         </Flex>
 
         <Label>בחר תמונת נושא:</Label>
@@ -336,9 +375,9 @@ class NewChannelForm extends Component{
         </Box>
         <Buttons py={2} px={32}>
           <Flex>
-            <PrimaryButton text="צור ערוץ" onClick={this.onSubmit} />
+            <PrimaryButton text="שמור" onClick={this.onSubmit} />
             <Box mx={3} />
-            <DefaultButton text="ביטול" onClick={this.props.onDismiss} />
+            <DefaultButton text="אפס" onClick={this.resetForm} />
           </Flex>
         </Buttons>
       </Form>
@@ -346,4 +385,4 @@ class NewChannelForm extends Component{
   }
 }
 
-export default withRouter(NewChannelForm);
+export default withRouter(ChannelSettings);
