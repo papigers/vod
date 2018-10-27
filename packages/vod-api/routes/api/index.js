@@ -12,6 +12,9 @@ router.use(auth);
 var videos = require('./videos');
 router.use('/videos', videos);
 
+var notifications = require('./notifications');
+router.use('/notifications', notifications);
+
 var channels = require('./channels');
 router.use('/channels', channels);
 
