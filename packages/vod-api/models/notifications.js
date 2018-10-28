@@ -45,14 +45,17 @@ module.exports = function(db) {
   notifications.updatedAt = false;
 
   notifications.addNotification = function(user, type, subject, trx) {
-    var qb = trx || db.knex;
     var id = generateId();
-    return qb(notifications.table).insert({
+    var qb = db.knex(notifications.table).insert({
       id,
       type,
       senderId: user && user.id,
       subjectId: subject,
-    })
+    });
+    if (trx) {
+      qb.transacting(trx);
+    }
+    return qb;
   }
 
   notifications.addVideoLikeNotification = function(user, videoId, trx) {
@@ -75,6 +78,38 @@ module.exports = function(db) {
     return notifications.addNotification(user, 'UPLOAD_ERROR', videoId, trx);
   }
 
+  notifications.removeNotification = function(user, type, subject, trx) {
+    var qb = db.knex(notifications.table).where({
+      type,
+      senderId: user && user.id,
+      subjectId: subject,
+    }).del();
+    if (trx) {
+      qb.transacting(trx);
+    }
+    return qb;
+  }
+
+  notifications.removeVideoLikeNotification = function(user, videoId, trx) {
+    return notifications.removeNotification(user, 'VIDEO_LIKE', videoId, trx);
+  }
+
+  notifications.removeVideoCommentNotification = function(user, commentId, trx) {
+    return notifications.removeNotification(user, 'VIDEO_COMMENT', commentId, trx);
+  }
+
+  notifications.removeChannelFollowNotification = function(user, channelId, trx) {
+    return notifications.removeNotification(user, 'CHANNEL_FOLLOW', channelId, trx);
+  }
+
+  notifications.removeUploadFinishNotification = function(user, videoId, trx) {
+    return notifications.removeNotification(user, 'UPLOAD_FINISH', videoId, trx);
+  }
+
+  notifications.removeUploadErrorNotification = function(user, videoId, trx) {
+    return notifications.removeNotification(user, 'UPLOAD_ERROR', videoId, trx);
+  }
+
   notifications.getChannelNotifications = function(user) {
     return db.knexnest(
       db.knex
@@ -92,13 +127,14 @@ module.exports = function(db) {
       .select('videoChannel.name as _video_channel_name')
       .select(`${db.channels.table}.id as _channel_id`)
       .select(`${db.channels.table}.name as _channel_name`)
-      .select(`sender.id as _sender_id`)
-      .select(`sender.name as _sender_name`)
-      .select(db.knex.raw('EXISTS(?) as ??', [
+      .select(`sender.id as _senders__id`)
+      .select(`sender.name as _senders__name`)
+      .select(db.knex.raw('NOT EXISTS(?) as ??', [
         db.knex.table(db.notificationReceipts.table).select(1).where('channelId', user && user.id).andWhere('notificationId', db.knex.raw('??', [`${notifications.table}.id`])).limit(1),
         '_unread',
       ]))
       .from(notifications.table)
+      .orderBy(`${notifications.table}.createdAt`, 'desc')
       .innerJoin(`${db.channels.table} as sender`, `${notifications.table}.senderId`, 'sender.id')
       .leftJoin(db.comments.table, function() {
         this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT']))

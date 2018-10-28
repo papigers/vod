@@ -51,9 +51,10 @@ module.exports = function(db) {
       .select(`${comments.table}.id as _id`, `${comments.table}.comment as _comment`, `${comments.table}.createdAt as _createdAt`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`)
       .from(comments.table)
       .leftJoin(db.channels.table, `${comments.table}.channelId`, `${db.channels.table}.id`)
+      .leftJoin(db.videos.table, `${comments.table}.videoId`, `${db.videos.table}.id`)
       .orderBy(`${comments.table}.createdAt`, 'desc')
       .limit(20)
-      .where('videoId', videoId)
+      .where(`${comments.table}.videoId`, videoId)
       .modify(db.channels.authorizedViewSubquery, user)
       .modify(db.videos.authorizedViewSubquery, user);
     if (page) {
@@ -66,10 +67,18 @@ module.exports = function(db) {
   }
 
   comments.postComment = function(user, videoId, comment) {
-    return db.knex(db.knex.raw('?? (??, ??, ??, ??)', [comments.table, 'id', 'comment', 'videoId', 'channelId'])).insert(
-      db.knex.select(db.knex.raw('?, ?, ?, ?', [generateId(), comment, videoId, user && user.id])).from(db.videos.table)
-        .where(`${db.videos.table}.id`, videoId).modify(db.videos.authorizedViewSubquery, user)
-    );
+    var id = generateId();
+    return db.knex.transaction(function(trx) {
+      return db.knex(db.knex.raw('?? (??, ??, ??, ??)', [comments.table, 'id', 'comment', 'videoId', 'channelId'])).insert(
+        db.knex.select(db.knex.raw('?, ?, ?, ?', [id, comment, videoId, user && user.id])).from(db.videos.table).transacting(trx)
+          .where(`${db.videos.table}.id`, videoId).modify(db.videos.authorizedViewSubquery, user)
+      )
+      .then(function() {
+        return db.notifications.addVideoCommentNotification(user, id, trx);
+      })
+      .then(trx.commit)
+      .catch(trx.catch);
+    });
   }
 
   return comments;

@@ -12,7 +12,7 @@ exports.up = async function(knex) {
         RAISE EXCEPTION 'Subject ID must be a valid comment ID, instead got %', NEW."subjectId";
       ELSIF NEW.type = 'CHANNEL_FOLLOW' AND NOT EXISTS (SELECT 1 FROM ?? WHERE NEW."subjectId" = ??) THEN
         RAISE EXCEPTION 'Subject ID must be a valid channel ID, instead got %', NEW."subjectId";
-      ELSIF NOT EXISTS (SELECT 1 FROM ?? WHERE NEW."subjectId" = ??) THEN
+      ELSIF NEW.type IN ('VIDEO_LIKE', 'UPLOAD_FINISH', 'UPLOAD_ERROR') AND NOT EXISTS (SELECT 1 FROM ?? WHERE NEW."subjectId" = ??) THEN
         RAISE EXCEPTION 'Subject ID must be a valid video ID, instead got %', NEW."subjectId";
       END IF;
       RETURN NEW;
