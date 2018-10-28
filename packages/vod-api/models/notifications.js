@@ -73,7 +73,6 @@ module.exports = function(db) {
 
   notifications.addUploadErrorNotification = function(user, videoId, trx) {
     return notifications.addNotification(user, 'UPLOAD_ERROR', videoId, trx);
-
   }
 
   notifications.getChannelNotifications = function(user) {
@@ -95,7 +94,10 @@ module.exports = function(db) {
       .select(`${db.channels.table}.name as _channel_name`)
       .select(`sender.id as _sender_id`)
       .select(`sender.name as _sender_name`)
-      .select(`${notifications.table}.unread as _unread`)
+      .select(db.knex.raw('EXISTS(?) as ??', [
+        db.knex.table(db.notificationReceipts.table).select(1).where('channelId', user && user.id).andWhere('notificationId', db.knex.raw('??', [`${notifications.table}.id`])).limit(1),
+        '_unread',
+      ]))
       .from(notifications.table)
       .innerJoin(`${db.channels.table} as sender`, `${notifications.table}.senderId`, 'sender.id')
       .leftJoin(db.comments.table, function() {

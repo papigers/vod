@@ -12,4 +12,24 @@ router.get('/', function(req, res, next) {
   });
 });
 
+router.put('/read/:id', function(req, res, next) {
+  db.notificationReceipts.readNotifications(req.user, [req.params.id])
+  .then(function() {
+    res.sendStatus(200);
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
+
+router.put('/read', function(req, res, next) {
+  db.notificationReceipts.readNotifications(req.user, [req.body.notifications])
+  .then(function() {
+    res.sendStatus(200);
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
+
 module.exports = router;
