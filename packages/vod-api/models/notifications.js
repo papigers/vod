@@ -125,30 +125,33 @@ module.exports = function(db) {
         this.onIn(`${notifications.table}.type`, ['VIDEO_LIKE', 'UPLOAD_FINISH', 'UPLOAD_ERROR'])
           .andOn(`${db.videos.table}.channelId`, `videoChannel.id`);
       })
+      .where('sender.id', '<>', user & user.id)
       .where(function() {
         this.where(function() {
-          this.where(`${notifications.table}.type`, 'VIDEO_LIKE')
-          .orWhere(`${notifications.table}.type`, 'UPLOAD_FINISH')
-          .orWhere(`${notifications.table}.type`, 'UPLOAD_ERROR')
+          this.where(function() {
+            this.where(`${notifications.table}.type`, 'VIDEO_LIKE')
+            .orWhere(`${notifications.table}.type`, 'UPLOAD_FINISH')
+            .orWhere(`${notifications.table}.type`, 'UPLOAD_ERROR')
+          })
+          .whereIn(`${notifications.table}.subjectId`, function() {
+            this.select(`${db.videos.table}.id`).from(db.videos.table)
+              .modify(db.videos.authorizedManageSubquery, user);
+          });
         })
-        .whereIn(`${notifications.table}.subjectId`, function() {
-          this.select(`${db.videos.table}.id`).from(db.videos.table)
-            .modify(db.videos.authorizedManageSubquery, user);
-        });
-      })
-      .orWhere(function() {
-        this.where(`${notifications.table}.type`, 'VIDEO_COMMENT')
-        .whereIn(`${notifications.table}.subjectId`, function() {
-          this.select(`${db.comments.table}.id`).from(db.comments.table)
-            .leftJoin(db.videos.table, `${db.comments.table}.videoId`, `${db.videos.table}.id`)
-            .modify(db.videos.authorizedManageSubquery, user);
-        });
-      })
-      .orWhere(function() {
-        this.where(`${notifications.table}.type`, 'CHANNEL_FOLLOW')
-        .whereIn(`${notifications.table}.subjectId`, function() {
-          this.select(`${db.channels.table}.id`).from(db.channels.table)
-            .modify(db.channels.authorizedManageSubquery, user)
+        .orWhere(function() {
+          this.where(`${notifications.table}.type`, 'VIDEO_COMMENT')
+          .whereIn(`${notifications.table}.subjectId`, function() {
+            this.select(`${db.comments.table}.id`).from(db.comments.table)
+              .leftJoin(db.videos.table, `${db.comments.table}.videoId`, `${db.videos.table}.id`)
+              .modify(db.videos.authorizedManageSubquery, user);
+          });
+        })
+        .orWhere(function() {
+          this.where(`${notifications.table}.type`, 'CHANNEL_FOLLOW')
+          .whereIn(`${notifications.table}.subjectId`, function() {
+            this.select(`${db.channels.table}.id`).from(db.channels.table)
+              .modify(db.channels.authorizedManageSubquery, user)
+          });
         });
       }),
       true,
