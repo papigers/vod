@@ -236,8 +236,8 @@ module.exports = function(db) {
   videos.getVideo = function(user, videoId) {
     return db.knexnest(
       db.knex.select(`${videos.table}.id`, `${videos.table}.createdAt`, `${videos.table}.name`, `${videos.table}.description`, `${db.channels.table}.id as channel_id`, `${db.channels.table}.name as channel_name`, `${db.tags.table}.tag as tags__tag`)
-      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, 'viewCount']))
-      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoLikes.table}.channelId`, 'likeCount']))
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.createdAt`, 'viewCount']))
+      .select(db.knex.raw('COUNT(DISTINCT ??) as ??', [`${db.videoLikes.table}.channelId`, 'likeCount']))
       .select(db.knex.raw('EXISTS(?) as ??', [
         db.knex.table(db.channelFollowers.table).select(1).where('followerId', user && user.id).andWhere('followeeId', db.knex.raw('??', `${db.channels.table}.id`)).limit(1),
         'channel_isFollowing',
@@ -255,7 +255,7 @@ module.exports = function(db) {
       .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
       .where(`${videos.table}.id`, videoId)
       .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, `${db.tags.table}.tag`)
-      .modify(videos.authorizedViewSubquery, user)
+      .modify(videos.authorizedViewSubquery, user),
     );
   }
 
@@ -272,19 +272,32 @@ module.exports = function(db) {
   }
 
   videos.likeVideo = function(user, id) {
-    return db.knex(db.knex.raw('?? (??, ??)', [db.videoLikes.table, 'videoId', 'channelId'])).insert(
-      db.knex.select(db.knex.raw('?, ?', [id, user && user.id])).from(videos.table)
-        .whereNotExists(function() {
-          this.select('id').from(videos.table).leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
-            .where('id', id).andWhere(`${db.videoLikes.table}.createdAt`, '>', new Date(new Date() - 3 * 60 * 60 * 1000))
-        })
-        .limit(1)
-        .modify(videos.authorizedView, user)
-    );
+    return db.knex.transaction(function(trx) {
+      return db.knex(db.knex.raw('?? (??, ??)', [db.videoLikes.table, 'videoId', 'channelId'])).transacting(trx).insert(
+        db.knex.select(db.knex.raw('?, ?', [id, user && user.id])).from(videos.table)
+          .whereNotExists(function() {
+            this.select('id').from(videos.table).leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
+              .where('id', id).andWhere(`${db.videoLikes.table}.createdAt`, '>', new Date(new Date() - 3 * 60 * 60 * 1000))
+          })
+          .limit(1)
+          .modify(videos.authorizedView, user)
+      ).then(function() {
+        return db.notifications.addVideoLikeNotification(user, id, trx);
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+    })
   }
 
   videos.dislikeVideo = function(user, id) {
-    return db.knex(db.videoLikes.table).where('videoId', id).andWhere('channelId', user && user.id).del();
+    return db.knex.transaction(function(trx) {
+      return db.knex(db.videoLikes.table).transacting(trx).where('videoId', id).andWhere('channelId', user && user.id).del()
+      .then(function() {
+        return db.notifications.removeVideoLikeNotification(user, id, trx);
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+    });
   }
 
   videos.order = function(queryBuilder, sort) {

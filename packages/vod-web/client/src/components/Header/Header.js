@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { Box } from 'grid-styled';
 import { transparentize, clearFix } from 'polished';
@@ -11,8 +11,10 @@ import { ContextualMenuItemType } from 'office-ui-fabric-react/lib/ContextualMen
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Label } from 'office-ui-fabric-react/lib/Label';
+import { TooltipHost, Tooltip, DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 
 import HeaderLogo from 'components/HeaderLogo';
+import NotificationsCallout from 'containers/NotificationsCallout';
 import { ThemeContext } from 'theme';
 
 const HeaderContainer = styled.div`
@@ -61,6 +63,10 @@ const StyledSearchBox = styled(SearchBox)`
 
 export const StyledCommandBar = styled(CommandBar)`
   background-color: transparent;
+  
+  .ms-Button-icon {
+    font-size: 19px;
+  }
 
   .ms-Button--commandBar {
     background-color: transparent;
@@ -163,17 +169,105 @@ const StyledSpinnerContainer = styled(Box)`
   }
 `;
 
-export default class Header extends Component {
-  renderHeaderButton = (props) => {
-    const { to, ...other } = props;
-    
-    if (!to) {
-      return (
-        <CommandBarButton {...other} />
-      );
+const TooltipContainer = styled.span`
+  position: relative;
+`;
+
+// const NotificationTooltip = styled.div`
+//   position: absolute;
+//   top: 0;
+//   right: 0;
+//   width: 20px;  
+//   height: 20px;
+//   padding: 0;
+//   padding-bottom: 1px;
+//   padding-right: 1px;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   border-radius: 50%;
+//   color: #f8f8f8;
+//   font-size: 10px;
+//   border: 1px solid;
+//   border-color: ${({theme}) => theme.palette.neutralLight};
+//   background-color: ${({theme}) => theme.palette.themeSecondary};
+//   box-shadow: ${({theme}) => theme.palette.blackTranslucent40} 0px 0px 5px 0px;
+// `;
+
+const NotificationTooltip = styled(Tooltip)`
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border-color: #f8f8f8;
+    background-color: ${({theme}) => theme.palette.themeSecondary};
+    box-shadow: ${({theme}) => theme.palette.blackTranslucent40} 0px 0px 5px 0px;
+    color: #f8f8f8;
+
+    .ms-Callout-main {
+      background: transparent;
     }
-    else if (to.indexOf('/channel') !== -1) {
-      return (
+`;
+
+const HeaderButtons = styled.div`
+  display: flex;
+  padding: 0 16px;
+  height: 40px;
+  background-color: transparent;
+
+  .ms-Button-icon {
+    font-size: 19px;
+  }
+
+  .ms-Button--commandBar {
+    background-color: transparent;
+    height: 100%;
+
+    &:hover {
+      background-color: ${({theme}) => transparentize(0.96, theme.palette.neutralPrimary)};
+    }
+  }
+`;
+
+const HeaderButton = styled.div`
+  height: 100%;;
+`;
+
+export default class Header extends Component {
+  constructor() {
+    super();
+    this.state = {
+      notifCalloutOpen: false,
+    };
+    this.notificationRef = React.createRef();
+  }
+
+  toggleNotificationCallout = () => this.setState({ notifCalloutOpen: !this.state.notifCalloutOpen });
+
+  renderHeaderButton = (props) => {
+    const {
+      to,
+      tooltip,
+      notifications,
+      itemRef,
+      text,
+      iconOnly,
+      tooltipHostProps,
+      ...other,
+    } = props;
+    
+    let component = (
+      <CommandBarButton
+        text={!iconOnly ? text : undefined}
+        {...other}
+      />
+    );
+
+    if (to && to.indexOf('/channel') !== -1) {
+      component = (
         <StyledChannelButton {...other}>
           <Link to={to}>
             <Persona
@@ -185,11 +279,29 @@ export default class Header extends Component {
         </StyledChannelButton>
       );
     }
-    return (
-      <Link to={to}>
-        <CommandBarButton {...other} />
-    </Link>
+    else if (to) {
+      component = (
+        <Link to={to}>
+          {component}
+        </Link>
+      );
+    }
+
+    component = (
+      <HeaderButton innerRef={itemRef}>
+        {component}
+      </HeaderButton>
     );
+    
+    if (iconOnly && text !== undefined) {
+      component = (
+        <TooltipHost content={text} {...tooltipHostProps}>
+          {component}
+        </TooltipHost>
+      )
+    }
+    
+    return component;
   }
 
   renderSubMenuLink = (props, dismiss) => {
@@ -230,10 +342,9 @@ export default class Header extends Component {
     }
   }
 
-  render() {
+  getHeaderButtons = ({ theme, toggleTheme }) => {
     const {
       user,
-      toggleSidebar,
       toggleChannelModalOpen,
     } = this.props;
 
@@ -252,6 +363,60 @@ export default class Header extends Component {
       onRender: this.renderLoadingSpinner,
     }]);
 
+    return [{
+        key: 'upload',
+        text: 'העלאה',
+        to: '/upload',
+        iconProps: {
+          iconName: 'Upload'
+        },
+      }, {
+        key: 'night',
+        text: theme.name === 'light' ? 'מצב לילה' : 'מצב יום',
+        onClick: toggleTheme,
+        iconProps: {
+          iconName: theme.name === 'light' ? 'ClearNight' : 'Brightness',
+        },
+        iconOnly: true,
+      },{
+        key: 'notifications',
+        text: 'נוטיפיקציות',
+        onClick: this.toggleNotificationCallout,
+        iconOnly: true,
+        iconProps: {
+          iconName: 'Ringer',
+        },
+        itemRef: this.notificationRef,
+      },{
+        key: 'channel',
+        text: 'הערוץ שלי',
+        to: '/channel',
+        iconOnly: true,
+        menuProps: {
+          items: [
+            ...managedChannelsLinks,
+            {
+              key: 'divider_1',
+              itemType: ContextualMenuItemType.Divider
+            },
+            {
+              key: 'createChannel',
+              to: '/channel/new',
+              onClick: toggleChannelModalOpen,
+              text: 'צור ערוץ',
+              iconProps: {
+                iconName: 'AddGroup'
+              },
+            },
+          ],
+        },
+      },
+    ];
+  };
+
+  render() {
+    const { toggleSidebar, unreadNotifications } = this.props;
+
     return (
       <HeaderContainer>
         <HeaderGroup>
@@ -262,46 +427,37 @@ export default class Header extends Component {
         </SearchGroup>
         <HeaderGroup>
           <ThemeContext.Consumer>
-            {({ theme, toggleTheme }) => (
-              <StyledCommandBar buttonAs={this.renderHeaderButton} items={[{
-                key: 'night',
-                name: theme.name === 'light' ? 'מצב לילה' : 'מצב יום',
-                onClick: toggleTheme,
-                iconProps: {
-                  iconName: theme.name === 'light' ? 'ClearNight' : 'Brightness',
-                },
-                iconOnly: true,
-              }, {
-                key: 'upload',
-                name: 'העלאה',
-                to: '/upload',
-                iconProps: {
-                    iconName: 'Upload'
-                },
-              }, {
-                key: 'channel',
-                name: 'הערוץ שלי',
-                to: '/channel',
-                iconOnly: true,
-                subMenuProps: {
-                  items: [
-                    ...managedChannelsLinks,
-                    {
-                      key: 'divider_1',
-                      itemType: ContextualMenuItemType.Divider
-                    },
-                    {
-                      key: 'createChannel',
-                      to: '/channel/new',
-                      onClick: toggleChannelModalOpen,
-                      text: 'צור ערוץ',
-                      iconProps: {
-                        iconName: 'AddGroup'
-                      },
-                    },
-                  ],
-                },
-              }]} />
+            {themeContext => (
+              <Fragment>
+                <HeaderButtons>
+                  {this.getHeaderButtons(themeContext).map(this.renderHeaderButton)}
+                </HeaderButtons>
+                {this.notificationRef.current && unreadNotifications ? (
+                  <NotificationTooltip
+                    content={unreadNotifications}
+                    calloutProps={{
+                      isBeakVisible: false,
+                      coverTarget: true,
+                      directionalHint: DirectionalHint.topLeftEdge,
+                    }}
+                    targetElement={this.notificationRef.current}
+                  />
+                ) : null}
+                {this.state.notifCalloutOpen ? (
+                  <NotificationsCallout
+                    calloutProps={{
+                      target: this.notificationRef.current,
+                      onDismiss: this.toggleNotificationCallout,
+                      directionalHint: DirectionalHint.bottomRightEdge,
+                      isBeakVisible: true,
+                      setInitialFocus: true,
+                      directionalHintFixed: true,
+                      calloutWidth: 500,
+                      preventDismissOnScroll: true,
+                    }}
+                  />
+                ) : null}
+              </Fragment>
             )}
           </ThemeContext.Consumer>
         </HeaderGroup>

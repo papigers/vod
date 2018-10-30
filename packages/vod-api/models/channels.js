@@ -160,17 +160,30 @@ module.exports = function(db) {
   };
 
   channels.followChannel = function(user, id) {
-    return db.knex(db.knex.raw('?? (??, ??)', [`${db.channelFollowers.table}`, 'followerId', 'followeeId'])).insert(
-      db.knex.select(db.knex.raw('?, ?', [user && user.id, id])).from(channels.table)
-        .where(`${channels.table}.id`, id).modify(channels.authorizedViewSubquery, user)
-    );
+    return db.knex.transaction(function(trx) {
+      return db.knex(db.knex.raw('?? (??, ??)', [`${db.channelFollowers.table}`, 'followerId', 'followeeId'])).transacting(trx).insert(
+        db.knex.select(db.knex.raw('?, ?', [user && user.id, id])).from(channels.table)
+          .where(`${channels.table}.id`, id).modify(channels.authorizedViewSubquery, user)
+      ).then(function() {
+        return db.notifications.addChannelFollowNotification(user, id, trx);
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+    });
   };
 
   channels.unfollowChannel = function(user, id) {
-    return db.knex(db.channelFollowers.table).where({
-      followerId: user && user.id,
-      followeeId: id,
-    }).del();
+    return db.knex.transaction(function(trx) {
+      return db.knex(db.channelFollowers.table).transacting(trx).where({
+        followerId: user && user.id,
+        followeeId: id,
+      }).del()
+      .then(function() {
+        return db.notifications.removeChannelFollowNotification(user, id, trx);
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+    });
   };
 
   channels.getFollowers = function(user, id) {

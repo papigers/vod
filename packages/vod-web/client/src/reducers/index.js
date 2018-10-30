@@ -5,6 +5,7 @@ import global from './global';
 import user from './user';
 import upload from './upload';
 import preload from './preload';
+import notifications from './notifications';
 
 export default combineReducers({
   route,
@@ -12,4 +13,5 @@ export default combineReducers({
   user,
   upload,
   preload,
+  notifications,
 });
