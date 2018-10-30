@@ -5,7 +5,7 @@ var router = express.Router();
 
 // default redirect to random
 router.get('/list', function(req, res) {
-  res.redirect(`${req.baseUrl}/random?${qs.stringify(req.query)}`);
+  res.redirect(`${req.baseUrl}/list/random?${qs.stringify(req.query)}`);
 });
 
 router.get('/list/:sort', function(req, res) {
@@ -13,7 +13,6 @@ router.get('/list/:sort', function(req, res) {
   var offset = req.query.offset || 0;
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
-
   db.videos.getVideos(req.user, limit, offset, sort)
     .then(function(videos) {
       res.json(videos);
@@ -21,6 +20,19 @@ router.get('/list/:sort', function(req, res) {
     .catch(function(err) {
       console.error(err);
       res.status(500).json({
+        error: 'Couldn\'t fetch videos',
+      });
+    });
+});
+
+router.get('/managed', function(req, res) {
+  db.videos.getManagedVideos(req.user)
+    .then(function(videos) {
+      return res.json(videos);
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
         error: 'Couldn\'t fetch videos',
       });
     });
