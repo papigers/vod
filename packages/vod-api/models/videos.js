@@ -88,7 +88,7 @@ module.exports = function(db) {
   }
 
   videos.authorizedManageSubquery = function(queryBuilder, user, options = {}) {
-    var tableName = options.table || videos.table;    
+    var tableName = options.table || videos.table;
     return queryBuilder.whereIn(`${tableName}.id`, function() {
       this.select(`${videos.table}.id`).from(videos.table).modify(videos.authorizedManage, user, options);
     });
@@ -316,6 +316,22 @@ module.exports = function(db) {
       .groupBy(`${videos.table}.id`, `${db.channels.table}.id`)
       .modify(videos.order, sort)
       .modify(videos.authorizedViewSubquery, user, { channelsName: 'c2' }),
+      true,
+    );
+  }
+
+  videos.getManagedVideos = function(user) {
+    return db.knexnest(
+      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal` )
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewCount']))
+      .from(videos.table)
+      .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
+      .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
+      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`)
+      .orderBy('_channel_personal', 'desc')
+      .orderBy('_channel_id')
+      .orderBy('_createdAt', 'desc')
+      .modify(videos.authorizedManageSubquery, user),
       true,
     );
   }
