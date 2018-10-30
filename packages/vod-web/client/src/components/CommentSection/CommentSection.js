@@ -127,12 +127,14 @@ class CommentSection extends Component {
             <CommentButton
               text="הגב"
               type="submit"
+              iconProps={{ iconName: 'CommentAdd' }}
               primary={true}
               onClick={this.onCommentSubmit}
               disabled={!comment.length}
             />
             <CommentButton
               text="בטל"
+              iconProps={{ iconName: 'EraseTool' }}
               onClick={this.onCommentCancel}
             />
           </Flex>
