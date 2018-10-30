@@ -19,9 +19,10 @@ import VideoPreloader from 'containers/VideoPreloader';
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectSidebar, makeSelectChannelModal } from './selectors';
+import { makeSelectUnreadNotificationCount } from '../NotificationsCallout/selectors';
 import { makeSelectUser, makeSelectFollowedChannels } from '../ChannelPage/selectors';
 import * as actions from './actions';
-
+import { getNotifications } from '../NotificationsCallout/actions';
 
 const Container = styled.div`
   display: flex;
@@ -43,6 +44,7 @@ class App extends Component {
         this.props.getManagedChannels();
         this.props.getFollowedChannels();
       });
+    this.props.getNotifications();
   }
 
   onSearch = query => {
@@ -54,6 +56,7 @@ class App extends Component {
       toggleSidebarOpen,
       toggleChannelModalOpen,
       channelModalOpen,
+      unreadNotifications,
       sidebar: {
         open: isSidebarOpen,
         trapped: isSidebarTrapped,
@@ -70,6 +73,7 @@ class App extends Component {
           toggleChannelModalOpen={toggleChannelModalOpen}
           user={user}
           onSearch={this.onSearch}
+          unreadNotifications={unreadNotifications}
         />
         <Container>
           <Sidebar followedChannels={followed} isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} onDismissed={toggleSidebarOpen} />
@@ -98,10 +102,14 @@ const mapStateToProps = createStructuredSelector({
   channelModalOpen: makeSelectChannelModal(),
   user: makeSelectUser(),
   followed: makeSelectFollowedChannels(),
+  unreadNotifications: makeSelectUnreadNotificationCount(),
 });
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators(actions, dispatch);
+  return bindActionCreators({
+    ...actions,
+    getNotifications,
+  }, dispatch);
 };
 
 export default createReduxContainer(App, mapStateToProps, mapDispatchToProps);

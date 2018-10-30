@@ -110,10 +110,12 @@ module.exports = function(db) {
     return notifications.removeNotification(user, 'UPLOAD_ERROR', videoId, trx);
   }
 
-  notifications.getChannelNotifications = function(user) {
-    return db.knexnest(
-      db.knex
-      .select(`${notifications.table}.id as _id`)
+  notifications.getChannelNotifications = function(user, before) {
+    var unreadSubQuery = db.knex.table(db.notificationReceipts.table).select(1).where('channelId', user && user.id).andWhere('notificationId', db.knex.raw('??', [`${notifications.table}.id`])).limit(1);
+    var query = db.knex
+      .select(db.knex.raw('?? || ? || ?? || ? || NOT EXISTS(?) as "_groupId"', [`${notifications.table}.type`, '_', `${notifications.table}.subjectId`, '_unread_', unreadSubQuery]))
+      .select(`${notifications.table}.id as _notifications__id`)
+      .select(`${notifications.table}.createdAt as _notifications__createdAt`)
       .select(`${notifications.table}.type as _type`)
       .select(`${db.comments.table}.id as _comment_id`)
       .select(`${db.comments.table}.comment as _comment_comment`)
@@ -129,12 +131,14 @@ module.exports = function(db) {
       .select(`${db.channels.table}.name as _channel_name`)
       .select(`sender.id as _senders__id`)
       .select(`sender.name as _senders__name`)
+      .select(`${notifications.table}.createdAt as _createdAt`)
       .select(db.knex.raw('NOT EXISTS(?) as ??', [
-        db.knex.table(db.notificationReceipts.table).select(1).where('channelId', user && user.id).andWhere('notificationId', db.knex.raw('??', [`${notifications.table}.id`])).limit(1),
+        unreadSubQuery,
         '_unread',
       ]))
       .from(notifications.table)
       .orderBy(`${notifications.table}.createdAt`, 'desc')
+      .limit(10)
       .innerJoin(`${db.channels.table} as sender`, `${notifications.table}.senderId`, 'sender.id')
       .leftJoin(db.comments.table, function() {
         this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT']))
@@ -189,9 +193,11 @@ module.exports = function(db) {
               .modify(db.channels.authorizedManageSubquery, user)
           });
         });
-      }),
-      true,
-    );
+      });
+    if (before) {
+      query.andWhere(`${notifications.table}.createdAt`, '<', before);
+    }
+    return db.knexnest(query, true);
   }
 
   return notifications;

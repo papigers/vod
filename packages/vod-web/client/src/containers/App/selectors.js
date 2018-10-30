@@ -8,4 +8,8 @@ const makeSelectSidebar = () =>
 const makeSelectChannelModal = () =>
   createSelector(selectGlobal, globalState => globalState.get('channelModalOpen'));
 
-export { selectGlobal, makeSelectSidebar, makeSelectChannelModal };
+export {
+  selectGlobal,
+  makeSelectSidebar,
+  makeSelectChannelModal,
+};

@@ -3,7 +3,8 @@ var router = express.Router();
 var db = require('../../models');
 
 router.get('/', function(req, res, next) {
-  db.notifications.getChannelNotifications(req.user)
+  var before = req.query.before ? new Date(req.query.before) : new Date();
+  db.notifications.getChannelNotifications(req.user, before)
   .then(function(results) {
     res.json(results);
   })
@@ -23,7 +24,7 @@ router.put('/read/:id', function(req, res, next) {
 });
 
 router.put('/read', function(req, res, next) {
-  db.notificationReceipts.readNotifications(req.user, [req.body.notifications])
+  db.notificationReceipts.readNotifications(req.user, req.body.notifications)
   .then(function() {
     res.sendStatus(200);
   })
