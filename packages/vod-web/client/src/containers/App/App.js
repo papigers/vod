@@ -39,11 +39,8 @@ const Content = styled.div`
 class App extends Component {
   
   componentDidMount() {
-    this.props.getUser()
-      .then(() => {
-        this.props.getManagedChannels();
-        this.props.getFollowedChannels();
-      });
+    this.props.getManagedChannels();
+    this.props.getFollowedChannels();
     this.props.getNotifications();
   }
 

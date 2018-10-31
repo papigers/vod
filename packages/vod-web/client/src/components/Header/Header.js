@@ -169,31 +169,6 @@ const StyledSpinnerContainer = styled(Box)`
   }
 `;
 
-const TooltipContainer = styled.span`
-  position: relative;
-`;
-
-// const NotificationTooltip = styled.div`
-//   position: absolute;
-//   top: 0;
-//   right: 0;
-//   width: 20px;  
-//   height: 20px;
-//   padding: 0;
-//   padding-bottom: 1px;
-//   padding-right: 1px;
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   border-radius: 50%;
-//   color: #f8f8f8;
-//   font-size: 10px;
-//   border: 1px solid;
-//   border-color: ${({theme}) => theme.palette.neutralLight};
-//   background-color: ${({theme}) => theme.palette.themeSecondary};
-//   box-shadow: ${({theme}) => theme.palette.blackTranslucent40} 0px 0px 5px 0px;
-// `;
-
 const NotificationTooltip = styled(Tooltip)`
     width: 20px;
     height: 20px;

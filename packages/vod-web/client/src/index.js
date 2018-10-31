@@ -14,6 +14,7 @@ import styledSanitize from 'styled-sanitize';
 import { injectGlobal } from 'styled-components';
 
 import App from './containers/App';
+import AuthRequired from './containers/AuthRequired';
 import ThemeProvider from './theme';
 
 import configureStore from './configureStore';
@@ -47,7 +48,12 @@ ReactDOM.render(
       <ScrollContext>
         <ThemeProvider>
           <Fabric>
-            <Route component={App} />
+            <Route render={props => (
+              <AuthRequired>
+                <App {...props} />
+              </AuthRequired>
+              )}
+            />
           </Fabric>
         </ThemeProvider>
       </ScrollContext>

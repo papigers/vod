@@ -5,9 +5,9 @@ let initial = {
   user: null,
   followedChannels: [],
 };
-if (process.env.REACT_APP_TEST_USER && process.env.NODE_ENV !== 'production') {
-  initial.user = JSON.parse(process.env.REACT_APP_TEST_USER);
-}
+// if (process.env.REACT_APP_TEST_USER && process.env.NODE_ENV !== 'production') {
+//   initial.user = JSON.parse(process.env.REACT_APP_TEST_USER);
+// }
 const userInitialState = fromJS(initial);
 
 export default function userReducer(state = userInitialState, action) {
