@@ -33,7 +33,7 @@ const StyledModal = styled(FabricModal).attrs({
   .ms-Dialog-main {
     z-index: 1;
     & > div {
-      ${(size) => (size && sizes[size]) || sizes[MODAL_SIZE.AUTO]}
+      ${({size}) => (size && sizes[size]) || sizes[MODAL_SIZE.AUTO]}
       max-height: 80vh;
       max-width: 80vw;
       display: flex;
@@ -71,7 +71,8 @@ class Modal extends Component {
       isOpen,
       isBlocking,
       onDismiss,
-      children
+      children,
+      size
     } = this.props;
 
     return (
@@ -79,6 +80,7 @@ class Modal extends Component {
         isOpen={isOpen}
         onDismiss={onDismiss}
         isBlocking={isBlocking}
+        size={size}
       >
         <ModalHeader>
           {title}
