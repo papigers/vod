@@ -322,12 +322,17 @@ module.exports = function(db) {
 
   videos.getManagedVideos = function(user) {
     return db.knexnest(
-      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal` )
-      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewCount']))
+      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal`,`${db.videoAcls.table}.id as _Acls_id`, `${db.videoAcls.table}.type as _Acls_type`, `${db.videoAcls.table}.videoId as _Acls_videoId`)
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewsCount']))
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoLikes.table}.channelId`, '_likesCount']))
+      .select(db.knex.raw('COUNT(??) as ??', [`${db.comments.table}.id`, '_commentsCount']))
       .from(videos.table)
       .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
       .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
-      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`)
+      .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
+      .leftJoin(db.comments.table, `${videos.table}.id`, `${db.comments.table}.videoId`)
+      .leftJoin(db.videoAcls.table, `${videos.table}.id`, `${db.videoAcls.table}.videoId`)
+      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, `${db.videoAcls.table}.id`, `${db.videoAcls.table}.videoId`)
       .orderBy('_channel_personal', 'desc')
       .orderBy('_channel_id')
       .orderBy('_createdAt', 'desc')
