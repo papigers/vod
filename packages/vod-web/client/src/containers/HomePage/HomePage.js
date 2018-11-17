@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import { Box, Flex } from 'grid-styled';
 import axios from 'utils/axios';
+import { knuthShuffle as shuffle } from 'knuth-shuffle'
 
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 
 const VIDEO_LISTS_DATA = {
+  recommended: {
+    label: 'מומלצים',
+    endpoint: '/videos/list/recommended',
+  },
   new: {
     label: 'חדשים',
     endpoint: '/videos/list/new',
   },
   top: {
-    label: 'הנצפים ביותר',
+    label: 'מובילים',
     endpoint: '/videos/list/top',
   },
   trending: {
@@ -56,7 +61,7 @@ class HomePage extends Component {
     return (
       <Flex justifyContent="center">
         <Box px={16} py={12} pb={8} width={[1, 1, 1, 0.92]}>
-          {Object.keys(VIDEO_LISTS_DATA).map(videoListId => (
+          {shuffle(Object.keys(VIDEO_LISTS_DATA)).map(videoListId => (
             <VideoList
               key={videoListId}
               category={VIDEO_LISTS_DATA[videoListId].label}
