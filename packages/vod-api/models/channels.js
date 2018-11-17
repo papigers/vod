@@ -120,13 +120,10 @@ module.exports = function(db) {
 
   channels.getChannelVideos = function(user, channelId, limit, offset, sort) {
     return db.knexnest(
-      db.knex.table(channels.table).innerJoin(db.videos.table, `${channels.table}.id`, `${db.videos.table}.channelId`)
-      .select(`${db.videos.table}.id as _id`, `${db.videos.table}.createdAt as _createdAt`, `${db.videos.table}.name as _name`, `${db.videos.table}.description as _description`, `${channels.table}.id as _channel_id`, `${channels.table}.name as _channel_name`)
-      .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewCount']))
+      db.knex.queryBuilder().modify(db.videos.videoListSelect)
       .where(`${channels.table}.id`, channelId)
       .limit(limit)
       .offset(offset)
-      .leftJoin(`${db.videoViews.table}`, `${db.videos.table}.id`, `${db.videoViews.table}.videoId`)
       .groupBy(`${db.videos.table}.id`, `${channels.table}.id`)
       .modify(db.videos.order, sort)
       .modify(channels.authorizedViewSubquery, user)
@@ -291,6 +288,7 @@ module.exports = function(db) {
   channels.searchChannels = function(user, query) {
     return this.select(`${channels.table}.id as _id`, `${channels.table}.createdAt as _createdAt`, `${channels.table}.name as _name`, `${channels.table}.description as _description`, db.knex.raw('NULL as _channel_id'), db.knex.raw('NULL as _channel_name'), db.knex.raw('search.rank as _rank'))
       .select(db.knex.raw('NULL as ??', ['_viewCount']))
+      .select(db.knex.raw('NULL as ??', ['_likeCount']))
       .select(db.knex.raw('?? IS NOT NULL as ??', [
         `${db.channelFollowers.table}.followerId`,
         '_isFollowing',

@@ -93,6 +93,9 @@ class VideoPage extends Component {
     this.state = {
       loading: true,
       error: null,
+      related: [],
+      loadingRelated: true,
+      errorRelated: null,
       video: null,
       likeDelta: 0,
       viewed: false,
@@ -105,8 +108,11 @@ class VideoPage extends Component {
       return {
         videoId: propsId,
         video: null,
+        related: [],
         loading: true,
         error: null,
+        loadingRelated: true,
+        errorRelated: null,
       };
     } 
     return null;
@@ -137,6 +143,22 @@ class VideoPage extends Component {
           video: null,
           loading: false,
           error: 'הסרטון אינו זמין',
+        });
+      });
+    axios.get(`/videos/related/${this.state.videoId}`)
+      .then(({ data }) => {
+        this.setState({
+          related: data,
+          loadingRelated: false,
+          errorRelated: null,
+        });
+      })
+      .catch((err) => {
+        // TODO: do something
+        this.setState({
+          related: [],
+          loadingRelated: false,
+          error: 'שגיאה בשליפת סרטונים דומים',
         });
       });
   }
@@ -290,7 +312,11 @@ class VideoPage extends Component {
               </Box>
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
-                <VideoList type={VIDEO_LIST_TYPE.LIST} />
+                <VideoList
+                  videos={this.state.related}
+                  loading={this.state.loadingRelated}
+                  type={VIDEO_LIST_TYPE.LIST}
+                />
               </Box>
             </Flex>
           </Box>

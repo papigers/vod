@@ -11,6 +11,7 @@ import {
   DocumentCardType,
 } from 'office-ui-fabric-react/lib/DocumentCard';
 import { Shimmer,ShimmerElementType as ElemType, ShimmerElementsGroup } from 'office-ui-fabric-react/lib/Shimmer';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 import { withPreload } from 'containers/VideoPreloader';
 
@@ -35,6 +36,7 @@ const StyledVideoCard = styled(DocumentCard)`
   }
   .ms-DocumentCardTitle {
     box-sizing: content-box;
+    flex-grow: 1;
   }
 
   .ms-DocumentCardActivity {
@@ -61,6 +63,16 @@ const StyledVideoCard = styled(DocumentCard)`
     .ms-DocumentCardTitle {
       height: 46px;
     }
+  }
+`;
+
+const LikeBox = styled(Flex)`
+  padding: 0 6px;
+  font-size: 12px;
+  i {
+    padding-left: 6px;
+    color: ${({theme}) => theme.palette.neutralTertiary};
+    margin-top: 1px;
   }
 `;
 
@@ -159,10 +171,18 @@ class VideoCard extends Component {
                 width='100%'
                 isDataLoaded={!showShimmer}
               >
-                {video && <DocumentCardTitle
-                  title={video.name}
-                  shouldTruncate
-                />}
+                {video && (
+                  <Flex justifyContent="space-between" alignItems="baseline">
+                    <DocumentCardTitle
+                      title={video.name}
+                      shouldTruncate
+                    />
+                    <LikeBox alignItems="center">
+                      <Icon iconName="LikeSolid" />
+                      {video.likeCount}
+                    </LikeBox>
+                  </Flex>
+                )}
                 <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
                   <DocumentCardActivity
                     // activity={video && `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}`}
