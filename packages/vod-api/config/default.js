@@ -7,7 +7,8 @@ module.exports = {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'Aa123123',
     database: process.env.DB_DATABASE || 'vod',
-    host: process.env.DB_HOSTNAME || '35.205.187.255',
+    host: process.env.DB_HOSTNAME || 'vod-db.westeurope.cloudapp.azure.com',
+    port: process.env.DB_PORT || 5433,
     config: {
       dialect: process.env.DB_TYPE || 'postgres',
       pool: {

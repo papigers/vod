@@ -7,6 +7,7 @@ module.exports = {
     user: config.username,
     password: config.password,
     host: config.host,
+    port: config.port,
   },
   pool: config.config.pool,
   migrations: {
