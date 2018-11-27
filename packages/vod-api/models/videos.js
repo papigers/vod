@@ -164,6 +164,93 @@ module.exports = function(db) {
     });
   }
 
+  videos.editMetadata = function(user, property, items) {
+    return db.knex.transaction(function(trx) {
+      return Promise.all(items.videos.map(function(video) {
+        return trx(videos.table)
+          .where('id', video.id)  
+          .update({
+              [property] :video[property]
+            })
+          .modify(videos.authorizedManageSubquery, user).transacting(trx);
+      }))
+      .catch(function(err){
+        return trx.rollback(new VideoError(
+          err,
+          500,
+          ));
+        });
+    });
+  }
+
+  videos.editPrivacy = function(user, id, video) {
+    return db.knex.transaction(function(trx) {
+      return trx(db.videoAcls.table).where('videoId', id).modify(videos.authorizedManageSubquery, user).del()
+      .then(function() {
+        if (video.privacy !== 'PUBLIC') {
+          return Promise.all(video.acls.map(function(acl) {
+            return trx(db.videoAcls.table).insert({
+              videoId: id,
+              id: acl.id,
+              type: acl.type,
+            }).modify(videos.authorizedManageSubquery, user);
+          }));
+        }
+        return Promise.resolve(video);
+      })
+      .catch(function(err){
+        return trx.rollback(new VideoError(
+          err,
+          500,
+          ));
+        });
+    });
+  }
+
+  videos.editTags = function(user, action, items) {
+    console.log(items, action);
+    
+    return db.knex.transaction(function(trx) {
+      switch (action) {
+        case 'clean':
+          return Promise.all(items.videos.map(function(video) {
+            return trx(db.tags.table).where('itemId', video.id).modify(videos.authorizedManageSubquery, user).del();
+          }));
+        case 'replace':
+          return Promise.all(items.videos.map(function(video) {
+            return Promise.all(items.tags.map(function(tag) {
+              return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId']))
+                .insert(trx.select(trx.raw('?, ?, ?', [tag, 'VIDEO', video.id]))
+                  .whereNotExists(function() {
+                      this.select('tag').from(db.tags.table).where('tag', tag).andWhere('itemId', video.id).andWhere('taggable', 'VIDEO');
+                    })
+                  .limit(1)
+                ).modify(videos.authorizedManageSubquery, user);
+            })).then(function() {
+              return trx(db.tags.table).where('itemId', video.id).whereNotIn('tag', items.tags).del();
+            });          
+          }));
+        case 'remove':
+          return Promise.all(items.videos.map(function(video) {
+              return trx(db.tags.table).where('itemId', video.id).whereIn('tag', items.tags).del().modify(videos.authorizedManageSubquery, user);
+          }));
+
+        default:
+          return Promise.all(items.videos.map(function(video) {
+            return Promise.all(items.tags.map(function(tag) {
+              return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId']))
+                .insert(trx.select(trx.raw('?, ?, ?', [tag, 'VIDEO', video.id]))
+                  .whereNotExists(function() {
+                      this.select('tag').from(db.tags.table).where('tag', tag).andWhere('itemId', video.id).andWhere('taggable', 'VIDEO');
+                    })
+                  .limit(1)
+                ).modify(videos.authorizedManageSubquery, user);
+            }));
+          }));
+      }
+    });
+  }
+
   videos.edit = function(user, id, video) {
     video.tags = video.tags || [];
     video.acl = video.acl || [];
@@ -225,6 +312,14 @@ module.exports = function(db) {
 
   videos.delete = function(user, id) {
     return db.knex(videos.table).where('id', id).modify(videos.authorizedManageSubquery, user).del();
+  }
+
+  videos.deleteVideos = function(user, items) {
+    return db.knex.transaction(function(trx) {
+      return Promise.all(items.videos.map(function(video) {
+        return trx(videos.table).where('id', video.id).modify(videos.authorizedManageSubquery, user).del();
+      }));
+    });
   }
 
   videos.checkAuth = function(videoId, user) {
@@ -322,7 +417,7 @@ module.exports = function(db) {
 
   videos.getManagedVideos = function(user) {
     return db.knexnest(
-      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal`,`${db.videoAcls.table}.id as _Acls_id`, `${db.videoAcls.table}.type as _Acls_type`, `${db.videoAcls.table}.videoId as _Acls_videoId`)
+      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.tags.table}.tag as _tags_tag`, `${db.tags.table}.taggable as _tags_taggable`, `${db.tags.table}.itemId as _tags_itemId`, `${videos.table}.published as _published`, `${videos.table}.privacy as _privacy`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal`,`${db.videoAcls.table}.id as _acls_id`, `${db.videoAcls.table}.type as _acls_type`, `${db.videoAcls.table}.videoId as _acls_videoId`)
       .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewsCount']))
       .select(db.knex.raw('COUNT(??) as ??', [`${db.videoLikes.table}.channelId`, '_likesCount']))
       .select(db.knex.raw('COUNT(??) as ??', [`${db.comments.table}.id`, '_commentsCount']))
@@ -332,7 +427,8 @@ module.exports = function(db) {
       .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
       .leftJoin(db.comments.table, `${videos.table}.id`, `${db.comments.table}.videoId`)
       .leftJoin(db.videoAcls.table, `${videos.table}.id`, `${db.videoAcls.table}.videoId`)
-      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, `${db.videoAcls.table}.id`, `${db.videoAcls.table}.videoId`)
+      .leftJoin(db.tags.table, `${videos.table}.id`, `${db.tags.table}.itemId`)
+      .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, `${db.videoAcls.table}.id`, `${db.videoAcls.table}.videoId`, `${db.tags.table}.tag`, `${db.tags.table}.itemId`)
       .orderBy('_channel_personal', 'desc')
       .orderBy('_channel_id')
       .orderBy('_createdAt', 'desc')
