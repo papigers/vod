@@ -279,6 +279,13 @@ export default class Header extends Component {
                     iconName: 'Upload'
                 },
               }, {
+                key: 'studio',
+                name: 'סטודיו',
+                to: '/studio',
+                iconProps: {
+                  iconName: 'MyMoviesTV'
+                },
+              }, {
                 key: 'channel',
                 name: 'הערוץ שלי',
                 to: '/channel',
