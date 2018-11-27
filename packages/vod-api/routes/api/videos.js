@@ -138,7 +138,62 @@ router.put('/video/:id/dislike', function(req, res) {
     });
 });
 
-router.put('/:id', function(req, res) {
+router.put('/tags/:action', function(req, res) {
+  db.videos.editTags(req.user, req.params.action, req.body)
+    .then(function(result) {
+      if (!!result) {
+        return res.sendStatus(200);
+      }
+      return res.status(404).json({
+        error: 'No such videos',
+      });
+    })
+    .catch(function (err) {
+      console.log(err);
+      
+      var statusCode = err.code || 500;
+      res.status(statusCode).json({
+        error: err.message || 'Videos edit failed',
+      });
+    });
+});
+
+router.put('/metadata/:property', function(req, res) {
+  db.videos.editMetadata(req.user, req.params.property, req.body)
+    .then(function(result) {
+      if (!!result) {
+        return res.sendStatus(200);
+      }
+      return res.status(404).json({
+        error: 'No such videos',
+      });
+    })
+    .catch(function (err) {
+      var statusCode = err.code || 500;
+      res.status(statusCode).json({
+        error: err.message || 'Videos edit failed',
+      });
+    });
+});
+
+router.put('/video/:id/permissions', function(req, res) {
+  db.videos.editPrivacy(req.user, req.params.id, req.body)
+    .then(function(result) {
+      if (!!result) {
+        return res.sendStatus(200);
+      }
+      return res.status(404).json({
+        error: 'No such video',
+      });
+    })
+    .catch(function (err) {
+      res.status(err.code).json({
+        error: err.message || 'Video edit failed',
+      });
+    });
+});
+
+router.put('/video/:id', function(req, res) {
   db.videos.edit(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
@@ -171,6 +226,22 @@ router.put('/publish/:id', function(req, res, next) {
       res.status(500).json({
         error: 'Video publish failed',
       });
+    });
+});
+
+router.delete('/', function(req, res) {
+  console.log('api',req.body);
+  
+  db.videos.deleteVideos(req.user, req.body)
+    .then(function(deleted) {
+      if (deleted) {
+        return res.json({});
+      }
+      return res.sendStatus(404);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.sendStatus(500);
     });
 });
 
