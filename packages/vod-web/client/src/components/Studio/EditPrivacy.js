@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import { Flex } from 'grid-styled';
 
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
@@ -7,6 +8,19 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 
 
 import PeoplePicker from 'components/PeoplePicker';
+
+const Form = styled.form`
+  align-content: center;
+  width:30vw;
+`;
+
+const FormContainer = styled(Flex)`
+  justify-content: center;
+`;
+
+const ContentContainer = FormContainer.extend`
+    margin: 1em 0;
+`;
 
 const FormButton = styled(DefaultButton)`
   margin: 0 1em;
@@ -98,7 +112,8 @@ class EditPrivacy extends Component {
       const {privacy, acls} = this.state;
       const {onClose} = this.props;
         return (
-            <div>
+            <FormContainer>
+              <Form>
                 <Dropdown
                     required
                     label="גישה"
@@ -117,19 +132,22 @@ class EditPrivacy extends Component {
                     onChange={this.onChangeACL}
                     selectedItems={acls}
                 />:null}
-                <FormButton
-                  primary
-                  text='שמור'
-                  iconProps={{ iconName: 'Save' }}
-                  onClick={this.onSubmit}
-                />
-                
-                <FormButton
-                  text='בטל'
-                  iconProps={{ iconName: 'Delete' }}
-                  onClick={onClose}
-                />
-            </div>
+                <ContentContainer>
+                  <FormButton
+                    primary
+                    text='שמור'
+                    iconProps={{ iconName: 'Save' }}
+                    onClick={this.onSubmit}
+                  />
+                  
+                  <FormButton
+                    text='בטל'
+                    iconProps={{ iconName: 'Delete' }}
+                    onClick={onClose}
+                  />
+                </ContentContainer>
+                </Form>
+            </FormContainer>
         );
     }
 }
