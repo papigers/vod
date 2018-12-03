@@ -214,7 +214,12 @@ module.exports = function(db) {
       switch (action) {
         case 'clean':
           return Promise.all(items.videos.map(function(video) {
-            return trx(db.tags.table).where('itemId', video.id).modify(videos.authorizedManageSubquery, user).del();
+            return trx(db.tags.table)
+            .where(`${db.tags.table}.itemId`, video.id)
+            .whereIn(`${db.tags.table}.itemId`, function() {
+              this.select(`${videos.table}.id`).from(videos.table).where(`${videos.table}.id`, video.id).modify(videos.authorizedManageSubquery, user);
+            })
+            .del(); 
           }));
         case 'replace':
           return Promise.all(items.videos.map(function(video) {
@@ -232,7 +237,13 @@ module.exports = function(db) {
           }));
         case 'remove':
           return Promise.all(items.videos.map(function(video) {
-              return trx(db.tags.table).where('itemId', video.id).whereIn('tag', items.tags).del().modify(videos.authorizedManageSubquery, user);
+              return trx(db.tags.table)
+              .where(`${db.tags.table}.itemId`, video.id)
+              .whereIn('tag', items.tags)
+              .whereIn(`${db.tags.table}.itemId`, function() {
+                this.select(`${videos.table}.id`).from(videos.table).where(`${videos.table}.id`, video.id).modify(videos.authorizedManageSubquery, user);
+              })
+              .del().debug();
           }));
 
         default:
