@@ -7,6 +7,7 @@ import axios from 'utils/axios';
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectSidebar } from 'containers/App/selectors';
 
 class StudioPage extends Component {
     constructor() {
@@ -102,8 +103,10 @@ class StudioPage extends Component {
 
     render() {
         const { videoList } = this.state;
+        const { sidebar } = this.props;
         return (
             <Studio
+                sidebarisopen={sidebar.open}
                 videoList={videoList}
                 onDelete={this.deleteVideos}
                 onMetadataEdit={this.editVideosMetadata}
@@ -116,6 +119,7 @@ class StudioPage extends Component {
 
 const mapStateToProps = createStructuredSelector({
     user: makeSelectUser(),
+    sidebar: makeSelectSidebar(),
   });
   
   export default createReduxContainer(StudioPage, mapStateToProps);
