@@ -308,13 +308,6 @@ export default class Header extends Component {
                     },
                   ],
                 },
-              }, {
-                key: 'studio',
-                name: 'סטודיו',
-                to: '/studio',
-                iconProps: {
-                  iconName: 'MyMoviesTV'
-                },
               }]} />
             )}
           </ThemeContext.Consumer>
