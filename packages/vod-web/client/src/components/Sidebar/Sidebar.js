@@ -14,6 +14,7 @@ const PanelHost = styled(LayerHost)`
   position: fixed;
   margin-top: 64px;
   height: calc(100% - 64px);
+  z-index: 1000;
 `;
 
 const StyledPanel = styled(Panel)`
