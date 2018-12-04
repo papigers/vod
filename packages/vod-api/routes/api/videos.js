@@ -38,6 +38,24 @@ router.get('/managed', function(req, res) {
     });
 });
 
+router.get('/video/:id/permissions', function(req, res) {
+  db.videoAcls.getvideoAcls(req.user, req.params.id)
+    .then(function(result) {
+      if (result) {
+        return res.json(result);
+      }
+      return res.status(404).json({
+        error: 'No such video',
+      });
+    })
+    .catch(function (err) {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Couldn\'t get video ACLs',
+      });
+    })
+});
+
 router.get('/search', function(req, res) {
   var limit = req.query.limit || 12;
   var offset = req.query.offset || 0;
