@@ -59,6 +59,15 @@ class TagPicker extends Component {
       selected: [],
     };
   }
+
+  componentDidMount() {
+    const { tags } = this.props;
+    if (tags) {
+      tags.forEach(tag => {
+        this.addItem({ name: tag.tag, key: tag.tag });
+      });
+    }
+  }
   
   addItem = (item) => {
     if (this.state.selected.findIndex(sel => sel.key === item.key) === -1) {
