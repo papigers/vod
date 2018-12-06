@@ -17,6 +17,7 @@ import Modal from 'components/Modal';
 import EditMetadata from './EditMetadata';
 import DeleteForm from './DeleteForm';
 import EditPrivacy from './EditPrivacy';
+import VideoEditForm from 'components/VideoEditForm';
 
 
 const ContentBox = styled(Flex).attrs({
@@ -100,6 +101,7 @@ class Studio extends Component {
                         privacy: video.privacy,
                         privacyDisplay: video.privacy === 'PUBLIC'? 'ציבורי' : 'פרטי',
                         acls: video.acls,
+                        tags: video.tags,
                         channelName: `${video.channel.name} (${video.channel.id})`,
                         channelId: video.channel.id,
                         viewsCount: video.viewsCount,
@@ -169,8 +171,20 @@ class Studio extends Component {
     }
 
     renderModal() {
-          const {editType, selectionDetails} = this.state;
-          const {onMetadataEdit, onVideoShare, onDelete, onTagsEdit} = this.props;
+          const {
+              editType,
+              selectionDetails,
+              items
+            } = this.state;
+
+          const {
+              onMetadataEdit,
+              onVideoShare,
+              onDelete,
+              onTagsEdit,
+              onVideoEdit
+            } = this.props;
+
           switch (editType) {
             case 'delete':
                 return <DeleteForm
@@ -184,16 +198,25 @@ class Studio extends Component {
                             onClose={this.changeModalState}
                             onSubmit={onVideoShare}
                             />
-            case 'thumbnail':
-                return <p>thumbnail</p>
+            case 'editVideo':
+                return <VideoEditForm
+                            video={selectionDetails[0]}
+                            onClose={this.changeModalState}
+                            onSubmit={onVideoEdit}
+                            />   
             default:
-                  return <EditMetadata
+                if (editType === 'name' || editType === 'description' || editType === 'tags') {
+                    return <EditMetadata
                             videos={selectionDetails}
                             editType={editType}
                             onClose={this.changeModalState}
                             onMetadataEdit={onMetadataEdit}
                             onTagsEdit={onTagsEdit}
                             />
+                } else {
+                    return <p>404</p>
+                }
+                  
           }
       }
 
@@ -209,7 +232,7 @@ class Studio extends Component {
 
         switch (activeTab) {
           case 'videos':
-            selection.setItems(this.state.items, false)
+            selection.setItems(items, false);
             return (
                 <Fragment>
                     <ActionsBox hasItems={selectionDetails.length}>
@@ -270,17 +293,7 @@ class Studio extends Component {
                                                     onClick: () => {
                                                         this.onMenuClick('tags');
                                                     }
-                                                },{
-                                                    key: 'thumbnail',
-                                                    name: 'תמונה',
-                                                    iconProps: {
-                                                        iconName: 'PictureCenter',
-                                                    },
-                                                    onClick: () => {
-                                                        this.onMenuClick('thumbnail');
-                                                    }
-                                                }
-                                                ]
+                                                }]
                                             }
                                         },{
                                             key: 'share',
@@ -306,7 +319,7 @@ class Studio extends Component {
                                         {
                                             key: 'info',
                                             name: selectionDetails.length === 1 ?
-                                                `נבחר פריט אחד`: `נחברו ${selectionDetails.length} פריטים`,
+                                                `נבחר פריט אחד`: `נבחרו ${selectionDetails.length} פריטים`,
                                             iconProps: {
                                                 iconName: 'Info',
                                             }
@@ -367,7 +380,7 @@ class Studio extends Component {
                                 <Pivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
                                     <PivotItem itemIcon="MSNVideos" linkText="סרטונים" itemKey='videos' />
                                     <PivotItem itemIcon='Stack' linkText="פלייליסטים" itemKey='playlists' />
-                                    <PivotItem itemIcon = 'BIDashboard' linkText="אנליטיקות" itemKey="analytics" />
+                                    <PivotItem itemIcon = 'AnalyticsView' linkText="אנליטיקות" itemKey="analytics" />
                                 </Pivot>
                             </TitleBox>
                             {this.renderTab()}
