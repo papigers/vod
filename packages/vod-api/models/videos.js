@@ -313,7 +313,7 @@ module.exports = function(db) {
         }
         return updated;
       });
-    });
+    })
   }
     
   videos.publish = function(user, id, video) {
@@ -428,7 +428,7 @@ module.exports = function(db) {
 
   videos.getManagedVideos = function(user) {
     return db.knexnest(
-      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.tags.table}.tag as _tags_tag`, `${db.tags.table}.taggable as _tags_taggable`, `${db.tags.table}.itemId as _tags_itemId`, `${videos.table}.published as _published`, `${videos.table}.privacy as _privacy`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal`,`${db.videoAcls.table}.id as _acls_id`, `${db.videoAcls.table}.type as _acls_type`, `${db.videoAcls.table}.videoId as _acls_videoId`)
+      db.knex.select(`${videos.table}.id as _id`, `${videos.table}.createdAt as _createdAt`, `${videos.table}.name as _name`, `${videos.table}.description as _description`, `${db.tags.table}.tag as _tags__tag`, `${db.tags.table}.taggable as _tags__taggable`, `${db.tags.table}.itemId as _tags__itemId`, `${videos.table}.published as _published`, `${videos.table}.privacy as _privacy`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`,`${db.channels.table}.personal as _channel_personal`,`${db.videoAcls.table}.id as _acls__id`, `${db.videoAcls.table}.type as _acls__type`, `${db.videoAcls.table}.videoId as _acls__videoId`)
       .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewsCount']))
       .select(db.knex.raw('COUNT(??) as ??', [`${db.videoLikes.table}.channelId`, '_likesCount']))
       .select(db.knex.raw('COUNT(??) as ??', [`${db.comments.table}.id`, '_commentsCount']))
