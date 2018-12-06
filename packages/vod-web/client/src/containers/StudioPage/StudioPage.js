@@ -13,23 +13,17 @@ class StudioPage extends Component {
         super();
         this.state = {
             videoList: {},
-            refresh: false,
         };
         this.editVideosMetadata = this.editVideosMetadata.bind(this);
     }
-
-    
 
     componentDidMount () {
         this.fetchVideos();
     }
 
     componentDidUpdate(prevProps) {
-        if (this.state.refresh || this.props.user.id !== prevProps.user.id) {
+        if (this.props.user.id !== prevProps.user.id) {
             this.fetchVideos();
-            this.setState({
-                refresh: false,
-            })
         }
     }
 
@@ -55,12 +49,8 @@ class StudioPage extends Component {
         return axios.delete(`/videos`,{
             videos
         })
-        .then(({ data }) => {
-            console.log(data);
-            this.setState({
-                refresh: true,
-            });
-        }).catch((err) => {
+        .then(() => this.fetchVideos())
+        .catch((err) => {
             console.error(err);
         });
     }
@@ -69,7 +59,15 @@ class StudioPage extends Component {
         return axios.put(`/videos/video/${video.id}/permissions`, {
             video
         })
-        .then(() => this.setState({ refresh: true }))
+        .then(() => this.fetchVideos())
+        .catch((err) => {
+            console.log(err);
+        });
+    }
+
+    editVideo(video){
+        return axios.put(`/videos/video/${video.id}`, video)
+        .then(() => this.fetchVideos())
         .catch((err) => {
             console.log(err);
         });
@@ -79,9 +77,7 @@ class StudioPage extends Component {
         return axios.put(`/videos/metadata/${property}`, {
             videos
         })
-        .then(( data ) => {
-            this.setState({ refresh: true });
-        })
+        .then(() => this.fetchVideos())
         .catch((err) => {
             console.log(err);
         });
@@ -92,9 +88,7 @@ class StudioPage extends Component {
             videos,
             tags,
         })
-        .then(( data ) => {
-            this.setState({ refresh: true });
-        })
+        .then(() => this.fetchVideos())
         .catch((err) => {
             console.log(err);
         });
@@ -104,11 +98,12 @@ class StudioPage extends Component {
         const { videoList } = this.state;
         return (
             <Studio
-                videoList={videoList}
-                onDelete={this.deleteVideos}
-                onMetadataEdit={this.editVideosMetadata}
-                onTagsEdit={this.editVideosTags}
-                onVideoShare={this.editVideoPrivacy}
+                videoList = {videoList}
+                onDelete = {this.deleteVideos}
+                onMetadataEdit = {this.editVideosMetadata}
+                onTagsEdit = {this.editVideosTags}
+                onVideoShare = {this.editVideoPrivacy}
+                onVideoEdit = {this.editVideo}
             />
         );
     }
