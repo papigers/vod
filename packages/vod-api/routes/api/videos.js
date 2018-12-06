@@ -1,6 +1,7 @@
 var express = require('express');
 var qs = require('querystring');
 var db = require('../../models');
+var adFilter = require('../ldap').adFilter;
 var router = express.Router();
 
 // default redirect to random
@@ -40,20 +41,31 @@ router.get('/managed', function(req, res) {
 
 router.get('/video/:id/permissions', function(req, res) {
   db.videoAcls.getvideoAcls(req.user, req.params.id)
-    .then(function(result) {
-      if (result) {
-        return res.json(result);
-      }
-      return res.status(404).json({
-        error: 'No such video',
-      });
+    .then(function(data) {
+      var acls = [];
+      return Promise.all(data.map(function(acl) {
+        return adFilter(acl.id, acl.type === 'USER' ? 'user' : 'group')
+        .then(function([adObject]) {
+          if (adObject) {
+            acls.push({
+              id: adObject.sAMAccountName || adObject.dn,
+              name: adObject.displayName || adObject.cn,
+              type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
+              profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
+            });
+          }
+          return Promise.resolve();
+        });
+      })).then(function() {
+        return res.json(acls);
+      })
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       return res.status(500).json({
-        error: 'Couldn\'t get video ACLs',
+        error: 'Failed to get channel videos',
       });
-    })
+    });
 });
 
 router.get('/search', function(req, res) {
