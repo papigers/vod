@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Flex } from 'grid-styled';
+import { Box, Flex } from 'grid-styled';
 
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
@@ -25,6 +25,20 @@ const FormButton = styled(DefaultButton)`
   margin: 0 1em;
 `;
 
+const ErrorMsg = styled(Box)`
+  color: #e90000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
+
+const SuccessMsg = styled(Box)`
+  color: #008000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
+
 class EditForm extends Component {
     constructor() {
         super();
@@ -33,6 +47,8 @@ class EditForm extends Component {
             action: '',
             options: [],
             tags: [],
+            error: null,
+            done: null,
         };
       }
 
@@ -120,11 +136,24 @@ class EditForm extends Component {
     }
 
     onSubmit = () => {
-        debugger;
         const { text, action, tags} = this.state;
-        const { editType, videos, onMetadataEdit, onTagsEdit, onClose} = this.props;
+        const {
+            editType,
+            videos,
+            onMetadataEdit,
+            onTagsEdit,
+            onClose,
+            refresh
+        } = this.props;
         if (editType === 'tags') {
-            onTagsEdit(videos, action, tags).then(onClose);
+            onTagsEdit(videos, action, tags)
+            .then(onClose)
+            .catch((err)=>{
+                this.setState({
+                    error: err,
+                })
+                console.error(err);
+            });
         }
         else {
             videos.forEach(video => {
@@ -142,16 +171,29 @@ class EditForm extends Component {
                         video[editType] = '';
                         break;
                 }
-                console.log(video[editType]);
             });
 
-            onMetadataEdit(videos, editType).then(onClose);
+            onMetadataEdit(videos, editType)
+            .then(()=>{
+                this.setState({
+                    done: 'הסרטונים עודכנו בהצלחה!'
+                })
+            }).then(()=>{
+                setTimeout(()=>{}, 10000);
+            })
+            .then(onClose)
+            .catch((err)=>{
+                this.setState({
+                    error: err,
+                })
+                console.error(err);
+            });
         }
         
     }
 
     render() {
-        const {options, action} = this.state;
+        const {options, action, error, done} = this.state;
         const {onClose} = this.props;
         return (
             <FormContainer>
@@ -178,6 +220,16 @@ class EditForm extends Component {
                             onClick={onClose}
                         />
                     </ContentContainer>
+                    {error && (
+                        <ErrorMsg width={1}>
+                            {error}
+                        </ErrorMsg>
+                    )}
+                    {done && (
+                        <SuccessMsg width={1}>
+                            {done}
+                        </SuccessMsg>
+                    )}
                 </Form>
             </FormContainer>
         );

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Flex } from 'grid-styled';
+import { Box, Flex } from 'grid-styled';
 
-import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
+import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 
@@ -41,30 +41,29 @@ const DropdownOption = styled.div`
   }
 `;
 
+const ErrorMsg = styled(Box)`
+  color: #e90000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
+
+const SuccessMsg = styled(Box)`
+  color: #008000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
+`;
+
 class EditPrivacy extends Component {
     constructor() {
         super();
         this.state = {
-            id: '',
             privacy: 'PRIVATE',
             acls: [],
+            error: null,
+            done: null,
         };
-      }
-      
-      static getDerivedStateFromProps(props, state) {
-        const {video} = props;
-        if (video && (!state.id || state.id !== video.id)) {
-          var acls = video.acls;
-          if (video.acls) {
-            acls = video.acls[0] ? video.acls : [video.acls];
-          }
-          return {
-            id: video.id,
-            privacy: video.privacy,
-            acls: acls,
-          }
-        }
-        return null;
       }
 
       onRenderPrivacyOption = (item) => {
@@ -98,7 +97,7 @@ class EditPrivacy extends Component {
         }).filter(acl => !!acl);
       }
 
-      onPrivacyChannge = (e, index) => {
+      onChangePrivacy = (e, index) => {
         this.setState({
             privacy: index.key
         });
@@ -109,7 +108,7 @@ class EditPrivacy extends Component {
     }
       
     render() {
-      const {privacy, acls} = this.state;
+      const {privacy, acls, error, done} = this.state;
       const {onClose} = this.props;
         return (
             <FormContainer>
@@ -118,13 +117,15 @@ class EditPrivacy extends Component {
                     required
                     label="גישה"
                     selectedKey={privacy}
-                    onChange={this.onPrivacyChannge}
+                    onChange={this.onChangePrivacy}
                     onRenderTitle={this.onRenderPrivacyOption}
                     onRenderOption={this.onRenderPrivacyOption}
                     placeHolder="בחר/י גישה לערוץ"
                     options={[
-                      { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
                       { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
+                      { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                      { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
+                      { key: 'CHANNEL', text: 'יורש מהערוץ', data: { icon: 'MSNVideos' } },
                     ]}
                 />{privacy !=='PUBLIC'?
                 <PeoplePicker
@@ -147,6 +148,16 @@ class EditPrivacy extends Component {
                   />
                 </ContentContainer>
                 </Form>
+                {error && (
+                    <ErrorMsg width={1}>
+                        {error}
+                    </ErrorMsg>
+                )}
+                {done && (
+                    <SuccessMsg width={1}>
+                        {done}
+                    </SuccessMsg>
+                )}
             </FormContainer>
         );
     }

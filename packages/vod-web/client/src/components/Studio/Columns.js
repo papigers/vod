@@ -28,7 +28,7 @@ export const videosColumns = [
         name: 'הרשאות',
         fieldName: 'privacyDisplay',
         minWidth: 50,
-        maxWidth: 100,
+        maxWidth: 50,
     },
     {
         key: 'channelName',
