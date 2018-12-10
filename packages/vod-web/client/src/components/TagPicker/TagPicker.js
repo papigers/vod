@@ -62,10 +62,12 @@ class TagPicker extends Component {
 
   componentDidMount() {
     const { tags } = this.props;
+    const selected = [];
     if (tags) {
       tags.forEach(tag => {
-        this.addItem({ name: tag.tag, key: tag.tag });
+        selected.push({ name: tag.tag, key: tag.tag });
       });
+      this.setState({selected:selected});
     }
   }
   
