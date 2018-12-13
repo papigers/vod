@@ -166,7 +166,7 @@ module.exports = function(db) {
               channelId: video.channel,
               creatorId: video.creator,
             }).then(function() {
-              return trx.select().from(videos.table).where('name', video.name).limit(1);
+              return db.knexnest(trx.select().from(videos.table).where('name', video.name).limit(1));
             });
           }
           return res[0];

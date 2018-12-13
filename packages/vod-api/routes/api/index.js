@@ -12,6 +12,9 @@ router.use(auth);
 var videos = require('./videos');
 router.use('/videos', videos);
 
+var upload = require('./upload');
+router.use('/upload', upload);
+
 var notifications = require('./notifications');
 router.use('/notifications', notifications);
 

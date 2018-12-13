@@ -18,6 +18,6 @@ io.of('/upload').use(function(socket, next){
     next(new Error('Authentication error'));
   }    
 })
-require('./ioRoutes/upload')(io);
+require('./io-routes/upload')(io);
 
 module.exports = io;

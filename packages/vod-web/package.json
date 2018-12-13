@@ -26,6 +26,7 @@
     "react-router-scroll-4": "^1.0.0-beta.2",
     "react-waypoint": "^8.0.3",
     "redux-thunk": "^2.3.0",
+    "tus-js-client": "^1.5.2",
     "vod-auth": "^0.0.0",
     "vod-object-storage-client": "^0.0.0",
     "vod-redis-client": "^0.0.0"
