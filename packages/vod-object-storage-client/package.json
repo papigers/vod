@@ -1,5 +1,5 @@
 {
-  "name": "vod-object-storage-client",
+  "name": "@vod/vod-object-storage-client",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "Gershon Papi <papigers93@gmail.com>",

@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var auth = require('vod-auth');
+var auth = require('@vod/vod-auth');
 var db = require('../../models');
 
 router.post('/user-login', function(req, res) {

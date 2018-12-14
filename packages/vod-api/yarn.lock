@@ -3212,9 +3212,9 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tus-node-server@^0.3.2:
+"tus-node-server@git+https://github.com/papigers/tus-node-server.git":
   version "0.3.2"
-  resolved "https://registry.yarnpkg.com/tus-node-server/-/tus-node-server-0.3.2.tgz#1f51cb316c814bc974637f6f7b998b4d1b50dc5f"
+  resolved "git+https://github.com/papigers/tus-node-server.git#1456c0323b403ff76c9ee1ba58b6ca442578f6da"
   dependencies:
     "@google-cloud/storage" "1.7.0"
     aws-sdk "^2.224.1"

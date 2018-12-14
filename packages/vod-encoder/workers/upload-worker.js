@@ -2,9 +2,9 @@
 var amqp = require('amqp-connection-manager');
 var path = require('path');
 var fs = require('fs');
-var OSClient = require('vod-object-storage-client').S3Client();
+var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
-var publishProgress = '../messages/progress';
+var publishProgress = require('../messages/progress');
 
 var UPLOAD_QUEUE = 'upload_queue';
 
@@ -50,7 +50,7 @@ var channelWrapper = connection.createChannel({
         })
         .catch(function(err) {
           console.log(err);
-          ch.nack(msg)
+          ch.nack(msg);
         });
       }, { noAck: false }),
     ]);

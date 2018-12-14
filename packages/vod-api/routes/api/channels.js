@@ -8,7 +8,7 @@ var db = require('../../models');
 var adFilter = require('../ldap').adFilter;
 var router = express.Router();
 
-var OSClient = require('vod-object-storage-client').S3Client();
+var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var channelStorage = multer.diskStorage({
   destination: function (req, file, cb) {

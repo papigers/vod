@@ -1,5 +1,5 @@
 {
-  "name": "vod-api",
+  "name": "@vod/vod-api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,6 +8,8 @@
     "dev": "cross-env DEBUG=vod:api nodemon ./bin/www"
   },
   "dependencies": {
+    "@vod/vod-auth": "^0.0.0",
+    "@vod/vod-object-storage-client": "^0.0.0",
     "activedirectory": "^0.7.2",
     "amqp-connection-manager": "^2.3.0",
     "amqplib": "^0.5.2",
@@ -30,10 +32,7 @@
     "pg": "^7.4.3",
     "rimraf": "^2.6.2",
     "socket.io": "^2.2.0",
-    "tus-node-server": "^0.3.2",
-    "vod-auth": "^0.0.0",
-    "vod-object-storage-client": "^0.0.0",
-    "vod-redis-client": "^0.0.0"
+    "tus-node-server": "git+https://github.com/papigers/tus-node-server.git"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",

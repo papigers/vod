@@ -1,5 +1,5 @@
 var express = require('express');
-var auth = require('vod-auth');
+var auth = require('@vod/vod-auth');
 var router = express.Router();
 
 // Only for B2B access - no auth required
