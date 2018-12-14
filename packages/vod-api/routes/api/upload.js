@@ -6,47 +6,48 @@ var fs = require('fs');
 var tus = require('tus-node-server');
 
 var enqueueEncoding = require('../../messages/encode');
+var generateThumbnail = require('../../messages/thumbnails').generateThumbnail;
 var db = require('../../models');
 var router = express.Router();
 
-// var channelStorage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     var dest = path.join(os.tmpdir(), 'uploads');
-//     fs.access(dest, function(err) {
-//       if (err) {
-//         fs.mkdir(dest, function(error) {
-//           cb(error, dest);
-//         });
-//       }
-//       else {
-//         cb(null, dest);
-//       }
-//     });
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, `${req.user && req.user.id}_${file.originalname}`);
-//   }
-// });
-// var upload = multer({ storage: channelStorage });
-// var videoUpload = upload.single('video');
+function translateMetadata(metadata) {
+  return metadata.split(',').reduce(function(metadatObj, keyValue) {
+    const keyValueSplit = keyValue.split(' ');
+    metadatObj[keyValueSplit[0]] = Buffer.from(keyValueSplit[1], 'base64').toString();
+    return metadatObj;
+  }, {}); 
+}
 
 var tusServer = new tus.Server();
 tusServer.datastore = new tus.FileStore({
   path: path.join(os.tmpdir(), 'uploads'),
   relativeLocation: true,
+  namingFunction: function(req, res) {
+    return res.locals.videoId;
+  }
 });
 tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, (event) => {
-  console.log(`Upload complete for file ${event.file.id}`, Date.now());
-  console.log(event);
+  const videoId = event.file.id;
+  const file = path.join(os.tmpdir(), 'uploads', event.file.id);
+  enqueueEncoding(videoId, file);
+  generateThumbnail(videoId, file);
 });
-router.use('/video', function(req, res, next) {
-  console.log(req.baseUrl, req.originalUrl, req.url);
-  next();
-})
+router.post('/video', function(req, res, next) {
+  const metadata = translateMetadata(req.header('upload-metadata'));
+  db.videos.initialCreate(req.user, {
+    creator: req.user && req.user.id,
+    channel: req.user && req.user.id,
+    name: metadata.name.replace(/\.[^/.]+$/, ''),
+  })
+  .then(function(video) {
+    res.locals.videoId = video.id;
+    next();
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
 router.use('/video', tusServer.handle.bind(tusServer));
-router.post('/video', function(req, res) {
-  console.log('finished', Date.now());
-})
 
 // router.post('/', videoUpload, function(req, res) {
 //   db.videos.initialCreate(req.user, {

@@ -13,6 +13,7 @@ var UPLOAD_QUEUE = 'upload_queue';
 var connection =  amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
 
 function handleThumbnailMessage(type, body) {
+  console.log(type, body);
   return new Promise(function(resolve, reject) {
     var outputFolder = path.join(os.tmpdir(), body.id);
     return ensurePath(outputFolder).then(function() {
@@ -110,7 +111,7 @@ var channelWrapper = connection.createChannel({
       ch.assertQueue(UPLOAD_QUEUE, { durable: true }),
       ch.prefetch(2),
       ch.consume(THUMBNAIL_QUEUE, function(msg) {
-        return handleThumbnailMessage(msg.properties.type, msg.content.toString())
+        return handleThumbnailMessage(msg.properties.type, JSON.parse(msg.content.toString()))
         .then(function(data) {
           return self.sendToQueue(msg.properties.replyTo, data, { correlationId: msg.properties.correlationId });
         })

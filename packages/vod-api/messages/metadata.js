@@ -12,7 +12,8 @@ var channelWrapper = connection.createChannel({
   },
 });
 
-function getVideoMetadata(path) {
+function getVideoMetadata(path, id) {
+  const corr = id;
   return new Promise(function(resolve, reject) {
     function replySetup(ch) {
       ch.assertQueue('', { exclusive: true, autoDelete: true })
@@ -26,8 +27,10 @@ function getVideoMetadata(path) {
             }
             return resolve(data);
           }
-        }, {noAck: true});
-      }).then(function() {
+        }, {noAck: true}).then(function() {
+          return Promise.resolve(q);
+        });;
+      }).then(function(q) {
         return channelWrapper.sendToQueue(METADATA_QUEUE, path, { correlationId: corr, replyTo: q.queue });
       });
     }
