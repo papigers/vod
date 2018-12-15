@@ -50,6 +50,14 @@ Client.prototype.proxyGetObject = function(clientRequest, httpRequest, httpRespo
   stream.pipe(httpResponse);
 };
 
+Client.prototype.serverGetObject = function(key) {
+  var opts = {
+    Bucket: this.Bucket,
+    Key: key,
+  };
+  return this.downloadS3.getObject(opts).createReadStream();
+}
+
 Client.prototype.getObject = function(opts, req, callback) {
   opts.Bucket = this.Bucket;
   var header = null;

@@ -1,6 +1,7 @@
 var express = require('express');
 var qs = require('querystring');
 var db = require('../../models');
+var previewThumbnails = require('../../messages/thumbnails').previewThumbnails;
 var router = express.Router();
 
 // default redirect to random
@@ -224,6 +225,35 @@ router.post('/:videoId/comments', function(req, res, next) {
   db.comments.postComment(req.user, req.params.videoId, req.body.comment)
     .then(function() {
       res.sendStatus(200);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
+    });
+});
+
+router.get('/:videoId/thumbnails', function(req, res, next) {
+  var count = +req.query.count || 1;
+  if (isNaN(count)) {
+    res.status(400).send('count must be a number')
+  }
+  if (count > 16 || count < 1) {
+    res.status(400).send('count must be between 1 and 16')
+  }
+  previewThumbnails(req.params.videoId, count)
+    .then(function(thumbs) {
+      if (count !== thumbs.length) {
+        return next(new Error('Encountered a problem getting video thumbnails'));
+      }
+      if (count === 1) {
+        var thumb = Buffer.from(thumbs[0].replace(/^data:image\/png;base64,/, ''), 'base64');
+        res.writeHead(200, {
+          'Content-Type': 'image/png',
+          'Content-Length': thumb.length,
+        })
+        return res.end(thumb);
+      }
+      res.json(thumbs);
     })
     .catch(function(err) {
       console.error(err);

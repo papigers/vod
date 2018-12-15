@@ -53,7 +53,7 @@ function generateThumbnail(videoId, path) {
   });
 }
 
-function previewThumbnails(videoId, path) {
+function previewThumbnails(videoId, count) {
   return new Promise(function(resolve, reject) {
     function replySetup(ch) {
       ch.assertQueue('', { exclusive: true, autoDelete: true })
@@ -61,21 +61,21 @@ function previewThumbnails(videoId, path) {
         return ch.consume(q.queue, function(msg) {
           if (msg.properties.correlationId == videoId) {
             var data = JSON.parse(msg.content.toString());
-            channelWrapper.removeSetup(replySetup);
             if (data.error) {
               return reject(data.error);
             }
+            ch.deleteQueue(q.queue, { ifEmpty: true });
             return resolve(data);
           }
         }, {noAck: true}).then(function() {
+          channelWrapper.removeSetup(replySetup, function() {});
           return Promise.resolve(q);
         });
       }).then(function(q) {
         return channelWrapper.sendToQueue(
           THUMBNAIL_QUEUE,
           {
-            count: 4,
-            path,
+            count: count || 4,
             id: videoId,
           },
           {

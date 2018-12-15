@@ -3,7 +3,10 @@ var amqp = require('amqp-connection-manager');
 var ffmpeg = require('fluent-ffmpeg');
 var path = require('path');
 var os = require('os');
+var fs = require('fs');
 var base64 = require('base64-img').base64;
+
+var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var ensurePath = require('../utils/ensurePath');
 
@@ -12,45 +15,74 @@ var UPLOAD_QUEUE = 'upload_queue';
 
 var connection =  amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
 
+function previewThumbnails(file, output, count) {
+  return new Promise(function(resolve, reject) {
+    var screenshots = [];
+    ffmpeg(file)
+    .on('filenames', function(names) {
+      screenshots = names.map(function(name) {
+        return path.join(output, name);
+      });
+    })
+    .on('error', reject)
+    .on('end', function() {
+      Promise.all(screenshots.map(function(shot) {
+        return new Promise(function(resolve, reject) {
+          base64(shot, function(err, data) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(data);
+          });
+        });
+      }))
+      .then(function(b64shots) {
+        resolve(b64shots);
+      })
+      .catch(reject);
+    })
+    .outputOptions('-crf 27')
+    .outputOptions('-preset veryfast')
+    .screenshots({
+      count: count,
+      size: '212x120',
+      folder: output,
+      filename: 'thumb%0i.png',
+    });
+  });
+}
+
+function downloadAndPreview(file, output, id, count) {
+  return new Promise(function(resolve, reject) {
+    var cacheFileStream = fs.createWriteStream(file);
+    cacheFileStream.on('finish', function() {
+      previewThumbnails(file, output, count).then(resolve).catch(reject);
+    });
+    OSClient.serverGetObject(`video/${id}/360.mp4`).on('error', function(error) {
+      return resolve({ error });
+    }).pipe(cacheFileStream);
+  });
+}
+
 function handleThumbnailMessage(type, body) {
-  console.log(type, body);
   return new Promise(function(resolve, reject) {
     var outputFolder = path.join(os.tmpdir(), body.id);
-    return ensurePath(outputFolder).then(function() {
+    var cacheFolder = path.join(os.tmpdir(), 'vod-cache');
+    return Promise.all([ensurePath(cacheFolder), ensurePath(outputFolder)]).then(function() {
       switch(type) {
         case 'PREVIEW_THUMBNAILS':
-          var screenshots = [];
-          ffmpeg(body.path)
-          .on('filenames', function(names) {
-            screenshots = names.map(function(name) {
-              return path.join(outputFolder, name);
-            });
-          })
-          .on('error', reject)
-          .on('end', function() {
-            Pomise.all(screenshots.map(function(shot) {
-              return new Promise(function(resolve, reject) {
-                base64(shot, function(err, data) {
-                  if (err) {
-                    return reject(err);
-                  }
-                  resolve(data);
-                });
+          var cacheFile = path.join(cacheFolder, body.id);
+          fs.exists(cacheFile, function(exists) {
+            if (exists) {
+              return previewThumbnails(cacheFile, outputFolder, body.count)
+              .then(resolve)
+              .catch(function() {
+                return downloadAndPreview(cacheFile, outputFolder, body.id, body.count).then(resolve).catch(reject);
               });
-            }))
-            .then(function(b64shots) {
-              resolve(b64shots);
-            })
-            .catch(reject);
-          })
-          .outputOptions('-crf 27')
-          .outputOptions('-preset veryfast')
-          .screenshots({
-            count: body.count,
-            size: '212x120',
-            folder: outputFolder,
-            filename: 'thumb%0i.png',
+            }
+            return downloadAndPreview(cacheFile, outputFolder, body.id, body.count).then(resolve).catch(reject);
           });
+          break;
         case 'GENERATE_THUMBNAIL':
           var promises = [];
           if (body.thumbnail) {
@@ -118,7 +150,7 @@ var channelWrapper = connection.createChannel({
         .then(function() {
           ch.ack(msg);
         })
-        .catch(function() {
+        .catch(function(e) {
           ch.nack(msg);
         })
       }, { noAck: false }),
