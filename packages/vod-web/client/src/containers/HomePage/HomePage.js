@@ -32,6 +32,7 @@ class HomePage extends Component {
   constructor() {
     super();
     this.state = {};
+    this.videoOrder = shuffle(Object.keys(VIDEO_LISTS_DATA));
     Object.keys(VIDEO_LISTS_DATA).forEach(key => this.state[key] = {
       videos: [],
       loading: true,
@@ -61,7 +62,7 @@ class HomePage extends Component {
     return (
       <Flex justifyContent="center">
         <Box px={16} py={12} pb={8} width={[1, 1, 1, 0.92]}>
-          {shuffle(Object.keys(VIDEO_LISTS_DATA)).map(videoListId => (
+          {this.videoOrder.map(videoListId => (
             <VideoList
               key={videoListId}
               category={VIDEO_LISTS_DATA[videoListId].label}

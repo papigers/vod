@@ -151,6 +151,7 @@ var channelWrapper = connection.createChannel({
           ch.ack(msg);
         })
         .catch(function(e) {
+          console.error(e);
           ch.nack(msg);
         })
       }, { noAck: false }),

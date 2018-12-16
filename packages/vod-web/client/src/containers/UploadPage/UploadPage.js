@@ -5,6 +5,7 @@ import { Box } from 'grid-styled';
 import io from 'socket.io-client';
 import { bindActionCreators } from 'redux';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
+import tus from 'tus-js-client';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -47,162 +48,164 @@ class UploadPage extends Component {
   }
 
   componentWillUnmount() {
-    if (this.uploadSocket) {
-      this.uploadSocket.disconnect();
-    }
-    this.uploadSocket = null;
-  }
-
-  initSocket = () => {
-    this.uploadSocket = io.connect(`${process.env.REACT_APP_ENCODER_HOSTNAME}/upload`);
-    this.uploadSocket.on('setUploadId', this.setUploadId);
-    this.uploadSocket.on('uploadProgress', this.updateProgress);
-    this.uploadSocket.on('uploadFinish', this.finishUploadStep);
-    this.uploadSocket.on('encodingProgress', this.updateEncodingProgress);
-    this.uploadSocket.on('encodingFinish', this.finishEncodingStep);
-    this.uploadSocket.on('s3Progress', this.updateS3Progress);
-    this.uploadSocket.on('s3Finish', this.finishS3Step);
-    this.uploadSocket.on('uploadMetadata', this.setUploadMetadata);
-    this.uploadSocket.on('screenshots', this.setUploadVideoThumbnails);
-    this.uploadSocket.on('error', this.props.setUploadError);
-    this.uploadSocket.on('disconnect', this.onDisconnect);
-
-    
-    this.reader = new FileReader();
-    this.reader.onload = (event) => {
-      const name = this.props.upload.file.name;
-      this.uploadSocket.emit('uploadStep', {
-        id: this.id,
-        name,
-        data: event.target.result,
-      });
-    };
-  }
-
-  onDisconnect = () => {
-    const { step } = this.props.upload;
-    if (step !== 'form_waiting') {
-      this.props.setUploadError('אין תקשורת');
-    }
-  }
-
-  setUploadId = ({ id }) => {
-    this.id = id;
-  }
-
-  updateProgress = (data) => {
-    if (data.id !== this.id) {
-      return;
-    }
-    this.props.setUploadProgress(data.progress);
-    const chunkIndex = data.chunk * CHUNK_SIZE;
-    let chunk;
-    const { file } = this.props.upload;
-    
-    if (file.slice) {
-      chunk = file.slice(chunkIndex, chunkIndex + Math.min(CHUNK_SIZE, (file.size - chunkIndex)));
-    }
-    else if (file.webkitSlice) {
-      chunk = file.webkitSlice(chunkIndex, chunkIndex + Math.min(CHUNK_SIZE, (file.size - chunkIndex)));
-    }
-    else {
-      chunk = file.mozSlice(chunkIndex, chunkIndex + Math.min(CHUNK_SIZE, (file.size - chunkIndex)));
-    }
-    this.reader.readAsBinaryString(chunk);
-  }
-
-  updateEncodingProgress = ({ id, progress}) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadProgress(progress.percent);
-  }
-
-  updateS3Progress = ({id, progress}) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadProgress(progress);
-  }
-
-  uploadFile = acceptedFiles => {
-    acceptedFiles.forEach(file => {
-      this.props.setUploadFile(file);
-      this.initSocket();
-      this.uploadSocket.emit('uploadStart', {
-        name: file.name,
-        size: file.size,
-      });
-    });
-    this.props.setUploadStep('form_upload');
-  }
-
-  finishUploadStep = ({ id }) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadStep('form_encode');
-  }
-
-  finishEncodingStep = ({ id }) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadStep('form_s3');
-  }
-
-  finishS3Step = ({ id }) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadStep('form_waiting');
     // if (this.uploadSocket) {
     //   this.uploadSocket.disconnect();
     // }
+    // this.uploadSocket = null;
+  }
+
+  initSocket = () => {
+    // this.uploadSocket = io.connect(`${process.env.REACT_APP_ENCODER_HOSTNAME}/upload`);
+    // this.uploadSocket.on('setUploadId', this.setUploadId);
+    // this.uploadSocket.on('uploadProgress', this.updateProgress);
+    // this.uploadSocket.on('uploadFinish', this.finishUploadStep);
+    // this.uploadSocket.on('encodingProgress', this.updateEncodingProgress);
+    // this.uploadSocket.on('encodingFinish', this.finishEncodingStep);
+    // this.uploadSocket.on('s3Progress', this.updateS3Progress);
+    // this.uploadSocket.on('s3Finish', this.finishS3Step);
+    // this.uploadSocket.on('uploadMetadata', this.setUploadMetadata);
+    // this.uploadSocket.on('screenshots', this.setUploadVideoThumbnails);
+    // this.uploadSocket.on('error', this.props.setUploadError);
+    // this.uploadSocket.on('disconnect', this.onDisconnect);
+
+    
+    // this.reader = new FileReader();
+    // this.reader.onload = (event) => {
+    //   const name = this.props.upload.file.name;
+    //   this.uploadSocket.emit('uploadStep', {
+    //     id: this.id,
+    //     name,
+    //     data: event.target.result,
+    //   });
+    // };
+  }
+
+  onDisconnect = () => {
+    // const { step } = this.props.upload;
+    // if (step !== 'form_waiting') {
+    //   this.props.setUploadError('אין תקשורת');
+    // }
+  }
+
+  setUploadId = ({ id }) => {
+    // this.id = id;
+  }
+
+  updateProgress = (data) => {
+    // if (data.id !== this.id) {
+    //   return;
+    // }
+    // this.props.setUploadProgress(data.progress);
+    // const chunkIndex = data.chunk * CHUNK_SIZE;
+    // let chunk;
+    // const { file } = this.props.upload;
+    
+    // if (file.slice) {
+    //   chunk = file.slice(chunkIndex, chunkIndex + Math.min(CHUNK_SIZE, (file.size - chunkIndex)));
+    // }
+    // else if (file.webkitSlice) {
+    //   chunk = file.webkitSlice(chunkIndex, chunkIndex + Math.min(CHUNK_SIZE, (file.size - chunkIndex)));
+    // }
+    // else {
+    //   chunk = file.mozSlice(chunkIndex, chunkIndex + Math.min(CHUNK_SIZE, (file.size - chunkIndex)));
+    // }
+    // this.reader.readAsBinaryString(chunk);
+  }
+
+  updateEncodingProgress = ({ id, progress}) => {
+    // if (id !== this.id) {
+    //   return;
+    // }
+    // this.props.setUploadProgress(progress.percent);
+  }
+
+  updateS3Progress = ({id, progress}) => {
+    // if (id !== this.id) {
+    //   return;
+    // }
+    // this.props.setUploadProgress(progress);
+  }
+
+  uploadFile = acceptedFiles => {
+    const file = acceptedFiles[0];
+    const upload = new tus.Upload(file, {
+      endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/upload/video/`,
+      metadata: {
+        name: file.name,
+        type: file.type,
+      },
+      withCredentials: true,
+      onError: e => {
+        console.error(e);
+        this.props.setUploadError('שגיאה בהעלאת הסרטון');
+      },
+      onProgress: (uploaded, total) => {
+        console.log(uploaded / total * 100);
+        this.props.setUploadProgress(uploaded / total * 100);
+      },
+      onSuccess: () => this.startEncodingStep(upload),
+    });
+
+    upload.start();
+  }
+
+  startEncodingStep = (upload) => {
+    const url = localStorage.getItem(upload._fingerprint);
+    const idRegex = new RegExp(`${process.env.REACT_APP_API_HOSTNAME}/api/upload/video/(.*)`);
+    const id = idRegex.exec(url);
+    if (id && id[1]) {
+      this.id = id[1];
+      this.props.setUploadStep('form_encode');
+      axios.get(`/videos/${this.id}/thumbnails?count=4`)
+        .then(({ data }) => {
+          this.props.setUploadVideoThumbnails(data);
+        });
+    }
+    localStorage.removeItem(upload._fingerprint);
   }
 
   setUploadMetadata = ({ id, metadata }) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadMetadata(metadata);
+    // if (id !== this.id) {
+    //   return;
+    // }
+    // this.props.setUploadMetadata(metadata);
   }
 
   setUploadVideoThumbnails = ({ id, thumbnails }) => {
-    if (id !== this.id) {
-      return;
-    }
-    this.props.setUploadVideoThumbnails(thumbnails);
+    // if (id !== this.id) {
+    //   return;
+    // }
+    // this.props.setUploadVideoThumbnails(thumbnails);
   }
 
   onSubmit = () => {
-    const {
-      name,
-      privacy,
-      description,
-      acl,
-      channel,
-      tags,
-      selectedThumbnail,
-    } = this.props.upload.video;
-    this.props.setUploadStep('form_submit');
-    this.uploadSocket.emit('uploadScreenshot', selectedThumbnail);
-    axios.put(`/videos/publish/${this.id}`, {
-      name,
-      privacy,
-      description,
-      channel,
-      acl,
-      tags,
-    }).then(({ data }) => {
-      if (!data.error) {
-        return this.props.push(`/watch?v=${this.id}`);
-      }
-      this.props.setUploadError('לא ניתן היה לשמור את הסרטון');
-    }).catch((err) => {
-      console.error(err);
-      this.props.setUploadError('לא ניתן היה לשמור את הסרטון');
-    });
+    // const {
+    //   name,
+    //   privacy,
+    //   description,
+    //   acl,
+    //   channel,
+    //   tags,
+    //   selectedThumbnail,
+    // } = this.props.upload.video;
+    // this.props.setUploadStep('form_submit');
+    // this.uploadSocket.emit('uploadScreenshot', selectedThumbnail);
+    // axios.put(`/videos/publish/${this.id}`, {
+    //   name,
+    //   privacy,
+    //   description,
+    //   channel,
+    //   acl,
+    //   tags,
+    // }).then(({ data }) => {
+    //   if (!data.error) {
+    //     return this.props.push(`/watch?v=${this.id}`);
+    //   }
+    //   this.props.setUploadError('לא ניתן היה לשמור את הסרטון');
+    // }).catch((err) => {
+    //   console.error(err);
+    //   this.props.setUploadError('לא ניתן היה לשמור את הסרטון');
+    // });
   }
 
   render() {

@@ -5,8 +5,6 @@ import Dropzone from 'react-dropzone';
 import { CompoundButton } from 'office-ui-fabric-react/lib/Button';
 import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
 
-import tus from 'tus-js-client';
-
 const StyledDropzone = styled(Dropzone)`
   position: absolute !important;
   width: 100%;
@@ -87,27 +85,7 @@ export default class UploadButton extends Component {
   }
 
   uploadFile = acceptedFiles => {
-    // this.props.uploadFile(acceptedFiles);
-    const file = acceptedFiles[0];
-    const upload = new tus.Upload(file, {
-      endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/upload/video/`,
-      metadata: {
-        name: file.name,
-        type: file.type,
-      },
-      withCredentials: true,
-      onError: console.error,
-      onProgress: function(bytesUploaded, bytesTotal) {
-        var percentage = (bytesUploaded / bytesTotal * 100).toFixed(2)
-        console.log(bytesUploaded, bytesTotal, percentage + "%")
-      },
-      onSuccess: function() {
-        console.log("Download %s from %s", upload.file.name, upload.url)
-      }
-    });
-
-    upload.start();
-
+    this.props.uploadFile(acceptedFiles);
     this.setDragging(false);
   }
 
