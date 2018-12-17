@@ -19,12 +19,6 @@ import DeleteForm from './DeleteForm';
 import EditPrivacy from './EditPrivacy';
 import VideoEditForm from 'components/VideoEditForm';
 
-
-const ContentBox = styled(Flex).attrs({
-    position: 'relative',
-    height: '100%',
-  })``;
-
 const ActionsBox = styled(Box).attrs({
     // pt: 15,
     // pb: 15,
@@ -73,7 +67,6 @@ class Studio extends Component {
             items: [],
             groups: [],
             activeTab: 'videos',
-            isDataLoaded : false,
             selection: new Selection({ onSelectionChanged: this.onSelectionChanged }),
             selectionDetails : [],
             modalIsOpen: false,
@@ -83,7 +76,7 @@ class Studio extends Component {
 
     static getDerivedStateFromProps(props, state) {
         const {videoList} = props;
-        if (!state.isDataLoaded || !state.groups.length || (state.groups.length !== Object.keys(videoList).length)) {
+        if (!state.groups.length || (state.groups.length !== Object.keys(videoList).length)) {
             const items = [];
             const groups = [];
             let startIndex = 0;
@@ -123,7 +116,6 @@ class Studio extends Component {
                 return {
                     groups: groups,
                     items: items,
-                    isDataLoaded: true,
                 }
             }
             return {
@@ -174,7 +166,6 @@ class Studio extends Component {
           const {
               editType,
               selectionDetails,
-              items
             } = this.state;
 
           const {
@@ -194,7 +185,7 @@ class Studio extends Component {
                             />
             case 'share':
                 return <EditPrivacy
-                            video={selectionDetails[0]}
+                            videos={selectionDetails}
                             onClose={this.changeModalState}
                             onSubmit={onVideoShare}
                             />
@@ -216,7 +207,6 @@ class Studio extends Component {
                 } else {
                     return <p>404</p>
                 }
-                  
           }
       }
 
@@ -227,7 +217,6 @@ class Studio extends Component {
             activeTab,
             selection,
             selectionDetails,
-            isDataLoaded,
         } = this.state;
 
         switch (activeTab) {
@@ -297,9 +286,9 @@ class Studio extends Component {
                                             }
                                         },{
                                             key: 'share',
-                                            name: 'שתף',
+                                            name: 'שנה הרשאות',
                                             iconProps: {
-                                                iconName: 'Share',
+                                                iconName: 'AddFriend',
                                             },
                                             onClick: () => {
                                                 this.onMenuClick('share');
