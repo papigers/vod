@@ -5,14 +5,12 @@ import { Box, Flex } from 'grid-styled';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
-import { Label } from 'office-ui-fabric-react/lib/Label';
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
 import TagPicker from 'components/TagPicker';
-import VideoThumbnail from 'components/VideoThumbnail';
 
 const Form = styled.form`
   .ms-BasePicker {
@@ -47,12 +45,11 @@ const DropdownOption = styled.div`
   }
 `;
 
-const Metadata = styled.div`
-  margin-top: 16px;
-
-  b {
-    color: ${({theme}) => theme.palette.themePrimaryAlt};
-  }
+const ErrorMsg = styled(Box)`
+  color: #e90000;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1em;
 `;
 
 class VideoEditForm extends Component {
@@ -65,6 +62,8 @@ class VideoEditForm extends Component {
             tags: [],
             privacy: 'PUBLIC',
             acls: [],
+            error: null,
+            loading: false,
         };
       }
 
@@ -105,6 +104,7 @@ class VideoEditForm extends Component {
             });
           }
       }
+
     onChangeName = ({ target }) => this.setState({name: target.value});
     onChangeDescription = ({ target }) => this.setState({description: target.value});
     onChangePrivacy = (e, { key: privacy }) => {this.setState({ privacy })};
@@ -147,18 +147,18 @@ class VideoEditForm extends Component {
     }
 
     formatACL = (acls) => {
-    return acls.map(acl => {
-        return {
-        id: acl.secondaryText,
-        name: acl.text,
-        profile: acl.imageUrl,
-        type: acl.type,
-        };
-    }).filter(acl => !!acl);
+        return acls.map(acl => {
+            return {
+                id: acl.secondaryText,
+                name: acl.text,
+                profile: acl.imageUrl,
+                type: acl.type,
+            };
+        }).filter(acl => !!acl);
     }
 
-      onSubmit(){
-          debugger;
+    onSubmit(){
+        debugger;
         const {
             id,
             name,
@@ -166,27 +166,35 @@ class VideoEditForm extends Component {
             privacy,
             acls,
             tags,
-          } = this.state;
+        } = this.state;
 
-          const video = {
-              id: id,
-              name: name,
-              description: description,
-              privacy: privacy,
-              acls: privacy === 'PUBLIC'? [] : acls,
-              tags: tags,
-          }
-          new Promise(() => {
-               
-          }).then(() => {
-            this.props.onSubmit(video);
-          }).then(() => {
-            this.props.onClose();
-          }).catch((err) => {
-            console.log(err);
+        const video = {
+            id: id,
+            name: name,
+            description: description,
+            privacy: privacy,
+            acls: privacy === 'PUBLIC'? [] : acls,
+            tags: tags.map(tag => tag['tag']),
+        }
+        Promise.resolve(() => {
+            
+        }).then(() => {
+            this.setState({
+                loading: true,
+                error: null,
             });
-          
-      }
+            return this.props.onSubmit(video);
+        }).then(() => {
+            return this.props.onClose();
+        }).catch((err) => {
+             this.setState({
+                error: err,
+                loading: false,
+            })
+            return console.error(err);
+        });
+    }
+
     render() {
         const {
             name,
@@ -194,6 +202,8 @@ class VideoEditForm extends Component {
             privacy,
             acls,
             tags,
+            error,
+            loading
           } = this.state;
 
         return (
@@ -240,19 +250,32 @@ class VideoEditForm extends Component {
                             ) :  null}
                             <TagPicker tags={tags} label="תגיות:" onChange={this.onChangeTags} />
                             <Box pt={40}>
-                            <Flex justifyContent="flex-start" alignItems="center">
-                                <PrimaryButton
-                                    text="שמור"
-                                    onClick={() => this.onSubmit()}
-                                />
-                                <Box mx={3} />
-                                <DefaultButton
-                                    text="בטל"
-                                    onClick={this.props.onClose}
-                                />
-                            </Flex>
-                        </Box>
+                                <Flex justifyContent="flex-start" alignItems="center">
+                                    <PrimaryButton
+                                        disabled={loading}
+                                        text="שמור"
+                                        iconProps={{ iconName: 'Save' }}
+                                        onClick={() => this.onSubmit()}
+                                    />
+                                    <Box mx={3} />
+                                    <DefaultButton
+                                        disabled={loading}
+                                        text="בטל"
+                                        iconProps={{ iconName: 'Cancel' }}
+                                        onClick={this.props.onClose}
+                                    />
+                                </Flex>
+                            </Box>
                         </Form>
+                        {error && (
+                            <ErrorMsg width={1}>
+                                {error}
+                            </ErrorMsg>
+                        )}
+                        {loading ? 
+                            <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
+                            : null
+                        }
                     </Box>
                 </Flex>
             </Fragment>

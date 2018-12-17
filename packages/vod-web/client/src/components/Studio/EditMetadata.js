@@ -143,7 +143,6 @@ class EditForm extends Component {
             onMetadataEdit,
             onTagsEdit,
             onClose,
-            refresh
         } = this.props;
         if (editType === 'tags') {
             onTagsEdit(videos, action, tags)
@@ -216,7 +215,7 @@ class EditForm extends Component {
                         
                         <FormButton
                             text='בטל'
-                            iconProps={{ iconName: 'Delete' }}
+                            iconProps={{ iconName: 'Cancel' }}
                             onClick={onClose}
                         />
                     </ContentContainer>
