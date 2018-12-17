@@ -16,7 +16,7 @@ function uploadFile(videoId, file) {
       path.basename(file),
       stream,
       function(progress) {
-        var percent = (progress.loaded / progress.total) * 100;
+        var percent = (progress.loaded / progress.total) * 90;
         publishProgress(videoId, percent, `u${path.basename(file)}`);
       },
       function(err, data) {

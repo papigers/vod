@@ -38,8 +38,6 @@ const ErrorBox = styled(MessageBar)`
   margin-bottom: 30px;
 `;
 
-const CHUNK_SIZE = 1048576;
-
 class UploadPage extends Component {
 
   componentWillMount() {
@@ -157,11 +155,20 @@ class UploadPage extends Component {
       this.id = id[1];
       this.props.setUploadStep('form_encode');
       axios.get(`/videos/${this.id}/thumbnails?count=4`)
-        .then(({ data }) => {
-          this.props.setUploadVideoThumbnails(data);
-        });
+      .then(({ data }) => {
+        this.props.setUploadVideoThumbnails(data);
+      });
+
+      this.progressSocket = io.connect(`${process.env.REACT_APP_API_HOSTNAME}/upload?id=${this.id}`);
+      this.progressSocket.on('progress', this.updateProgress);
     }
     localStorage.removeItem(upload._fingerprint);
+  }
+
+  updateProgress = (data) => {
+    if (data.id === this.id) {
+      this.props.setUploadProgress(data.progress);
+    }
   }
 
   setUploadMetadata = ({ id, metadata }) => {

@@ -14,7 +14,7 @@ var channelWrapper = connection.createChannel({
 });
 
 function publishProgress(videoId, progress, type) {
-  return channelWrapper.publish(PROGRESS_EXCHANGE, videoId, progress, { type });
+  return channelWrapper.publish(PROGRESS_EXCHANGE, videoId, { progress }, { type });
 }
 
 module.exports = publishProgress;

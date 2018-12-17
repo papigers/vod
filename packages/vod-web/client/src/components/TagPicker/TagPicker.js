@@ -46,6 +46,8 @@ const TagItemClose = styled.span`
 `;
 
 const StyledPicker = styled(Picker)`
+  background-color: ${({theme}) => theme.palette.bodyBackground};
+
   & .ms-BasePicker-text > span {
     display: flex;
   }
