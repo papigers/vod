@@ -12,9 +12,8 @@ class StudioPage extends Component {
     constructor() {
         super();
         this.state = {
-            videoList: {},
+            videoList: [],
         };
-        this.editVideosMetadata = this.editVideosMetadata.bind(this);
     }
 
     componentDidMount () {
@@ -27,82 +26,62 @@ class StudioPage extends Component {
         }
     }
 
-    fetchVideos() {
+    fetchVideos = () => {
         axios.get(`/videos/managed`)
             .then(({ data }) => {
-                const videoList = {};
-                data.forEach(element => {
-                    if (!videoList[element.channel.id]) {
-                        videoList[element.channel.id] = {channelName : element.channel.name, videos : []};
-                    }
-                    videoList[element.channel.id].videos = [...videoList[element.channel.id].videos,element];
-                });
+                console.log(data);
+                
                 this.setState({
-                    videoList: videoList,
+                    videoList: data,
                 });
             }).catch((err) => {
                     console.error(err);
             });
     }
 
-    deleteVideos(videos){
-        return axios.delete(`/videos`,{
-            videos
-        })
-        .then(() => this.fetchVideos())
-        .catch((err) => {
-            console.error(err);
-        });
+    deleteVideos = (videos) => {
+        return Promise.all(videos.map(video => {
+            return axios.delete(`/videos/${video.id}`)
+            .then(result => Promise.resolve({ id: video.id, status: 'success', result }))
+            .catch(error => Promise.resolve({ id: video.id, status: 'error', error }));
+        }))
+        .finally(this.fetchVideos);
+        
     }
 
-    editVideoPrivacy(video){
-        return axios.put(`/videos/video/${video.id}/permissions`, {
-            video
-        })
-        .then(() => this.fetchVideos())
-        .catch((err) => {
-            console.log(err);
-        });
+    editVideosPrivacy = (videos) => {
+        return axios.put(`/videos/permissions`, videos)
+        .finally(this.fetchVideos);
     }
 
-    editVideo(video){
+    editVideo = (video) => {
         return axios.put(`/videos/video/${video.id}`, video)
-        .then(() => this.fetchVideos())
-        .catch((err) => {
-            console.log(err);
-        });
+        .finally(this.fetchVideos);
     }
 
-    editVideosMetadata(videos, property){
-        return axios.put(`/videos/metadata/${property}`, {
-            videos
-        })
-        .then(() => this.fetchVideos())
-        .catch((err) => {
-            console.log(err);
-        });
+    editVideosMetadata = (videos, property) => {
+        return axios.put(`/videos/metadata/${property}`, videos)
+        .finally(this.fetchVideos);;
     }
 
-    editVideosTags(videos, action, tags){
+    editVideosTags = (videosId, action, tags) => {
         return axios.put(`/videos/tags/${action}`, {
-            videos,
-            tags,
+            videosId,
+            tags
         })
-        .then(() => this.fetchVideos())
-        .catch((err) => {
-            console.log(err);
-        });
+        .finally(this.fetchVideos);
     }
 
     render() {
         const { videoList } = this.state;
+        console.log(videoList);
         return (
             <Studio
                 videoList = {videoList}
                 onDelete = {this.deleteVideos}
                 onMetadataEdit = {this.editVideosMetadata}
                 onTagsEdit = {this.editVideosTags}
-                onVideoShare = {this.editVideoPrivacy}
+                onVideoShare = {this.editVideosPrivacy}
                 onVideoEdit = {this.editVideo}
             />
         );

@@ -5,6 +5,7 @@ import { Box, Flex } from 'grid-styled';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { DefaultButton} from 'office-ui-fabric-react/lib/Button';
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import TagPicker from 'components/TagPicker';
 
@@ -32,13 +33,6 @@ const ErrorMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
-const SuccessMsg = styled(Box)`
-  color: #008000;
-  text-align: center;
-  font-weight: 600;
-  font-size: 1.1em;
-`;
-
 class EditForm extends Component {
     constructor() {
         super();
@@ -48,7 +42,7 @@ class EditForm extends Component {
             options: [],
             tags: [],
             error: null,
-            done: null,
+            loading: false,
         };
       }
 
@@ -144,55 +138,54 @@ class EditForm extends Component {
             onTagsEdit,
             onClose,
         } = this.props;
+
+        this.setState({
+            loading: true,
+        })
+
         if (editType === 'tags') {
-            onTagsEdit(videos, action, tags)
+            onTagsEdit(videos.map(video => video.id ), action, tags)
             .then(onClose)
-            .catch((err)=>{
+            .catch(e =>{
                 this.setState({
-                    error: err,
+                    error: e.message,
+                    loading: false,
                 })
-                console.error(err);
             });
         }
         else {
-            videos.forEach(video => {
+            const items = videos.map(video => {
+                var item = video[editType];
                 switch (action) {
                     case 'beginning':
-                        video[editType] = text.trimStart().concat(video[editType]);
+                        item = text.trimStart().concat(video[editType]);
                         break;
                     case 'end':
-                        video[editType] = video[editType].concat(text.trim());
+                        item = video[editType].concat(text.trim());
                         break;
                     case 'replace':
-                        video[editType] = text.trim();
+                        item = text.trim();
                         break;
                     case 'clean':
-                        video[editType] = '';
+                        item = '';
                         break;
                 }
+                return {id: video.id, property: item};
             });
 
-            onMetadataEdit(videos, editType)
-            .then(()=>{
-                this.setState({
-                    done: 'הסרטונים עודכנו בהצלחה!'
-                })
-            }).then(()=>{
-                setTimeout(()=>{}, 10000);
-            })
+            onMetadataEdit(items, editType)
             .then(onClose)
-            .catch((err)=>{
+            .catch(e => {
                 this.setState({
-                    error: err,
+                    error: e.message,
+                    loading: false,
                 })
-                console.error(err);
             });
         }
-        
     }
 
     render() {
-        const {options, action, error, done} = this.state;
+        const {options, action, error, loading} = this.state;
         const {onClose} = this.props;
         return (
             <FormContainer>
@@ -209,12 +202,14 @@ class EditForm extends Component {
                         <FormButton
                             primary
                             text='שמור'
+                            disabled={loading}
                             iconProps={{ iconName: 'Save' }}
                             onClick={() => this.onSubmit()}
                         />
                         
                         <FormButton
                             text='בטל'
+                            disabled={loading}
                             iconProps={{ iconName: 'Cancel' }}
                             onClick={onClose}
                         />
@@ -224,11 +219,10 @@ class EditForm extends Component {
                             {error}
                         </ErrorMsg>
                     )}
-                    {done && (
-                        <SuccessMsg width={1}>
-                            {done}
-                        </SuccessMsg>
-                    )}
+                    {loading ? 
+                      <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
+                      : null
+                    }
                 </Form>
             </FormContainer>
         );

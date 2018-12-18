@@ -223,6 +223,21 @@ router.put('/video/:id/permissions', function(req, res) {
     });
 });
 
+router.put('/permissions', function(req, res) {
+  db.videos.editVideosPrivacy(req.user, req.body)
+    .then(function(result) {
+      if (!!result) {
+        return res.sendStatus(200);
+      }
+      return res.status(404);
+    })
+    .catch(function (err) {
+      res.status(err.code).json({
+        error: err.message || 'Video edit failed',
+      });
+    });
+});
+
 router.put('/video/:id', function(req, res) {
   db.videos.edit(req.user, req.params.id, req.body)
     .then(function(result) {
@@ -256,22 +271,6 @@ router.put('/publish/:id', function(req, res, next) {
       res.status(500).json({
         error: 'Video publish failed',
       });
-    });
-});
-
-router.delete('/', function(req, res) {
-  console.log('api',req.body);
-  
-  db.videos.deleteVideos(req.user, req.body)
-    .then(function(deleted) {
-      if (deleted) {
-        return res.json({});
-      }
-      return res.sendStatus(404);
-    })
-    .catch(function(err) {
-      console.error(err);
-      res.sendStatus(500);
     });
 });
 

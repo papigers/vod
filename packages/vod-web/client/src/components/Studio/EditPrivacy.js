@@ -5,7 +5,7 @@ import { Box, Flex } from 'grid-styled';
 import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
-
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import PeoplePicker from 'components/PeoplePicker';
 
@@ -48,21 +48,14 @@ const ErrorMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
-const SuccessMsg = styled(Box)`
-  color: #008000;
-  text-align: center;
-  font-weight: 600;
-  font-size: 1.1em;
-`;
-
 class EditPrivacy extends Component {
     constructor() {
         super();
         this.state = {
-            privacy: 'PRIVATE',
+            privacy: null,
             acls: [],
             error: null,
-            done: null,
+            loading: false,
         };
       }
 
@@ -104,11 +97,32 @@ class EditPrivacy extends Component {
     }
 
     onSubmit(){
+      const { privacy, acls } = this.state;
+      const { videos, onSubmit, onClose } = this.props;
 
+      const items = videos.map(video => {
+        return {id: video.id, privacy, acls};
+      });
+
+      this.setState({
+        loading: true,
+        error: null,
+      });
+
+      onSubmit(items)
+      .then(results => {
+          console.log(results);
+          onClose();
+      }).catch( e => {
+           this.setState({
+              error: e.message,
+              loading: false,
+          })
+      });
     }
       
     render() {
-      const {privacy, acls, error, done} = this.state;
+      const {privacy, acls, error, loading} = this.state;
       const {onClose} = this.props;
         return (
             <FormContainer>
@@ -127,37 +141,42 @@ class EditPrivacy extends Component {
                       { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
                       { key: 'CHANNEL', text: 'יורש מהערוץ', data: { icon: 'MSNVideos' } },
                     ]}
-                />{privacy !=='PUBLIC'?
-                <PeoplePicker
-                    label="הרשאות צפייה"
-                    onChange={this.onChangeACL}
-                    selectedItems={acls}
-                />:null}
+                />
+                { privacy && privacy !=='PUBLIC'?
+                  <PeoplePicker
+                      label="הרשאות צפייה"
+                      onChange={this.onChangeACL}
+                      selectedItems={acls}
+                  /> : null
+                }
                 <ContentContainer>
-                  <FormButton
-                    primary
-                    text='שמור'
-                    iconProps={{ iconName: 'Save' }}
-                    onClick={this.onSubmit}
-                  />
-                  
-                  <FormButton
-                    text='בטל'
-                    iconProps={{ iconName: 'Delete' }}
-                    onClick={onClose}
-                  />
-                </ContentContainer>
-                </Form>
-                {error && (
+                  {error && (
                     <ErrorMsg width={1}>
                         {error}
                     </ErrorMsg>
-                )}
-                {done && (
-                    <SuccessMsg width={1}>
-                        {done}
-                    </SuccessMsg>
-                )}
+                  )}
+                  {loading ? 
+                      <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
+                      : null
+                  }
+                  <FormButton
+                    primary
+                    disabled={loading}
+                    text='שמור'
+                    iconProps={{ iconName: 'Save' }}
+                    onClick={() => this.onSubmit()}
+                  />
+                  
+                  <FormButton
+                    disabled={loading}
+                    text='בטל'
+                    iconProps={{ iconName: 'Cancel' }}
+                    onClick={onClose}
+                  />
+                  
+                  
+                </ContentContainer>
+                </Form>
             </FormContainer>
         );
     }

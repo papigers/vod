@@ -64,8 +64,6 @@ class Studio extends Component {
     constructor() {
         super();
         this.state = {
-            items: [],
-            groups: [],
             activeTab: 'videos',
             selection: new Selection({ onSelectionChanged: this.onSelectionChanged }),
             selectionDetails : [],
@@ -74,56 +72,56 @@ class Studio extends Component {
         };
       }
 
-    static getDerivedStateFromProps(props, state) {
-        const {videoList} = props;
-        if (!state.groups.length || (state.groups.length !== Object.keys(videoList).length)) {
-            const items = [];
-            const groups = [];
-            let startIndex = 0;
-            const options = {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit',minute: '2-digit',second: '2-digit',};
-
-            Object.keys(videoList).forEach(function(key) {
-                const { videos, channelName} = videoList[key];
-                
-                videos.forEach(video => {
-                    items.push({
-                        thumbnail: <VideoThumbnail src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${video.id}/thumbnail.png`} width={180} height={101}/>,
-                        id: video.id,
-                        name: video.name,
-                        description: video.description,
-                        privacy: video.privacy,
-                        privacyDisplay: video.privacy === 'PUBLIC'? 'ציבורי' : 'פרטי',
-                        acls: video.acls,
-                        tags: video.tags,
-                        channelName: `${video.channel.name} (${video.channel.id})`,
-                        channelId: video.channel.id,
-                        viewsCount: video.viewsCount,
-                        likesCount: video.likesCount,
-                        commentsCount: video.commentsCount,
-                        createdAt: new Date(video.createdAt).toLocaleDateString('hebrew',options),
-                    });
-                });
-                groups.push({
-                    key: key,
-                    name: channelName,
-                    startIndex: startIndex,
-                    count: videos.length
-                });
-                startIndex += videos.length;
-            });
-            
-            if (groups.length && items.length) {
-                return {
-                    groups: groups,
-                    items: items,
-                }
-            }
-            return {
-                groups: groups,
-                items: items,
-            }
+    getVideoList = () => {
+        const options = {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit',minute: '2-digit',second: '2-digit'}
+        if (!this.props.videoList.length) {
+            return [];
         }
-        return null;
+        return this.props.videoList.map(video => {
+            return {
+                thumbnail : <VideoThumbnail src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${video.id}/thumbnail.png`} width={180} height={101}/>,
+                id: video.id,
+                name: video.name,
+                description: video.description,
+                privacy: video.privacy,
+                privacyDisplay: video.privacy === 'PUBLIC'? 'ציבורי' : 'פרטי',
+                acls: video.acls,
+                tags: video.tags,
+                channelName: `${video.channel.name} (${video.channel.id})`,
+                channelId: video.channel.id,
+                viewsCount: video.viewsCount,
+                likesCount: video.likesCount,
+                commentsCount: video.commentsCount,
+                createdAt: new Date(video.createdAt).toLocaleDateString('hebrew',options),
+            }
+        });
+    }
+
+    getGroupsList = () => {
+        let startIndex = 0;
+        const channels = [];
+
+        if (!this.props.videoList.length) {
+            return [];
+        }
+
+        this.props.videoList.forEach(video => {
+            if (!channels[video.channel.id]) {
+                channels[video.channel.id] = {name : video.channel.name, videos : []};
+            }
+            channels[video.channel.id].videos.push(video);
+        });
+
+        return Object.keys(channels).map(id => {
+            let start = startIndex;
+            startIndex += channels[id].videos.length;
+            return {
+                key: id,
+                name: channels[id].name,
+                startIndex: start,
+                count: channels[id].videos.length
+            }
+        })
     }
 
     onLinkClick = (item)  => {
@@ -212,16 +210,16 @@ class Studio extends Component {
 
     renderTab() {
         const {
-            groups,
-            items,
             activeTab,
             selection,
             selectionDetails,
         } = this.state;
 
+        const { videoList } = this.props;
+
         switch (activeTab) {
           case 'videos':
-            selection.setItems(items, false);
+            selection.setItems(videoList, false);
             return (
                 <Fragment>
                     <ActionsBox hasItems={selectionDetails.length}>
@@ -288,7 +286,7 @@ class Studio extends Component {
                                             key: 'share',
                                             name: 'שנה הרשאות',
                                             iconProps: {
-                                                iconName: 'AddFriend',
+                                                iconName: 'EditContact',
                                             },
                                             onClick: () => {
                                                 this.onMenuClick('share');
@@ -322,8 +320,8 @@ class Studio extends Component {
                         <MarqueeSelection selection={selection}>
                             <DetailsList
                                 setKey="items"
-                                items={items}
-                                groups={groups}
+                                items={this.getVideoList()}
+                                groups={this.getGroupsList()}
                                 columns={videosColumns}
                                 selection={selection}
                                 selectionPreservedOnEmptyClick={true}
