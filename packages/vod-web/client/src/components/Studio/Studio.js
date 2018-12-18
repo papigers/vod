@@ -288,7 +288,7 @@ class Studio extends Component {
                                             key: 'share',
                                             name: 'שנה הרשאות',
                                             iconProps: {
-                                                iconName: 'AddFriend',
+                                                iconName: 'EditContact',
                                             },
                                             onClick: () => {
                                                 this.onMenuClick('share');

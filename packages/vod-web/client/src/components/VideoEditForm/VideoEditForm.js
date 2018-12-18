@@ -174,24 +174,21 @@ class VideoEditForm extends Component {
             description: description,
             privacy: privacy,
             acls: privacy === 'PUBLIC'? [] : acls,
-            tags: tags.map(tag => tag['tag']),
-        }
-        Promise.resolve(() => {
-            
-        }).then(() => {
+            tags: tags.map(tag => tag.tag),
+        };
+
+        this.setState({
+            loading: true,
+            error: null,
+        });
+
+        return this.props.onSubmit(video)
+        .then(this.props.onClose)
+        .catch(e => {
             this.setState({
-                loading: true,
-                error: null,
-            });
-            return this.props.onSubmit(video);
-        }).then(() => {
-            return this.props.onClose();
-        }).catch((err) => {
-             this.setState({
-                error: err,
+                error: e.message,
                 loading: false,
-            })
-            return console.error(err);
+            });
         });
     }
 

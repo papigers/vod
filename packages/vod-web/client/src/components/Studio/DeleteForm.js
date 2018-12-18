@@ -46,22 +46,23 @@ class DeleteForm extends Component {
             onClose
         } = this.props;
 
-        Promise.resolve((video) => {
-            
-        }).then(() => {
+        this.setState({
+            loading: true,
+            error: null,
+        });
+        onSubmit(videos)
+        .then(results => {
+            const errors = results.filter(res => res.status === 'error');
+            if (errors.length) {
+                return this.setState({
+                    error: 'print err',
+                    loading: false,
+                });
+            }
             this.setState({
-                loading: true,
-                error: null,
-            });
-            return onSubmit(videos);
-        }).then(() => {
-            return onClose();
-        }).catch((err) => {
-             this.setState({
-                error: err,
                 loading: false,
-            })
-            return console.error(err);
+            });
+            onClose();
         });
     }
 

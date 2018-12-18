@@ -46,20 +46,17 @@ class StudioPage extends Component {
     }
 
     deleteVideos(videos){
-        return axios.delete(`/videos`,{
-            videos
-        })
-        .then(() => this.fetchVideos())
-        .catch((err) => {
-            console.error(err);
-        });
+        return Promise.all(videos.map(video => {
+            return axios.delete(`/videos/${video.id}`)
+            .then(result => Promise.resolve({ id: video.id, status: 'success', result }))
+            .catch(error => Promise.resolve({ id: video.id, status: 'error', error }));
+        }));
+        
     }
 
-    editVideoPrivacy(video){
-        return axios.put(`/videos/video/${video.id}/permissions`, {
-            video
-        })
-        .then(() => this.fetchVideos())
+    editVideosPrivacy(videos){
+        return axios.put(`/videos/permissions`, videos)
+        .then( () => this.fetchVideos())
         .catch((err) => {
             console.log(err);
         });
@@ -70,24 +67,19 @@ class StudioPage extends Component {
         .then(() => this.fetchVideos())
         .catch((err) => {
             console.log(err);
-        });
+        })
     }
 
     editVideosMetadata(videos, property){
-        return axios.put(`/videos/metadata/${property}`, {
-            videos
-        })
+        return axios.put(`/videos/metadata/${property}`, videos)
         .then(() => this.fetchVideos())
         .catch((err) => {
             console.log(err);
         });
     }
 
-    editVideosTags(videos, action, tags){
-        return axios.put(`/videos/tags/${action}`, {
-            videos,
-            tags,
-        })
+    editVideosTags(videosId, action, tags){
+        return axios.put(`/videos/tags/${action}`, videosId, tags)
         .then(() => this.fetchVideos())
         .catch((err) => {
             console.log(err);
@@ -102,7 +94,7 @@ class StudioPage extends Component {
                 onDelete = {this.deleteVideos}
                 onMetadataEdit = {this.editVideosMetadata}
                 onTagsEdit = {this.editVideosTags}
-                onVideoShare = {this.editVideoPrivacy}
+                onVideoShare = {this.editVideosPrivacy}
                 onVideoEdit = {this.editVideo}
             />
         );
