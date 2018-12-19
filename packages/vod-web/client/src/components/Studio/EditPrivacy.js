@@ -130,6 +130,7 @@ class EditPrivacy extends Component {
                 <Dropdown
                     required
                     label="גישה"
+                    disabled={loading}
                     selectedKey={privacy}
                     onChange={this.onChangePrivacy}
                     onRenderTitle={this.onRenderPrivacyOption}
@@ -145,38 +146,39 @@ class EditPrivacy extends Component {
                 { privacy && privacy !=='PUBLIC'?
                   <PeoplePicker
                       label="הרשאות צפייה"
+                      disabled={loading}
                       onChange={this.onChangeACL}
                       selectedItems={acls}
                   /> : null
                 }
                 <ContentContainer>
-                  {error && (
-                    <ErrorMsg width={1}>
-                        {error}
-                    </ErrorMsg>
-                  )}
                   {loading ? 
-                      <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
-                      : null
+                      <Spinner size={SpinnerSize.large} ariaLive="loading" />
+                      :
+                      <FormButton
+                        primary
+                        disabled={loading}
+                        text='שמור'
+                        iconProps={{ iconName: 'Save' }}
+                        onClick={() => this.onSubmit()}
+                      />
                   }
-                  <FormButton
-                    primary
-                    disabled={loading}
-                    text='שמור'
-                    iconProps={{ iconName: 'Save' }}
-                    onClick={() => this.onSubmit()}
-                  />
-                  
                   <FormButton
                     disabled={loading}
                     text='בטל'
                     iconProps={{ iconName: 'Cancel' }}
                     onClick={onClose}
                   />
-                  
+                </ContentContainer>
+                <ContentContainer>
+                  {error && (
+                    <ErrorMsg width={1}>
+                        {error}
+                    </ErrorMsg>
+                  )}
                   
                 </ContentContainer>
-                </Form>
+              </Form>
             </FormContainer>
         );
     }

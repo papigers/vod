@@ -77,13 +77,17 @@ class DeleteForm extends Component {
                     <p>האם אתה בטוח שברצונך ללמחוק סרטונים אלו?</p>
                     <p>לא יהיה ניתן לשחזר סרטונים אלו.</p>
                     <ContentContainer>
-                        <FormButton
-                            primary
-                            disabled={loading}
-                            text='מחק'
-                            iconProps={{ iconName: 'Delete' }}
-                            onClick={() => this.onSubmit()}
-                        />
+                        {loading ? 
+                            <Spinner size={SpinnerSize.large} ariaLive="loading" />
+                            :
+                            <FormButton
+                                primary
+                                disabled={loading}
+                                text='שמור'
+                                iconProps={{ iconName: 'Save' }}
+                                onClick={() => this.onSubmit()}
+                            />
+                        }
                         <FormButton
                             disabled={loading}
                             text='בטל'
@@ -91,15 +95,13 @@ class DeleteForm extends Component {
                             onClick={this.props.onClose}
                         />
                     </ContentContainer>
-                    {error && (
-                        <ErrorMsg width={1}>
-                            {error}
-                        </ErrorMsg>
-                    )}
-                    {loading ? 
-                        <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
-                        : null
-                    }
+                    <ContentContainer>
+                        {error && (
+                            <ErrorMsg width={1}>
+                                {error}
+                            </ErrorMsg>
+                        )}
+                    </ContentContainer>
                 </Form>
             </FormContainer>
         );

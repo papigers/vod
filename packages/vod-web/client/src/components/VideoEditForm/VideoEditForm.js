@@ -26,6 +26,18 @@ const Form = styled.form`
   }
 `;
 
+const FormContainer = styled(Flex)`
+  justify-content: center;
+`;
+
+const ContentContainer = FormContainer.extend`
+    margin: 1em 0;
+`;
+
+const FormButton = styled(DefaultButton)`
+  margin: 0 1em;
+`;
+
 const DropdownContainer = styled.div`
   max-width: 250px;
 `;
@@ -203,78 +215,82 @@ class VideoEditForm extends Component {
           } = this.state;
 
         return (
-            <Fragment>
-                <Flex justifyContent="center">
-                    <Box >
-                        <Form onSubmit={this.onSubmit}>
-                            <Flex alignItems="flex-end">
-                                <TextField
-                                    label="שם סרטון"
-                                    required
-                                    value={name}
-                                    onChange={this.onChangeName}
-                                    errorMessage={this.state.nameError}
-                                />
-                            </Flex>
-                            <TextField
-                                label="תיאור"
-                                multiline
-                                autoAdjustHeight
-                                value={description}
-                                onChange={this.onChangeDescription}
+            <FormContainer>
+                <Form onSubmit={this.onSubmit}>
+                    <Flex alignItems="flex-end">
+                        <TextField
+                            label="שם סרטון"
+                            disabled={loading}
+                            required
+                            value={name}
+                            onChange={this.onChangeName}
+                            errorMessage={this.state.nameError}
+                        />
+                    </Flex>
+                    <TextField
+                        label="תיאור"
+                        disabled={loading}
+                        multiline
+                        autoAdjustHeight
+                        value={description}
+                        onChange={this.onChangeDescription}
+                    />
+                    <DropdownContainer>
+                        <Dropdown
+                            required
+                            label="גישה"
+                            disabled={loading}
+                            selectedKey={privacy}
+                            onChange={this.onChangePrivacy}
+                            onRenderTitle={this.onRenderPrivacyOption}
+                            onRenderOption={this.onRenderPrivacyOption}
+                            placeHolder="בחר/י גישה לסרטון"
+                            errorMessage={this.state.privacyError}
+                            options={[
+                                { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
+                                { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                                { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
+                                { key: 'CHANNEL', text: 'יורש מהערוץ', data: { icon: 'MSNVideos' } },
+                            ]}
+                        />
+                    </DropdownContainer>
+                    {privacy !== 'PUBLIC' ? (
+                        <PeoplePicker
+                            disabled={loading}
+                            selectedItems={acls}
+                            label={privacy === 'CHANNEL'?'הסרטון משותף בנוסף עם:':'הסרטון משותף עם:'}
+                            onChange={this.onChangeACL}
+                        />
+                    ) :  null}
+                    <TagPicker disabled={loading} tags={tags} label="תגיות:" onChange={this.onChangeTags} />
+                    <ContentContainer>
+                        {loading ? 
+                            <Spinner size={SpinnerSize.large} ariaLive="loading" />
+                            : 
+                            <FormButton
+                                text="שמור"
+                                primary
+                                disabled={loading}
+                                iconProps={{ iconName: 'Save' }}
+                                onClick={() => this.onSubmit()}
                             />
-                            <DropdownContainer>
-                                <Dropdown
-                                    required
-                                    label="גישה"
-                                    selectedKey={privacy}
-                                    onChange={this.onChangePrivacy}
-                                    onRenderTitle={this.onRenderPrivacyOption}
-                                    onRenderOption={this.onRenderPrivacyOption}
-                                    placeHolder="בחר/י גישה לסרטון"
-                                    errorMessage={this.state.privacyError}
-                                    options={[
-                                        { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
-                                        { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
-                                        { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
-                                        { key: 'CHANNEL', text: 'יורש מהערוץ', data: { icon: 'MSNVideos' } },
-                                    ]}
-                                />
-                            </DropdownContainer>
-                            {privacy !== 'PUBLIC' ? (
-                                <PeoplePicker selectedItems={acls} label={privacy === 'CHANNEL'?'הסרטון משותף בנוסף עם:':'הסרטון משותף עם:'} onChange={this.onChangeACL} />
-                            ) :  null}
-                            <TagPicker tags={tags} label="תגיות:" onChange={this.onChangeTags} />
-                            <Box pt={40}>
-                                <Flex justifyContent="flex-start" alignItems="center">
-                                    <PrimaryButton
-                                        disabled={loading}
-                                        text="שמור"
-                                        iconProps={{ iconName: 'Save' }}
-                                        onClick={() => this.onSubmit()}
-                                    />
-                                    <Box mx={3} />
-                                    <DefaultButton
-                                        disabled={loading}
-                                        text="בטל"
-                                        iconProps={{ iconName: 'Cancel' }}
-                                        onClick={this.props.onClose}
-                                    />
-                                </Flex>
-                            </Box>
-                        </Form>
+                        }
+                        <FormButton
+                            text="בטל"
+                            disabled={loading}
+                            iconProps={{ iconName: 'Cancel' }}
+                            onClick={this.props.onClose}
+                        />
+                    </ContentContainer>
+                    <ContentContainer>
                         {error && (
                             <ErrorMsg width={1}>
                                 {error}
                             </ErrorMsg>
                         )}
-                        {loading ? 
-                            <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
-                            : null
-                        }
-                    </Box>
-                </Flex>
-            </Fragment>
+                    </ContentContainer>
+                </Form>
+            </FormContainer>
         );
     }
 }

@@ -109,11 +109,12 @@ class EditForm extends Component {
     }
 
     renderInput = () => {
-        const {action, text} = this.state;
+        const {action, text, loading} = this.state;
         const {editType} = this.props;
         if (editType === 'tags') {
             return <TagPicker
                 label="תגיות:"
+                disabled={loading}
                 onChange={this.onChangeTags}
                 />
         }
@@ -121,6 +122,7 @@ class EditForm extends Component {
             return <TextField
                 required
                 label="טקסט"
+                disabled={loading}
                 value={text}
                 onChange={this.onTextChannge}
                 multiline
@@ -193,36 +195,39 @@ class EditForm extends Component {
                     <Dropdown
                         required
                         label="סוג עריכה"
+                        disabled={loading}
                         selectedKey={action}
                         onChange={this.onSelectionChannge}
                         options={options}
                     />
+                    {/* Render Content */}
                     {this.renderInput()}
                     <ContentContainer>
+                        {loading ? 
+                            <Spinner size={SpinnerSize.large} ariaLive="loading" />
+                            : 
+                            <FormButton
+                                text="שמור"
+                                primary
+                                disabled={loading}
+                                iconProps={{ iconName: 'Save' }}
+                                onClick={() => this.onSubmit()}
+                            />
+                        }
                         <FormButton
-                            primary
-                            text='שמור'
-                            disabled={loading}
-                            iconProps={{ iconName: 'Save' }}
-                            onClick={() => this.onSubmit()}
-                        />
-                        
-                        <FormButton
-                            text='בטל'
+                            text="בטל"
                             disabled={loading}
                             iconProps={{ iconName: 'Cancel' }}
-                            onClick={onClose}
+                            onClick={this.props.onClose}
                         />
                     </ContentContainer>
-                    {error && (
-                        <ErrorMsg width={1}>
-                            {error}
-                        </ErrorMsg>
-                    )}
-                    {loading ? 
-                      <Spinner size={SpinnerSize.large} label="טוען..." ariaLive="assertive" />
-                      : null
-                    }
+                    <ContentContainer>
+                        {error && (
+                            <ErrorMsg width={1}>
+                                {error}
+                            </ErrorMsg>
+                        )}
+                    </ContentContainer>
                 </Form>
             </FormContainer>
         );
