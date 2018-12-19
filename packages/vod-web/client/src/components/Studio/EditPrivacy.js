@@ -169,6 +169,8 @@ class EditPrivacy extends Component {
                     iconProps={{ iconName: 'Cancel' }}
                     onClick={onClose}
                   />
+                  
+                  
                 </ContentContainer>
                 <ContentContainer>
                   {error && (

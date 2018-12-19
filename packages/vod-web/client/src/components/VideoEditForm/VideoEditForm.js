@@ -1,11 +1,11 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
-import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import axios from 'utils/axios';

@@ -218,7 +218,7 @@ class EditForm extends Component {
                             text="בטל"
                             disabled={loading}
                             iconProps={{ iconName: 'Cancel' }}
-                            onClick={this.props.onClose}
+                            onClick={onClose}
                         />
                     </ContentContainer>
                     <ContentContainer>
