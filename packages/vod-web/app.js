@@ -5,10 +5,10 @@ var config = require('config');
 var logger = require('morgan');
 var compression = require('compression');
 var axios = require('axios');
-var auth = require('vod-auth');
+var auth = require('@vod/vod-auth');
 
-var OSClient = require('vod-object-storage-client').S3Client();
-// var authCache = require('vod-redis-client')(config.cache.auth);
+var OSClient = require('@vod/vod-object-storage-client').S3Client();
+// var authCache = require('@vod/vod-redis-client')(config.cache.auth);
 
 var app = express();
 

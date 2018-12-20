@@ -46,7 +46,12 @@ module.exports = {
             builder = builder.enu(name, attr.values, { useNative: true, enumName: `enum_${table}_${name}` });
             break;
           default:
-            builder = builder[type](name);
+            if (builder[type]) {
+              builder = builder[type](name);
+            }
+            else {
+              builder = builder.specificType(name, type);
+            }
         }
         if (attr.notNullable) {
           builder = builder.notNullable();

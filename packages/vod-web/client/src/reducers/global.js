@@ -7,7 +7,7 @@ const untrapNavbarRoutes = [{
   path: '/watch*',
   exact: true,
 }, {
-  path: '/upload',
+  path: '/upload/:id',
   exact: true,
 }];
 

@@ -12,7 +12,8 @@ import NewChannelForm from 'components/NewChannelForm';
 
 import HomePage from 'containers/HomePage';
 import VideoPage from 'containers/VideoPage';
-import UploadPage from 'containers/UploadPage';
+import UploadButton from 'components/UploadButton';
+import UploadEdit from 'containers/UploadEdit';
 import ChannelPage from 'containers/ChannelPage';
 import VideoPreloader from 'containers/VideoPreloader';
 
@@ -80,7 +81,8 @@ class App extends Component {
               <Route exact path="/channel" component={ChannelPage} />
               <Route exact path="/channel/:channelId" component={ChannelPage} />
               <Route exact path="/watch" component={VideoPage} />
-              <Route exact path="/upload" component={UploadPage} />
+              <Route exact path="/upload" component={UploadButton} />
+              <Route exact path="/upload/edit" component={UploadEdit} />
               <Route exact path="/results" component={Results} />
               <Redirect to="/" />
             </Switch>

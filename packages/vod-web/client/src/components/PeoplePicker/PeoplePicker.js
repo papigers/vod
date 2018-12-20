@@ -45,18 +45,32 @@ class PeoplePicker extends Component {
     };
   }
 
-  static getDerivedStateFromProps(props, state) {
-    if (props.selectedItems) {
-      return {
-        currentSelectedItems: (props.selectedItems || []).map(item => ({
-          text: item.name,
-          secondaryText: item.id,
-          imageUrl: item.profile,
-          type: item.type,
-        })),
-      };
+  componentDidMount() {
+    if (this.props.value && this.props.value.length) {
+      this.propsADLookup();
     }
-    return null;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.value && this.props.value.length && this.props.value.length !== prevProps.value.length) {
+      this.propsADLookup();
+    }
+  }
+
+  propsADLookup() {
+    Promise.all(this.props.value.map(people => new Promise((resolve, reject) => {
+      ldapAxios.post(`/search/${people.type === 'AD_GROUP' ? 'group': 'user'}`, {
+        filter: people.id,
+      }).then(({ data: { results } }) => {
+        if (results.length) {
+          const obj = this.reformatResults(results, [])[0];
+          resolve(obj);
+        }
+        resolve(null);
+      }).catch(reject);
+    }))).then(results => {
+      this.onChange(results.filter(res => !!res));
+    });
   }
 
   render() {
@@ -81,7 +95,10 @@ class PeoplePicker extends Component {
 
   onChange = (currentSelectedItems) => {
     if (this.props.onChange) {
-      this.props.onChange(currentSelectedItems);
+      this.props.onChange(currentSelectedItems.map(item => ({
+        id: item.secondaryText,
+        type: item.type,
+      })));
     }
     this.setState({ currentSelectedItems });
   }

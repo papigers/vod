@@ -1,6 +1,8 @@
 var express = require('express');
 var qs = require('querystring');
 var db = require('../../models');
+var generateThumbnail = require('../../messages/thumbnails').generateThumbnail;
+var previewThumbnails = require('../../messages/thumbnails').previewThumbnails;
 var router = express.Router();
 
 // default redirect to random
@@ -158,27 +160,12 @@ router.put('/video/:id/dislike', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  db.videos.edit(req.user, req.params.id, req.body)
+  var video = req.body;
+  db.videos.edit(req.user, req.params.id, video)
     .then(function(result) {
       if (!!result) {
-        return res.sendStatus(200);
-      }
-      return res.status(404).json({
-        error: 'No such video',
-      });
-    })
-    .catch(function (err) {
-      res.status(err.code).json({
-        error: err.message || 'Video edit failed',
-      });
-    });
-});
-
-// finish video creation with all data.
-router.put('/publish/:id', function(req, res, next) {
-  db.videos.publish(req.user, req.params.id, req.body)
-    .then(function(result) {
-      if (!!result) {
+        console.log(result)
+        generateThumbnail(req.params.id, `${(video.thumbnail + 1) * 20}%`);
         return res.sendStatus(200);
       }
       return res.status(404).json({
@@ -187,8 +174,8 @@ router.put('/publish/:id', function(req, res, next) {
     })
     .catch(function (err) {
       console.error(err);
-      res.status(500).json({
-        error: 'Video publish failed',
+      res.status(err.code || 500).json({
+        error: err.message || 'Video edit failed',
       });
     });
 });
@@ -230,5 +217,63 @@ router.post('/:videoId/comments', function(req, res, next) {
       next(err);
     });
 });
+
+router.get('/:videoId/thumbnails', function(req, res, next) {
+  db.videos.checkAuth(req.params.videoId, req.user)
+  .then(function({ count }) {
+    return Promise.resolve(count > 0);
+  }).then(function(authorized) {
+    if (!authorized) {
+      return res.sendStatus(403);
+    }
+    var count = +req.query.count || 1;
+    if (isNaN(count)) {
+      res.status(400).send('count must be a number')
+    }
+    if (count > 16 || count < 1) {
+      res.status(400).send('count must be between 1 and 16')
+    }
+    previewThumbnails(req.params.videoId, count)
+      .then(function(thumbs) {
+        if (count !== thumbs.length) {
+          return next(new Error('Encountered a problem getting video thumbnails'));
+        }
+        if (count === 1) {
+          var thumb = Buffer.from(thumbs[0].replace(/^data:image\/png;base64,/, ''), 'base64');
+          res.writeHead(200, {
+            'Content-Type': 'image/png',
+            'Content-Length': thumb.length,
+          })
+          return res.end(thumb);
+        }
+        res.json(thumbs);
+      })
+      .catch(function(err) {
+        next(err);
+      });
+  })
+});
+
+router.get('/managed/:videoId', function(req, res, next) {
+  db.videos.getManagedVideos(req.user, req.params.videoId)
+    .then(function(video) {
+      res.json(video);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
+    });
+});
+
+router.get('/managed', function(req, res, next) {
+  db.videos.getManagedVideos(req.user, req.params.videoId)
+    .then(function(video) {
+      res.json(video);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
+    });
+})
 
 module.exports = router;

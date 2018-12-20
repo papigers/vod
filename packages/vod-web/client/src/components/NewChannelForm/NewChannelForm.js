@@ -97,6 +97,13 @@ class NewChannelForm extends Component{
       error: null,
     };
   }
+
+  componentDidMount() {
+    this.setState({
+      viewACL: this.formatACL(this.state.viewACL, 'view'),
+      manageACL: this.formatACL(this.state.manageACL, 'manage'),
+    })
+  }
   
   onRenderPrivacyOption = (item) => {
     const option = item[0] || item;
@@ -127,18 +134,12 @@ class NewChannelForm extends Component{
     }
   }
 
-  formatACL = (acls) => {
-    return acls.map(acl => {
-      if (acl.secondaryText === this.props.user.id) {
-        return null;
-      }
-      return {
-        id: acl.secondaryText,
-        name: acl.text,
-        profile: acl.imageUrl,
-        type: acl.type,
-      };
-    }).filter(acl => !!acl);
+  formatACL = (acls, type) => {
+    const withoutSelf = acls.filter(acl => !!acl && (acl.type === 'USER' && acl.id !== this.props.user.id));
+    if (type === 'view') {
+      return withoutSelf;
+    }
+    return withoutSelf.concat([this.getCurrentUser()]);
   }
 
   onChangeName = ({ target }) => this.setState({ name: target.value });
@@ -147,8 +148,8 @@ class NewChannelForm extends Component{
   onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
   onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
   onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
-  onChangeViewACL = (acls) => this.setState({ viewACL: this.formatACL(acls) });
-  onChangeManageACL = (acls) => this.setState({ manageACL: this.formatACL(acls) });
+  onChangeViewACL = (acls) => this.setState({ viewACL: this.formatACL(acls, 'view') });
+  onChangeManageACL = (acls) => this.setState({ manageACL: this.formatACL(acls, 'manage') });
 
   setError(error) {
     this.setState({ error }, () => {
@@ -212,10 +213,10 @@ class NewChannelForm extends Component{
         name,
         description,
         viewACL,
-        manageACL: manageACL.concat(this.getCurrentUser()),
+        manageACL: this.formatACL(manageACL, 'manage'),
         privacy,
-      }).then(response => {
-        return axios.post(`channels/images/${response.data.id}`, data, {
+      }).then(() => {
+        return axios.post(`channels/images/${id}`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       })
@@ -235,8 +236,6 @@ class NewChannelForm extends Component{
   getCurrentUser() {
     return {
       id: this.props.user.id,
-      name: this.props.user.name,
-      profile: '/images/user.svg',
       type: 'USER',
     };
   }
@@ -253,8 +252,6 @@ class NewChannelForm extends Component{
       viewACL,
       manageACL,
     } = this.state;
-
-    const currentUser = this.getCurrentUser();
 
     return(
       <Form onSubmit={this.onSubmit}>
@@ -287,22 +284,22 @@ class NewChannelForm extends Component{
             onRenderOption={this.onRenderPrivacyOption}
             placeHolder="בחר/י גישה לערוץ"
             options={[
-              { key: 'public', text: 'ציבורי', data: { icon: 'Group' } },
-              { key: 'private', text: 'פרטי', data: { icon: 'Contact' } },
+              { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+              { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
             ]}
           />
         </DropdownContainer>
-        {privacy !== 'public' ? (
+        {privacy !== 'PUBLIC' ? (
           <PeoplePicker
             label="הרשאות צפייה"
             onChange={this.onChangeViewACL}
-            selectedItems={viewACL}
+            value={viewACL}
           />
         ) :  null}
         <PeoplePicker
           label="הרשאות ניהול"
           onChange={this.onChangeManageACL}
-          selectedItems={manageACL.concat([currentUser])}
+          value={manageACL}
         />
         <TextField
           label="תיאור"

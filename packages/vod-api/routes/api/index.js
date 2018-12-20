@@ -1,5 +1,5 @@
 var express = require('express');
-var auth = require('vod-auth');
+var auth = require('@vod/vod-auth');
 var router = express.Router();
 
 // Only for B2B access - no auth required
@@ -11,6 +11,9 @@ router.use(auth);
 
 var videos = require('./videos');
 router.use('/videos', videos);
+
+var upload = require('./upload');
+router.use('/upload', upload);
 
 var notifications = require('./notifications');
 router.use('/notifications', notifications);

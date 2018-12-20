@@ -23,9 +23,9 @@ const uploadInitialState = fromJS({
   error: null,
   metadata: {
     size: 0,
-    ratioW: 16,
-    ratioH: 9,
-    res: 0,
+    width: 0,
+    height: 0,
+    resolution: 0,
     duration: 0,
   },
   video: {
@@ -69,8 +69,7 @@ export default function uploadReducer(state = uploadInitialState, action) {
         .set('error', null);
     case SET_UPLOAD_METADATA:
       return state
-        .set('metadata', state.get('metadata').merge(action.metadata))
-        .setIn(['video', 'name'], state.getIn(['video', 'name']) || action.metadata.name);
+        .set('metadata', state.get('metadata').merge(action.metadata));
     case SET_UPLOAD_STEP:
       return state
         .set('step', action.step)

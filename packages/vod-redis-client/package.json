@@ -1,5 +1,5 @@
 {
-  "name": "vod-redis-client",
+  "name": "@vod/vod-redis-client",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "Gershon Papi <papigers93@gmail.com>",
