@@ -285,6 +285,7 @@ module.exports = function(db) {
       .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
       .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
       .where(`${videos.table}.id`, videoId)
+      .where(`${videos.table}.state`, '<>', 'DRAFT')
       .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, `${db.tags.table}.tag`)
       .modify(videos.authorizedViewSubquery, user),
     );

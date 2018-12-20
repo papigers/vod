@@ -12,7 +12,7 @@ function ioUpload(io) {
     };
 
     function calculateProgress() {
-      if (video.upload.step = 'FINISH') {
+      if (video.upload.step === 'FINISH') {
         return 100;
       }
       if (!video.upload.requiredFiles) {

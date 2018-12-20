@@ -164,7 +164,6 @@ router.put('/:id', function(req, res) {
   db.videos.edit(req.user, req.params.id, video)
     .then(function(result) {
       if (!!result) {
-        console.log(result)
         generateThumbnail(req.params.id, `${(video.thumbnail + 1) * 20}%`);
         return res.sendStatus(200);
       }

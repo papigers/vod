@@ -170,7 +170,10 @@ module.exports = function(db) {
         this.onIn(`${notifications.table}.type`, ['VIDEO_LIKE', 'UPLOAD_FINISH', 'UPLOAD_ERROR'])
           .andOn(`${db.videos.table}.channelId`, `videoChannel.id`);
       })
-      .where(`${notifications.table}.senderId`, '<>', user && user.id)
+      .where(function() {
+        this.where(`${notifications.table}.senderId`, '<>', user && user.id)
+        .orWhereIn(`${notifications.table}.type`, ['UPLOAD_FINISH', 'UPLOAD_ERROR']);
+      })
       .where(function() {
         this.where(function() {
           this.where(function() {

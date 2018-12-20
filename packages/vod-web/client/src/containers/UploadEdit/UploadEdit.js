@@ -121,7 +121,7 @@ class UploadEdit extends Component {
     metadata: {},
     upload: {},
     thumbnails: [],
-    selectedThumbnail: 0,
+    selectedThumbnail: null,
     errors: {},
   };
 
@@ -338,7 +338,7 @@ class UploadEdit extends Component {
       },
       upload,
     } = this.state;
-    var finished = !upload || upload.step === 'FINISH';
+    var finished = upload.step === 'FINISH';
     axios.put(`/videos/${id}`, {
       name,
       privacy,
@@ -442,6 +442,7 @@ class UploadEdit extends Component {
       thumbnails,
       selectedThumbnail,
       video: {
+        id,
         name,
         description,
         privacy,
@@ -488,7 +489,7 @@ class UploadEdit extends Component {
               <VideoThumbnail
                 width={210}
                 height={118}
-                src={thumbnails && thumbnails[selectedThumbnail]}
+                src={(thumbnails && thumbnails[selectedThumbnail]) || `${process.env.REACT_APP_STREAMER_HOSTNAME}/${id}/thumbnail.png`}
               />
               <Label>בחר תמונת תצוגה:</Label>
               {[0,1,2,3].map(k => (
@@ -594,6 +595,8 @@ class UploadEdit extends Component {
               ) : null}
               <Box pt={40}>
                 ההעלאה תימשך ברקע ותקבל התראה בסיום ההעלאה
+                <br />
+                <br />
                 <Flex justifyContent="flex-start" alignItems="center">
                   <PrimaryButton
                     text="שמור"
