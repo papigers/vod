@@ -151,22 +151,41 @@ module.exports = function(db) {
       .from(videos.table)
       .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
       .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
-      .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`);
+      .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
+      .whereNotIn(`${videos.table}.id`, function() {
+        this.select('id').from(db.uploads.table);
+      })
+      .where(`${videos.table}.state`, 'PUBLISHED');
   }
 
   videos.initialCreate = function(user, video) {
+    var videoId = generateId();
     return db.knex.transaction(function(trx) {
-      return trx.select().from(videos.table).where('name', video.name).andWhere('published', false)
+      return trx.select(`${videos.table}.id`, `${videos.table}.name`, `${db.uploads.table}.step`)
+        .from(videos.table)
+        .innerJoin(db.uploads.table, `${videos.table}.id`, `${db.uploads.table}.id`)
+        .where(`${videos.table}.name`, video.name)
+        .andWhere(`${videos.table}.creatorId`, video.creator)
         .then(function(res) {
           if (res.length === 0) {
             return trx(videos.table).insert({
-              id: generateId(),
+              id: videoId,
               name: video.name,
-              published: false,
               channelId: video.channel,
               creatorId: video.creator,
             }).then(function() {
-              return db.knexnest(trx.select().from(videos.table).where('name', video.name).limit(1));
+              return trx(db.uploads.table).insert({
+                id: videoId,
+              })
+            }).then(function() {
+              return db.knexnest(
+                trx.select(`${videos.table}.id`, `${videos.table}.name`, `${db.uploads.table}.step`)
+                .from(videos.table)
+                .innerJoin(db.uploads.table, `${videos.table}.id`, `${db.uploads.table}.id`)
+                .where(`${videos.table}.name`, video.name)
+                .andWhere(`${videos.table}.creatorId`, video.creator)
+                .limit(1)
+              );
             });
           }
           return res[0];
@@ -176,7 +195,7 @@ module.exports = function(db) {
 
   videos.edit = function(user, id, video) {
     video.tags = video.tags || [];
-    video.acl = video.acl || [];
+    video.acls = video.acls || [];
     return db.knex.transaction(function(trx) {
       return Promise.all(video.tags.map(function(tag) {
         return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId'])).insert(
@@ -192,7 +211,7 @@ module.exports = function(db) {
       })
       .then(function() {
         if (video.privacy !== 'PUBLIC') {
-          return Promise.all(video.acl.map(function(acl) {
+          return Promise.all(video.acls.map(function(acl) {
             return trx(db.videoAcls.table).insert({
               videoId: id,
               id: acl.id,
@@ -211,7 +230,8 @@ module.exports = function(db) {
             name: video.name,
             description: video.description,
             privacy: video.privacy,
-            published: video.published,
+            channelId: video.channel.id,
+            state: video.state,
           })
           .where('id', id)
           .modify(videos.authorizedManageSubquery, user);
@@ -227,11 +247,6 @@ module.exports = function(db) {
       });
     });
   }
-    
-  videos.publish = function(user, id, video) {
-    video.published = true;
-    return videos.edit(user, id, video);
-  }
 
   videos.delete = function(user, id) {
     return db.knex(videos.table).where('id', id).modify(videos.authorizedManageSubquery, user).del();
@@ -240,6 +255,12 @@ module.exports = function(db) {
   videos.checkAuth = function(videoId, user) {
     return db.knexnest(
       db.knex(videos.table).count('*').where(`${videos.table}.id`, videoId).modify(videos.authorizedViewSubquery, user)
+    );
+  }
+
+  videos.checkManageAuth = function(videoId, user) {
+    return db.knexnest(
+      db.knex(videos.table).count('*').where(`${videos.table}.id`, videoId).modify(videos.authorizedManageSubquery, user)
     );
   }
 
@@ -496,9 +517,10 @@ module.exports = function(db) {
           // top videos viewd by users who viewd your trending videos
           function() {
             this.modify(videos.videoListSelect)
-            .innerJoin(`${db.videoViews.table} as otherViews`, function() {
-              this.on('otherViews.videoId', `${videos.table}.id`)
-              .onIn('otherViews.channelId', db.knex.raw('select ?? from ??', ['channelId', 'trendingWatchers']));
+            .whereIn(`${videos.table}.id`, function() {
+              this.select(`${db.videoViews.table}.videoId`)
+              .from(db.videoViews.table)
+              .whereIn(`${db.videoViews.table}.channelId`, db.knex.raw('select ?? from ??', ['channelId', 'trendingWatchers']))
             })
             .groupBy(`${videos.table}.id`, `${db.channels.table}.id`)
             .modify(videos.order, 'top')
@@ -528,11 +550,113 @@ module.exports = function(db) {
         .as('videos')
       })
       .limit(limit)
-      .offset(offset),
+      .offset(offset)
+      .orderByRaw(
+        '(?? + (2.5 * ??)) desc',
+        ['_viewCount', '_likeCount'],
+      ),
       true,
     );
   }
 
+  videos.setMetadata = function(videoId, metadata) {
+    return db.knex(videos.table)
+      .update({
+        metadata_height: metadata.height,
+        metadata_width: metadata.width,
+        metadata_resolution: metadata.resolution,
+        metadata_duration: metadata.duration,
+        metadata_size: metadata.size,
+      })
+      .where('id', videoId);
+    // return db.knex.transaction(function(trx) {
+    //   return trx(videos.table)
+    //   .update({
+    //     metadata_height: metadata.height,
+    //     metadata_width: metadata.width,
+    //     metadata_resolution: metadata.resolution,
+    //     metadata_duration: metadata.duration,
+    //     metadata_size: metadata.size,
+    //   })
+    //   .where('id', videoId)
+    //   .then(function(updated) {
+    //     if (!updated) {
+    //       throw new VideoError(
+    //         'Video not found',
+    //         404,
+    //       );
+    //     }
+    //     if (!metadata.resolution) {
+    //       return Promise.resolve(updated);
+    //     }
+    //     var required = 3;
+    //     if (metadata.resolution >= 1080) {
+    //       required = 7; // 1080 720 480 360 240 audio mpd
+    //     }
+    //     else if (metadata.resolution  >= 720) {
+    //       required = 6;
+    //     }
+    //     else if (metadata.resolution  >= 480) {
+    //       required = 5;
+    //     }
+    //     else if (metadata.resolution  >= 360) {
+    //       required = 4;
+    //     }
+    //     return trx(db.uploads.table)
+    //     .update('required', required)
+    //     .where('id', videoId);
+    //   });
+    // });  
+  }
+
+  videos.getManagedVideos = function(user, videoId) {
+    var query = db.knex.select(
+      `${videos.table}.id as _id`,
+      `${videos.table}.createdAt as _createdAt`,
+      `${videos.table}.name as _name`,
+      `${videos.table}.description as _description`,
+      `${videos.table}.state as _state`,
+      `${videos.table}.metadata_height as _metadata_height`,
+      `${videos.table}.metadata_width as _metadata_width`,
+      `${videos.table}.metadata_resolution as _metadata_resolution`,
+      `${videos.table}.metadata_duration as _metadata_duration`,
+      `${videos.table}.metadata_size as _metadata_size`,
+      `${db.tags.table}.tag as _tags__tag`,
+      `${videos.table}.privacy as _privacy`,
+      `${db.channels.table}.id as _channel_id`,
+      `${db.channels.table}.name as _channel_name`,
+      `${db.channels.table}.personal as _channel_personal`,
+      `${db.videoAcls.table}.id as _acls__id`,
+      `${db.videoAcls.table}.type as _acls__type`,
+      `${db.uploads.table}.id as _upload_id`,
+      `${db.uploads.table}.required as _upload_requiredFiles`,
+      `${db.uploads.table}.uploaded as _upload_uploadedFiles`,
+      `${db.uploads.table}.step as _upload_step`,
+    )
+    .count(`${db.videoViews.table}.channelId as _viewsCount`)
+    .countDistinct(`${db.videoLikes.table}.channelId as _likesCount`)
+    .count(`${db.comments.table}.id as _commentsCount`)
+    .from(videos.table)
+    .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
+    .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
+    .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
+    .leftJoin(db.comments.table, `${videos.table}.id`, `${db.comments.table}.videoId`)
+    .leftJoin(db.videoAcls.table, `${videos.table}.id`, `${db.videoAcls.table}.videoId`)
+    .leftJoin(db.tags.table, `${videos.table}.id`, `${db.tags.table}.itemId`)
+    .leftJoin(db.uploads.table, `${videos.table}.id`, `${db.uploads.table}.id`)
+    .groupBy(`${videos.table}.id`, `${db.channels.table}.id`, `${db.videoAcls.table}.id`, `${db.videoAcls.table}.videoId`, `${db.tags.table}.itemId`, `${db.tags.table}.tag`, `${db.uploads.table}.id`)
+    .orderBy('_channel_personal', 'desc')
+    .orderBy('_channel_id')
+    .orderBy('_createdAt', 'desc')
+    .modify(videos.authorizedManageSubquery, user);
+    if (!!videoId) {
+      query = query.where(`${videos.table}.id`, videoId);
+    }
+    return db.knexnest(
+      query,
+      true,
+    );
+  }
 
   return videos;
 };

@@ -10,6 +10,7 @@ module.exports = function(db) {
   }
 
   notifications.table = 'notifications';
+  notifications.generateId = generateId;
   notifications.attributes = {
     id: {
       type: 'char',
@@ -46,10 +47,14 @@ module.exports = function(db) {
 
   notifications.addNotification = function(user, type, subject, trx) {
     var id = generateId();
+    var senderId = user && user.id;
+    if (type === 'UPLOAD_FINISH' || type === 'UPLOAD_ERROR') {
+      senderId = db.knex.select('creatorId').from(db.videos.table).where('id', subject);
+    }
     var qb = db.knex(notifications.table).insert({
       id,
       type,
-      senderId: user && user.id,
+      senderId,
       subjectId: subject,
     });
     if (trx) {

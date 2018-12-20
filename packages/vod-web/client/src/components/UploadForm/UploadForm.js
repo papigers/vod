@@ -129,6 +129,15 @@ class UploadForm extends Component {
     return `${seconds} שניות`;
   }
 
+  gcd(numer, denom) {
+    return denom ? this.gcd(denom, numer % denom) : numer;
+  }
+
+  ratioString(width, height) {
+    const gcd = this.gcd(width, height);
+    return `${width / gcd}:${height / gcd}`;
+  }
+
   getUploadStatus(step) {
     switch(step) {
       case 'form_upload':
@@ -319,7 +328,7 @@ class UploadForm extends Component {
                     activityIcon={<Icon iconName="PictureStretch" />}
                     activityDescription={[
                       <b>רזולוציה:</b>,
-                      ` ${metadata.res}p`,
+                      ` ${metadata.resolution}p`,
                     ]}
                   />
                   <ActivityItem
@@ -327,7 +336,7 @@ class UploadForm extends Component {
                     activityIcon={<Icon iconName="AspectRatio" />}
                     activityDescription={[
                       <b>יחס גודל:</b>,
-                      ` ${metadata.ratioW}:${metadata.ratioH}`,
+                      ` ${this.ratioString(metadata.width, metadata.height)}`,
                     ]}
                   />
                 </Metadata>

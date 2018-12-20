@@ -52,15 +52,77 @@ function previewThumbnails(file, output, count) {
   });
 }
 
-function downloadAndPreview(file, output, id, count) {
+function generateThumbnail(id, file, output, timestamp, thumbnail, poster) {
+  var promises = [];
+  if (thumbnail) {
+    promises.push(new Promise(function(resolve, reject) {
+      ffmpeg(file)
+      .on('error', reject)
+      .on('end', function() {
+        channelWrapper.sendToQueue(UPLOAD_QUEUE, {
+          id,
+          path: path.join(output, 'thumbnail.png'),
+        }).then(resolve).catch(reject);
+      })
+      .outputOptions('-crf 27')
+      .outputOptions('-preset veryfast')
+      .screenshots({
+        timestamps: [timestamp],
+        size: '212x120',
+        folder: output,
+        filename: 'thumbnail.png',
+      });
+    }));
+  }
+  if (poster) {
+    promises.push(new Promise(function(resolve, reject) {
+      ffmpeg(file)
+      .on('error', reject)
+      .on('end', function() {
+        channelWrapper.sendToQueue(UPLOAD_QUEUE, {
+          id,
+          path: path.join(output, 'poster.png'),
+        }).then(resolve).catch(reject);
+      })
+      .outputOptions('-crf 27')
+      .outputOptions('-preset veryfast')
+      .screenshots({
+        timestamps: [timestamp],
+        size: '852x480',
+        folder: output,
+        filename: 'poster.png',
+      });
+    }));
+  }
+  return Promise.all(promises);
+}
+
+function downloadVideo(id) {
+  var file = path.join(os.tmpdir(), 'vod-cache', id);
   return new Promise(function(resolve, reject) {
     var cacheFileStream = fs.createWriteStream(file);
     cacheFileStream.on('finish', function() {
-      previewThumbnails(file, output, count).then(resolve).catch(reject);
+      resolve(file);
     });
-    OSClient.serverGetObject(`video/${id}/360.mp4`).on('error', function(error) {
-      return resolve({ error });
-    }).pipe(cacheFileStream);
+    OSClient.serverGetObject(`video/${id}/360.mp4`).on('error', reject).pipe(cacheFileStream);
+  });
+}
+
+function ensureVideoPath(videoId) {
+  return new Promise(function(resolve, reject) {
+    var uploadFile = path.join(os.tmpdir(), 'uploads', videoId);
+    fs.exists(uploadFile, function(exists) {
+      if (exists) {
+        resolve(uploadFile);
+      }
+      var cacheFile = path.join(os.tmpdir(), 'vod-cache', videoId);
+      fs.exists(cacheFile, function(exists) {
+        if (exists) {
+          resolve(cacheFile);
+        }
+        downloadVideo(videoId).then(resolve).catch(reject);
+      });
+    });
   });
 }
 
@@ -71,61 +133,28 @@ function handleThumbnailMessage(type, body) {
     return Promise.all([ensurePath(cacheFolder), ensurePath(outputFolder)]).then(function() {
       switch(type) {
         case 'PREVIEW_THUMBNAILS':
-          var cacheFile = path.join(cacheFolder, body.id);
-          fs.exists(cacheFile, function(exists) {
-            if (exists) {
-              return previewThumbnails(cacheFile, outputFolder, body.count)
-              .then(resolve)
-              .catch(function() {
-                return downloadAndPreview(cacheFile, outputFolder, body.id, body.count).then(resolve).catch(reject);
-              });
-            }
-            return downloadAndPreview(cacheFile, outputFolder, body.id, body.count).then(resolve).catch(reject);
+          ensureVideoPath(body.id)
+          .then(function(path) {
+            return previewThumbnails(path, outputFolder, body.count);
+          })
+          .then(resolve)
+          .catch(function() {
+            downloadVideo(videoId).then(function(path) {
+              return previewThumbnails(path, outputFolder, body.count);
+            }).then(resolve).catch(reject);
           });
           break;
         case 'GENERATE_THUMBNAIL':
-          var promises = [];
-          if (body.thumbnail) {
-            promises.push(new Promise(function(resolve, reject) {
-              ffmpeg(body.path)
-              .on('error', reject)
-              .on('end', function() {
-                channelWrapper.sendToQueue(UPLOAD_QUEUE, {
-                  id: body.id,
-                  path: path.join(outputFolder, 'thumbnail.png'),
-                }).then(resolve).catch(reject);
-              })
-              .outputOptions('-crf 27')
-              .outputOptions('-preset veryfast')
-              .screenshots({
-                timestamps: [body.timestamp],
-                size: '212x120',
-                folder: outputFolder,
-                filename: 'thumbnail.png',
-              });
-            }));
-          }
-          if (body.poster) {
-            promises.push(new Promise(function(resolve, reject) {
-              ffmpeg(body.path)
-              .on('error', reject)
-              .on('end', function() {
-                channelWrapper.sendToQueue(UPLOAD_QUEUE, {
-                  id: body.id,
-                  path: path.join(outputFolder, 'poster.png'),
-                }).then(resolve).catch(reject);
-              })
-              .outputOptions('-crf 27')
-              .outputOptions('-preset veryfast')
-              .screenshots({
-                timestamps: [body.timestamp],
-                size: '852x480',
-                folder: outputFolder,
-                filename: 'poster.png',
-              });
-            }));
-          }
-          return Promise.all(promises).then(resolve).catch(reject);
+          ensureVideoPath(body.id)
+          .then(function(path) {
+            return generateThumbnail(body.id, path, outputFolder, body.timestamp, !!body.thumbnail, !!body.poster);
+          })
+          .then(resolve)
+          .catch(function() {
+            downloadVideo(videoId).then(function(path) {
+              return generateThumbnail(body.id, path, outputFolder, body.timestamp, !!body.thumbnail, !!body.poster);
+            }).then(resolve).catch(reject);
+          });
         default:
           resolve({ error: 'Unrecognized Request '});
       }

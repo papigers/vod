@@ -4,8 +4,13 @@ var path = require('path');
 var os = require('os');
 var ffmpeg = require('fluent-ffmpeg');
 var exec = require('child_process').exec;
+var axios = require('axios');
+var config = require('config');
+
 var ensurePath = require('../utils/ensurePath');
-var publishProgress = require('../messages/progress');
+var publishProgress = require('../messages/upload').publishProgress;
+var publishMetadata = require('../messages/upload').publishMetadata;
+var publishStep = require('../messages/upload').publishStep;
 
 var ENCODE_QUEUE = 'encode_queue';
 var UPLOAD_QUEUE = 'upload_queue';
@@ -55,8 +60,24 @@ function encodeVideo(videoId, inputPath) {
             },
           );
           var resHeight = (dims.ratioW / dims.ratioH) * (9 / 16) * dims.height;
+          var metadata = {
+            height: dims.height,
+            width: dims.width,
+            resolution: resHeight,
+            duration: metadata.format.duration,
+            size: metadata.format.size,
+          };
           
-          var encoding = ffmpeg(inputPath)
+          return axios.put(`${config.api}/private/uploads/${videoId}/start-encoding`).then(function({ data: step }) {
+            publishStep(videoId, step);
+            return axios.put(`${config.api}/private/videos/${videoId}/metadata`, {
+              metadata,
+            });
+          })
+          .then(function() {
+            publishMetadata(videoId, metadata);
+
+            var encoding = ffmpeg(inputPath)
             /* ffmpeg -i <filename> -c:a aac -ac 2 -ab 128k -vn <output-audio> */
             .output(`${outputFile}-audio.mp4`)
             .audioCodec('aac')
@@ -177,10 +198,16 @@ function encodeVideo(videoId, inputPath) {
                 if (err) {
                   return reject(err);
                 }
-                resolve(mp4boxOutputs);
-              })
+                return axios.put(`${config.api}/private/uploads/${videoId}/finish-encoding`).then(function({ data: step }) {
+                  publishProgress(videoId, 100, 'encoding');
+                  publishStep(videoId, step);
+                  resolve(mp4boxOutputs);
+                }).catch(reject);
+              });
             })
             .run();
+          })
+          .catch(reject);
         }
       });
     });
@@ -194,6 +221,7 @@ var channelWrapper = connection.createChannel({
   name: 'encoderChannel',
   setup(ch) {
     var self = this;
+    // return Promise.resolve(1);
     return Promise.all([
       ch.assertQueue(ENCODE_QUEUE, {durable: true}),
       ch.assertQueue(UPLOAD_QUEUE, {durable: true}),

@@ -177,14 +177,7 @@ class ChannelSettings extends Component{
   }
 
   formatACL = (acls) => {
-    return acls.map(acl => {
-      return {
-        id: acl.secondaryText,
-        name: acl.text,
-        profile: acl.imageUrl,
-        type: acl.type,
-      };
-    }).filter(acl => !!acl);
+    return acls;
   }
 
   onChangeName = ({ target }) => this.setState({name: target.value});
@@ -333,14 +326,14 @@ class ChannelSettings extends Component{
           <PeoplePicker
             label="הרשאות צפייה"
             onChange={this.onChangeViewACL}
-            selectedItems={viewACL}
+            value={viewACL}
           />
         ) :  null }
         {personal === false ? (
           <PeoplePicker
             label="הרשאות ניהול"
             onChange={this.onChangeManageACL}
-            selectedItems={manageACL}
+            value={manageACL}
           />
         ) :  null }
         <TextField

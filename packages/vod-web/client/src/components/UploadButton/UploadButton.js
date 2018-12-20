@@ -1,9 +1,20 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import Dropzone from 'react-dropzone';
+import tus from 'tus-js-client';
 
 import { CompoundButton } from 'office-ui-fabric-react/lib/Button';
 import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
+import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
+
+const Container = styled.div`
+  padding-top: 4em;
+`;
+
+const ErrorBox = styled(MessageBar)`
+  width: 350px;
+  margin: 1em auto;
+`;
 
 const StyledDropzone = styled(Dropzone)`
   position: absolute !important;
@@ -27,6 +38,13 @@ const StyledUploadButton = styled(CompoundButton)`
   text-align: center;
   display: block;
   pointer-events: ${({ unclickable }) => unclickable ? 'none' : 'inherit'};
+  &:hover {
+    border: 2px solid #dadada;
+  }
+  
+  &, &:hover, .ms-Button-description, &:hover .ms-Button-description {
+    color: #fff;
+  }
 
   .ms-Button-icon {
     margin: 0 auto;
@@ -81,30 +99,73 @@ export default class UploadButton extends Component {
     super();
     this.state = {
       dragging: false,
+      progress: 0,
+      error: null,
     };
   }
 
+  setUploadError = error => this.setState({ error, progress: 0 });
+
   uploadFile = acceptedFiles => {
-    this.props.uploadFile(acceptedFiles);
     this.setDragging(false);
+    this.setUploadError(null);
+    const file = acceptedFiles[0];
+    const upload = new tus.Upload(file, {
+      endpoint: `${process.env.REACT_APP_API_HOSTNAME}/api/upload/video/`,
+      metadata: {
+        name: file.name,
+        type: file.type,
+      },
+      withCredentials: true,
+      onError: e => {
+        console.error(e);
+        this.setUploadError('שגיאה בהעלאת הסרטון');
+      },
+      onProgress: (uploaded, total) => {
+        this.setState({ progress: uploaded / total * 100 });
+      },
+      onSuccess: () => this.onUploadComplete(upload),
+    });
+
+    upload.start();
+  }
+
+  onUploadComplete = upload => {
+    const url = localStorage.getItem(upload._fingerprint);
+    localStorage.removeItem(upload._fingerprint);
+    const idRegex = new RegExp(`${process.env.REACT_APP_API_HOSTNAME}/api/upload/video/(.*)`);
+    const id = idRegex.exec(url);
+    if (id && id[1]) {
+      this.props.history.push(`/upload/edit?v=${id[1]}`);
+    }
   }
 
   setDragging = dragging => this.setState({ dragging })
   
   render() {
-    const { file, progress } = this.props;
+    const { error, progress } = this.state;
+    const isUploading = progress > 0;
 
-    const buttonProps = file ? {
+    const buttonProps = isUploading ? {
       unclickable: true,
     } : {
-      iconProps: { iconName: 'Upload' },
+      iconProps: { iconName: 'MediaAdd' },
       text: 'בחר קובץ להעלאה',
       secondaryText: 'או גרור לכאן',
     };
     return (
-      <Fragment>
+      <Container>
+        {error ? (
+          <ErrorBox
+            messageBarType={MessageBarType.error}
+            onDismiss={() => this.setUploadError(null)}
+            dismissButtonAriaLabel="סגור"
+          >
+            ההעלאה נכשלה: {error}
+          </ErrorBox>
+        ) : null}
         <StyledUploadButton checked={this.state.dragging} primary {...buttonProps}>
-          {file ? (
+          {isUploading ? (
             <StyledProgressIndicator label="מעלה..." description={`${Math.round(progress)}%`} barHeight={5} percentComplete={progress / 100} />
           ) : (
             <StyledDropzone
@@ -117,7 +178,7 @@ export default class UploadButton extends Component {
           )}
         </StyledUploadButton>
         
-      </Fragment>
+      </Container>
     );
   }
 }

@@ -55,15 +55,32 @@ const StyledPicker = styled(Picker)`
 
 class TagPicker extends Component {
 
-  constructor() {
+  constructor(props) {
     super();
     this.state = {
-      selected: [],
+      selected: TagPicker.reformatTagsProps(props.value || []),
     };
+  }
+
+  static reformatTagsProps = tags => tags.map(tag => ({
+    key: tag.tag || tag,
+    name: tag.tag || tag,
+  }));
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.value && props.value.length !== state.selected.length) {
+      return {
+        selected: TagPicker.reformatTagsProps(props.value),
+      };
+    }
+    return {};
   }
   
   addItem = (item) => {
     if (this.state.selected.findIndex(sel => sel.key === item.key) === -1) {
+      if (this.props.value) {
+        return this.props.onChange(this.state.selected.concat([item]).map(item => item.key)); 
+      }
       this.setState({ selected: this.state.selected.concat([item])}, this.onChange);
     }
   }
@@ -91,12 +108,15 @@ class TagPicker extends Component {
   }
 
   removeItem = item => {
+    if (this.props.value) {
+      return this.props.onChange(this.state.selected.filter(sel => sel.key !== item.key).map(item => item.key)); 
+    }
     this.setState({
       selected: this.state.selected.filter(sel => sel.key !== item.key),
     }, this.onChange);
   }
 
-  onRenderItem = (item) => (
+  onRenderItem = (item) => { console.log(item); return (
     <TagItem {...item.props}>
       <TagItemText>
         {item.item.name}
@@ -107,7 +127,7 @@ class TagPicker extends Component {
         </TagItemClose>
       ) : null}
     </TagItem>
-  );
+  )};
   
   render() {
     return (

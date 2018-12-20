@@ -47,4 +47,45 @@ router.get('/authz/view-video/:videoId', auth, function(req, res) {
     });
 });
 
+router.put('/videos/:videoId/metadata', function(req, res, next) {
+  var metadata = req.body.metadata;
+  return db.videos.setMetadata(req.params.videoId, metadata)
+  .then(function() {
+    res.sendStatus(200);
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
+
+router.put('/uploads/:videoId/start-encoding', function(req, res, next) {
+  return db.uploads.startEncoding(req.params.videoId)
+  .then(function() {
+    res.status(200).send('ENCODE');
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
+
+router.put('/uploads/:videoId/finish-encoding', function(req, res, next) {
+  return db.uploads.finishEncoding(req.params.videoId)
+  .then(function() {
+    res.status(200).send('S3_UPLOAD');
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
+
+router.put('/uploads/:videoId/finish-uploading/:file', function(req, res, next) {
+  return db.uploads.finishUploading(req.params.videoId, req.params.file)
+  .then(function(step) {
+    res.status(200).send(step);
+  })
+  .catch(function(err) {
+    next(err);
+  });
+});
+
 module.exports = router;

@@ -2,29 +2,36 @@
 var amqp = require('amqp-connection-manager');
 var path = require('path');
 var fs = require('fs');
+var axios = require('axios');
+var config = require('config');
 var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
-var publishProgress = require('../messages/progress');
+var publishProgress = require('../messages/upload').publishProgress;
+var publishStep = require('../messages/upload').publishStep;
 
 var UPLOAD_QUEUE = 'upload_queue';
 
 function uploadFile(videoId, file) {
   return new Promise(function(resolve, reject) {
     var stream = fs.createReadStream(file);
+    var filename = path.basename(file);
     OSClient.uploadVideo(
       videoId,
-      path.basename(file),
+      filename,
       stream,
       function(progress) {
         var percent = (progress.loaded / progress.total) * 90;
-        publishProgress(videoId, percent, `u${path.basename(file)}`);
+        publishProgress(videoId, percent, filename);
       },
       function(err, data) {
         if (err) {
           return reject(err);
         }
-        publishProgress(videoId, 100, `u${path.basename(file)}`);
-        resolve(data);
+        axios.put(`${config.api}/private/uploads/${videoId}/finish-uploading/${filename}`).then(function({ data: step }) {
+          publishStep(videoId, step, filename);
+          publishProgress(videoId, 100, filename);
+          resolve(data);
+        });
       },
     );
   });
@@ -38,7 +45,7 @@ var channelWrapper = connection.createChannel({
   setup(ch) {
     return Promise.all([
       ch.assertQueue(UPLOAD_QUEUE, {durable: true}),
-      ch.prefetch(1),
+      ch.prefetch(2),
       ch.consume(UPLOAD_QUEUE, function(msg) {
         var data = JSON.parse(msg.content.toString());
         return uploadFile(data.id, data.path)

@@ -239,33 +239,43 @@ router.get('/:channelId/permissions', function(req, res) {
     .then(function(permissions) {
       var viewACL =[];
       var manageACL =[];
-      return Promise.all(permissions.map(function(perm) {
-        return adFilter(perm.id, perm.type === 'USER' ? 'user' : 'group')
-        .then(function([adObject]) {
-          if (adObject) {
-            var obj = {
-              id: adObject.sAMAccountName || adObject.dn,
-              name: adObject.displayName || adObject.cn,
-              type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
-              profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
-            }
-            switch(perm.access) {
-              case 'VIEW':
-                viewACL.push(obj);
-                break;
-              case 'MANAGE':
-                manageACL.push(obj);
-                break;
-            }
-          }
-          return Promise.resolve();
-        });
-      })).then(function() {
+      permissions.forEach(function(perm) {
+        switch(perm.access) {
+          case 'VIEW':
+            viewACL.push(perm);
+            break;
+          case 'MANAGE':
+            manageACL.push(perm);
+            break;
+        }
+      });
+      // return Promise.all(permissions.map(function(perm) {
+      //   return adFilter(perm.id, perm.type === 'USER' ? 'user' : 'group')
+      //   .then(function([adObject]) {
+      //     if (adObject) {
+      //       var obj = {
+      //         id: adObject.sAMAccountName || adObject.dn,
+      //         name: adObject.displayName || adObject.cn,
+      //         type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
+      //         profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
+      //       }
+      //       switch(perm.access) {
+      //         case 'VIEW':
+      //           viewACL.push(obj);
+      //           break;
+      //         case 'MANAGE':
+      //           manageACL.push(obj);
+      //           break;
+      //       }
+      //     }
+      //     return Promise.resolve();
+      //   });
+      // })).then(function() {
         res.json({
           viewACL,
           manageACL,
         });
-      })
+      // })
     })
     .catch(function(err) {
       console.error(err);

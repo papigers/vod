@@ -46,10 +46,10 @@ class UploadPage extends Component {
   }
 
   componentWillUnmount() {
-    // if (this.uploadSocket) {
-    //   this.uploadSocket.disconnect();
-    // }
-    // this.uploadSocket = null;
+    if (this.uploadSocket) {
+      this.uploadSocket.disconnect();
+    }
+    this.uploadSocket = null;
   }
 
   initSocket = () => {
@@ -159,8 +159,9 @@ class UploadPage extends Component {
         this.props.setUploadVideoThumbnails(data);
       });
 
-      this.progressSocket = io.connect(`${process.env.REACT_APP_API_HOSTNAME}/upload?id=${this.id}`);
-      this.progressSocket.on('progress', this.updateProgress);
+      this.uploadSocket = io.connect(`${process.env.REACT_APP_API_HOSTNAME}/upload?id=${this.id}`);
+      this.uploadSocket.on('progress', this.updateProgress);
+      this.uploadSocket.on('metadata', this.setUploadMetadata);
     }
     localStorage.removeItem(upload._fingerprint);
   }
@@ -172,10 +173,9 @@ class UploadPage extends Component {
   }
 
   setUploadMetadata = ({ id, metadata }) => {
-    // if (id !== this.id) {
-    //   return;
-    // }
-    // this.props.setUploadMetadata(metadata);
+    if (id === this.id) {
+      this.props.setUploadMetadata(metadata);
+    }
   }
 
   setUploadVideoThumbnails = ({ id, thumbnails }) => {
