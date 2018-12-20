@@ -49,21 +49,4 @@ router.post('/video', function(req, res, next) {
 });
 router.use('/video', tusServer.handle.bind(tusServer));
 
-// router.post('/', videoUpload, function(req, res) {
-//   db.videos.initialCreate(req.user, {
-//     creator: req.user && req.user.id,
-//     channel: req.body.channel,
-//     name: req.body.name,
-//   }).then(function(video) {
-//     return enqueueEncoding(video.id, req.file.path).then(function() {
-//       res.json(video.id);
-//     });
-//   }).catch(function(err) {
-//     console.error(err);
-//     res.status(500).json({
-//       error: 'Video upload failed',
-//     });
-//   });
-// });
-
 module.exports = router;

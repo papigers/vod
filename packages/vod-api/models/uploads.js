@@ -47,14 +47,13 @@ module.exports = function(db) {
       return db.knex(uploads.table).where('id', videoId).update({
         uploaded: db.knex.raw('array_append(array_remove(??, ?), ?)', [`${uploads.table}.uploaded`, file, file]),
       }, ['id', 'uploaded']).then(function(ret) {
-        console.log(ret);
         return db.knex(uploads.table)
         .where(db.knex.raw('?? = array_length(??,1)', [`${uploads.table}.required`, `${uploads.table}.uploaded`]))
         .whereNotNull(`${uploads.table}.required`)
         .del()
       }).then(function(deleted) {
         if (deleted > 0) {
-          return db.notifications.addUploadFinishNotification(null, videoId, trx).then(function() {
+          return db.notifications.addUploadFinishNotification(null, videoId, trx).then(function(result) {
             return Promise.resolve('FINISH');
           });
         }

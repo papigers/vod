@@ -17,10 +17,7 @@ class AuthRequired extends Component {
   render() {
     const { children, ...other } = this.props;
 
-    console.log(this.props.user);
-
     if (this.props.user) {
-      console.log('shit', React.Children.forEach(console.log));
       return (
         <Fragment>
           {React.Children.map(children, child =>

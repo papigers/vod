@@ -40,8 +40,15 @@ function encodeVideo(videoId, inputPath) {
               return stream.codec_type === 'video';
             })
             .reduce(function(maxDims, stream) {
-              var ratioW = stream.display_aspect_ratio.substring(0, stream.display_aspect_ratio.indexOf(':'));
-              var ratioH = stream.display_aspect_ratio.substring(stream.display_aspect_ratio.indexOf(':') + 1);
+              var ratioW, ratioH;
+              if (!stream.display_aspect_ratio || stream.display_aspect_ratio === 'N/A') {
+                ratioW = stream.width;
+                ratioH = stream.height;
+              }
+              else {
+                ratioW = stream.display_aspect_ratio.substring(0, stream.display_aspect_ratio.indexOf(':'));
+                ratioH = stream.display_aspect_ratio.substring(stream.display_aspect_ratio.indexOf(':') + 1);
+              }
               if ((ratioW /ratioH) < (maxDims.ratioW / maxDims.ratioH)) {
                 ratioW = maxDims.ratioW;
                 ratioH = maxDims.ratioH;
@@ -59,7 +66,7 @@ function encodeVideo(videoId, inputPath) {
               ratioH: 3,
             },
           );
-          var resHeight = (dims.ratioW / dims.ratioH) * (9 / 16) * dims.height;
+          var resHeight = Math.round((dims.ratioW / dims.ratioH) * (9 / 16) * dims.height);
           var metadata = {
             height: dims.height,
             width: dims.width,
@@ -67,7 +74,7 @@ function encodeVideo(videoId, inputPath) {
             duration: metadata.format.duration,
             size: metadata.format.size,
           };
-          
+
           return axios.put(`${config.api}/private/uploads/${videoId}/start-encoding`).then(function({ data: step }) {
             publishStep(videoId, step);
             return axios.put(`${config.api}/private/videos/${videoId}/metadata`, {
@@ -163,12 +170,8 @@ function encodeVideo(videoId, inputPath) {
 
           encoding
             .on('progress', function (progress) {
-              console.log('Processing: ' + progress.percent + '% done');
+              // console.log('Processing: ' + progress.percent + '% done');
               publishProgress(videoId, progress.percent, 'encoding');
-              // self.socket.emit('encodingProgress', {
-              //   progress,
-              //   id: self.id,
-              // });
             })
             .on('error', function (err, stdout, stderr) {
               // console.log('Cannot process video: ' + err.message);

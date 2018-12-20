@@ -85,6 +85,10 @@ class Notification extends Component {
           text = <span><NotificationBold>{senders[0].name}</NotificationBold> אהב את הסרטון {end}</span>
         }
         break;
+      case 'UPLOAD_FINISH':
+        end = `${video.name}`;
+        text = <span>סרטון הועלה בהצלחה: "<NotificationBold>{end}</NotificationBold>"</span>;
+        break;
       case 'CHANNEL_FOLLOW':
         if (senders.length > 2) {
           text = (
@@ -114,6 +118,8 @@ class Notification extends Component {
     const { type, video, channel, comment, user } = this.props;
     switch (type) {
       case 'VIDEO_LIKE':
+      case 'UPLOAD_FINISH':
+      case 'UPLOAD_ERROR':
         return user.id === video.channel.id ? 'הערוץ שלך' : video.channel.name;
       case 'VIDEO_COMMENT':
         return user.id === comment.video.channel.id ? 'הערוץ שלך' : comment.video.channel.name;
@@ -132,6 +138,8 @@ class Notification extends Component {
         return `/watch?v=${this.props.comment.video.id}`;
       case 'CHANNEL_FOLLOW':
         return `/channel/${this.props.senders[0].id}`;
+      case 'UPLOAD_FINISH':
+        return `/watch?v=${this.props.video.id}`;
       default:
         return null;
     }
