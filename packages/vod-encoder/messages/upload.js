@@ -23,25 +23,15 @@ function publishProgress(videoId, progress, type) {
 }
 
 function publishMetadata(videoId, metadata) {
-  return channelWrapper.publish(
-    VIDEO_UPLOAD_EXCHANGE,
-    videoId,
-    { metadata },
-    { type: 'metadata' },
-  );
+  return channelWrapper.publish(VIDEO_UPLOAD_EXCHANGE, videoId, { metadata }, { type: 'metadata' });
 }
 
 function publishStep(videoId, step, file) {
-  return channelWrapper.publish(
-    VIDEO_UPLOAD_EXCHANGE,
-    videoId,
-    { step, file },
-    { type: 'step' },
-  );
+  return channelWrapper.publish(VIDEO_UPLOAD_EXCHANGE, videoId, { step, file }, { type: 'step' });
 }
 
 module.exports = {
   publishProgress,
   publishMetadata,
-  publishStep
+  publishStep,
 };

@@ -12,10 +12,12 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var app = express();
 
-app.use(cors({
-  credentials: true,
-  origin: ['http://localhost:3000', 'http://localhost:8000'],
-}));
+app.use(
+  cors({
+    credentials: true,
+    origin: ['http://localhost:3000', 'http://localhost:8000'],
+  }),
+);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -27,14 +29,16 @@ function getUser(req) {
   return req.user && req.user.id;
 }
 
-app.get('/:videoId/:object',
+app.get(
+  '/:videoId/:object',
   function checkAuthorized(req, res, next) {
     // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    return axios.get(`${config.api}/private/authz/view-video/${req.params.videoId}`, {
-      headers: {
-        Authorization: `bearer ${req.cookies.jwt}`,
-      },
-    })
+    return axios
+      .get(`${config.api}/private/authz/view-video/${req.params.videoId}`, {
+        headers: {
+          Authorization: `bearer ${req.cookies.jwt}`,
+        },
+      })
       .then(function({ data }) {
         if (data.authorized) {
           return next();
@@ -50,7 +54,7 @@ app.get('/:videoId/:object',
     //     if (authorized) {
     //       return Promise.resolve({ data: { authorized, cache: true } });
     //     }
-    //     return axios.get(`${config.api}/videos/${req.params.videoId}/auth-check/${getUser(req)}`);  
+    //     return axios.get(`${config.api}/videos/${req.params.videoId}/auth-check/${getUser(req)}`);
     //   })
     //   .then(function({ data }) {
     //     if (!data.cache) {
@@ -68,7 +72,7 @@ app.get('/:videoId/:object',
   },
   function serveRequest(req, res, next) {
     OSClient.proxyGetObject(OSClient.getVideoObject(req), req, res, next);
-  }
+  },
 );
 
 module.exports = app;

@@ -23,14 +23,16 @@ function getUser(req) {
   return req.user && req.user.id;
 }
 
-app.get('/profile/:channelId/:img',
+app.get(
+  '/profile/:channelId/:img',
   function checkAuthorized(req, res, next) {
     // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
-    return axios.get(`${config.api}/private/authz/view-channel/${req.params.channelId}`, {
-      headers: {
-        Authorization: `bearer ${req.cookies.jwt}`,
-      },
-    })
+    return axios
+      .get(`${config.api}/private/authz/view-channel/${req.params.channelId}`, {
+        headers: {
+          Authorization: `bearer ${req.cookies.jwt}`,
+        },
+      })
       .then(function({ data }) {
         if (data.authorized) {
           return next();
@@ -41,8 +43,7 @@ app.get('/profile/:channelId/:img',
         console.error(err);
         if (err.response && err.response.data) {
           res.status(500).send(err.response.data);
-        }
-        else {
+        } else {
           res.sendStatus(500);
         }
         // return res.status(500).send('Server Error');
@@ -52,7 +53,7 @@ app.get('/profile/:channelId/:img',
     //     if (authorized) {
     //       return Promise.resolve({ data: { authorized, cache: true } });
     //     }
-    //     return axios.get(`${config.api}/channels/${req.params.channelId}/auth-check/${getUser(req)}`);  
+    //     return axios.get(`${config.api}/channels/${req.params.channelId}/auth-check/${getUser(req)}`);
     //   })
     //   .then(function({ data }) {
     //     if (!data.cache) {
@@ -79,9 +80,8 @@ if (process.env.NODE_ENV === 'production') {
 
   // Handle React routing, return all requests to React app
   app.get('*', function(req, res) {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../vod-client/build', 'index.html'));
   });
 }
-
 
 module.exports = app;

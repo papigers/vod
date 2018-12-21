@@ -13,86 +13,98 @@ var ensurePath = require('../utils/ensurePath');
 var THUMBNAIL_QUEUE = 'thumbnail_queue';
 var UPLOAD_QUEUE = 'upload_queue';
 
-var connection =  amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
 
 function previewThumbnails(file, output, count) {
   return new Promise(function(resolve, reject) {
     var screenshots = [];
     ffmpeg(file)
-    .on('filenames', function(names) {
-      screenshots = names.map(function(name) {
-        return path.join(output, name);
-      });
-    })
-    .on('error', reject)
-    .on('end', function() {
-      Promise.all(screenshots.map(function(shot) {
-        return new Promise(function(resolve, reject) {
-          base64(shot, function(err, data) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(data);
-          });
+      .on('filenames', function(names) {
+        screenshots = names.map(function(name) {
+          return path.join(output, name);
         });
-      }))
-      .then(function(b64shots) {
-        resolve(b64shots);
       })
-      .catch(reject);
-    })
-    .outputOptions('-crf 27')
-    .outputOptions('-preset veryfast')
-    .screenshots({
-      count: count,
-      size: '212x120',
-      folder: output,
-      filename: 'thumb%0i.png',
-    });
+      .on('error', reject)
+      .on('end', function() {
+        Promise.all(
+          screenshots.map(function(shot) {
+            return new Promise(function(resolve, reject) {
+              base64(shot, function(err, data) {
+                if (err) {
+                  return reject(err);
+                }
+                resolve(data);
+              });
+            });
+          }),
+        )
+          .then(function(b64shots) {
+            resolve(b64shots);
+          })
+          .catch(reject);
+      })
+      .outputOptions('-crf 27')
+      .outputOptions('-preset veryfast')
+      .screenshots({
+        count: count,
+        size: '212x120',
+        folder: output,
+        filename: 'thumb%0i.png',
+      });
   });
 }
 
 function generateThumbnail(id, file, output, timestamp, thumbnail, poster) {
   var promises = [];
   if (thumbnail) {
-    promises.push(new Promise(function(resolve, reject) {
-      ffmpeg(file)
-      .on('error', reject)
-      .on('end', function() {
-        channelWrapper.sendToQueue(UPLOAD_QUEUE, {
-          id,
-          path: path.join(output, 'thumbnail.png'),
-        }).then(resolve).catch(reject);
-      })
-      .outputOptions('-crf 27')
-      .outputOptions('-preset veryfast')
-      .screenshots({
-        timestamps: [timestamp],
-        size: '212x120',
-        folder: output,
-        filename: 'thumbnail.png',
-      });
-    }));
+    promises.push(
+      new Promise(function(resolve, reject) {
+        ffmpeg(file)
+          .on('error', reject)
+          .on('end', function() {
+            channelWrapper
+              .sendToQueue(UPLOAD_QUEUE, {
+                id,
+                path: path.join(output, 'thumbnail.png'),
+              })
+              .then(resolve)
+              .catch(reject);
+          })
+          .outputOptions('-crf 27')
+          .outputOptions('-preset veryfast')
+          .screenshots({
+            timestamps: [timestamp],
+            size: '212x120',
+            folder: output,
+            filename: 'thumbnail.png',
+          });
+      }),
+    );
   }
   if (poster) {
-    promises.push(new Promise(function(resolve, reject) {
-      ffmpeg(file)
-      .on('error', reject)
-      .on('end', function() {
-        channelWrapper.sendToQueue(UPLOAD_QUEUE, {
-          id,
-          path: path.join(output, 'poster.png'),
-        }).then(resolve).catch(reject);
-      })
-      .outputOptions('-crf 27')
-      .outputOptions('-preset veryfast')
-      .screenshots({
-        timestamps: [timestamp],
-        size: '852x480',
-        folder: output,
-        filename: 'poster.png',
-      });
-    }));
+    promises.push(
+      new Promise(function(resolve, reject) {
+        ffmpeg(file)
+          .on('error', reject)
+          .on('end', function() {
+            channelWrapper
+              .sendToQueue(UPLOAD_QUEUE, {
+                id,
+                path: path.join(output, 'poster.png'),
+              })
+              .then(resolve)
+              .catch(reject);
+          })
+          .outputOptions('-crf 27')
+          .outputOptions('-preset veryfast')
+          .screenshots({
+            timestamps: [timestamp],
+            size: '852x480',
+            folder: output,
+            filename: 'poster.png',
+          });
+      }),
+    );
   }
   return Promise.all(promises);
 }
@@ -104,7 +116,9 @@ function downloadVideo(id) {
     cacheFileStream.on('finish', function() {
       resolve(file);
     });
-    OSClient.serverGetObject(`video/${id}/360.mp4`).on('error', reject).pipe(cacheFileStream);
+    OSClient.serverGetObject(`video/${id}/360.mp4`)
+      .on('error', reject)
+      .pipe(cacheFileStream);
   });
 }
 
@@ -120,7 +134,9 @@ function ensureVideoPath(videoId) {
         if (exists) {
           resolve(cacheFile);
         }
-        downloadVideo(videoId).then(resolve).catch(reject);
+        downloadVideo(videoId)
+          .then(resolve)
+          .catch(reject);
       });
     });
   });
@@ -131,32 +147,52 @@ function handleThumbnailMessage(type, body) {
     var outputFolder = path.join(os.tmpdir(), body.id);
     var cacheFolder = path.join(os.tmpdir(), 'vod-cache');
     return Promise.all([ensurePath(cacheFolder), ensurePath(outputFolder)]).then(function() {
-      switch(type) {
+      switch (type) {
         case 'PREVIEW_THUMBNAILS':
           ensureVideoPath(body.id)
-          .then(function(path) {
-            return previewThumbnails(path, outputFolder, body.count);
-          })
-          .then(resolve)
-          .catch(function() {
-            downloadVideo(videoId).then(function(path) {
+            .then(function(path) {
               return previewThumbnails(path, outputFolder, body.count);
-            }).then(resolve).catch(reject);
-          });
+            })
+            .then(resolve)
+            .catch(function() {
+              downloadVideo(videoId)
+                .then(function(path) {
+                  return previewThumbnails(path, outputFolder, body.count);
+                })
+                .then(resolve)
+                .catch(reject);
+            });
           break;
         case 'GENERATE_THUMBNAIL':
           ensureVideoPath(body.id)
-          .then(function(path) {
-            return generateThumbnail(body.id, path, outputFolder, body.timestamp, !!body.thumbnail, !!body.poster);
-          })
-          .then(resolve)
-          .catch(function() {
-            downloadVideo(videoId).then(function(path) {
-              return generateThumbnail(body.id, path, outputFolder, body.timestamp, !!body.thumbnail, !!body.poster);
-            }).then(resolve).catch(reject);
-          });
+            .then(function(path) {
+              return generateThumbnail(
+                body.id,
+                path,
+                outputFolder,
+                body.timestamp,
+                !!body.thumbnail,
+                !!body.poster,
+              );
+            })
+            .then(resolve)
+            .catch(function() {
+              downloadVideo(videoId)
+                .then(function(path) {
+                  return generateThumbnail(
+                    body.id,
+                    path,
+                    outputFolder,
+                    body.timestamp,
+                    !!body.thumbnail,
+                    !!body.poster,
+                  );
+                })
+                .then(resolve)
+                .catch(reject);
+            });
         default:
-          resolve({ error: 'Unrecognized Request '});
+          resolve({ error: 'Unrecognized Request ' });
       }
     });
   });
@@ -171,19 +207,25 @@ var channelWrapper = connection.createChannel({
       ch.assertQueue(THUMBNAIL_QUEUE, { durable: false }),
       ch.assertQueue(UPLOAD_QUEUE, { durable: true }),
       ch.prefetch(2),
-      ch.consume(THUMBNAIL_QUEUE, function(msg) {
-        return handleThumbnailMessage(msg.properties.type, JSON.parse(msg.content.toString()))
-        .then(function(data) {
-          return self.sendToQueue(msg.properties.replyTo, data, { correlationId: msg.properties.correlationId });
-        })
-        .then(function() {
-          ch.ack(msg);
-        })
-        .catch(function(e) {
-          console.error(e);
-          ch.nack(msg);
-        })
-      }, { noAck: false }),
+      ch.consume(
+        THUMBNAIL_QUEUE,
+        function(msg) {
+          return handleThumbnailMessage(msg.properties.type, JSON.parse(msg.content.toString()))
+            .then(function(data) {
+              return self.sendToQueue(msg.properties.replyTo, data, {
+                correlationId: msg.properties.correlationId,
+              });
+            })
+            .then(function() {
+              ch.ack(msg);
+            })
+            .catch(function(e) {
+              console.error(e);
+              ch.nack(msg);
+            });
+        },
+        { noAck: false },
+      ),
     ]);
   },
 });

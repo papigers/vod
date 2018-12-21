@@ -3,5 +3,5 @@
 const vodAuth = require('..');
 
 describe('vod-auth', () => {
-    it('needs tests');
+  it('needs tests');
 });

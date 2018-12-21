@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof Upload)) {
       return new Upload();
     }
-  }
+  };
   uploads.table = 'uploads';
   uploads.attributes = {
     id: {
@@ -28,46 +28,73 @@ module.exports = function(db) {
       default: '{}',
     },
     required: {
-      type: 'integer'
+      type: 'integer',
     },
   };
   uploads.createdAt = true;
   uploads.updatedAt = false;
 
   uploads.startEncoding = function(videoId) {
-    return db.knex(uploads.table).where('id', videoId).update({
-      step: 'ENCODE',
-      required: null,
-      uploaded: '{}',
-    });
-  }
+    return db
+      .knex(uploads.table)
+      .where('id', videoId)
+      .update({
+        step: 'ENCODE',
+        required: null,
+        uploaded: '{}',
+      });
+  };
 
   uploads.finishUploading = function(videoId, file) {
     return db.knex.transaction(function(trx) {
-      return db.knex(uploads.table).where('id', videoId).update({
-        uploaded: db.knex.raw('array_append(array_remove(??, ?), ?)', [`${uploads.table}.uploaded`, file, file]),
-      }, ['id', 'uploaded']).then(function(ret) {
-        return db.knex(uploads.table)
-        .where(db.knex.raw('?? = array_length(??,1)', [`${uploads.table}.required`, `${uploads.table}.uploaded`]))
-        .whereNotNull(`${uploads.table}.required`)
-        .del()
-      }).then(function(deleted) {
-        if (deleted > 0) {
-          return db.notifications.addUploadFinishNotification(null, videoId, trx).then(function(result) {
-            return Promise.resolve('FINISH');
-          });
-        }
-        return Promise.resolve('S3_UPLOAD');
-      }).then(trx.commit).catch(trx.rollback);
+      return db
+        .knex(uploads.table)
+        .where('id', videoId)
+        .update(
+          {
+            uploaded: db.knex.raw('array_append(array_remove(??, ?), ?)', [
+              `${uploads.table}.uploaded`,
+              file,
+              file,
+            ]),
+          },
+          ['id', 'uploaded'],
+        )
+        .then(function(ret) {
+          return db
+            .knex(uploads.table)
+            .where(
+              db.knex.raw('?? = array_length(??,1)', [
+                `${uploads.table}.required`,
+                `${uploads.table}.uploaded`,
+              ]),
+            )
+            .whereNotNull(`${uploads.table}.required`)
+            .del();
+        })
+        .then(function(deleted) {
+          if (deleted > 0) {
+            return db.notifications
+              .addUploadFinishNotification(null, videoId, trx)
+              .then(function(result) {
+                return Promise.resolve('FINISH');
+              });
+          }
+          return Promise.resolve('S3_UPLOAD');
+        })
+        .then(trx.commit)
+        .catch(trx.rollback);
     });
-    
-  }
+  };
 
   uploads.finishEncoding = function(videoId) {
-    return db.knex(uploads.table).where('id', videoId).update({
-      step: 'S3_UPLOAD',
-    });
-  }
+    return db
+      .knex(uploads.table)
+      .where('id', videoId)
+      .update({
+        step: 'S3_UPLOAD',
+      });
+  };
 
   return uploads;
 };

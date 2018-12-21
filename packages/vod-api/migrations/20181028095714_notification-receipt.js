@@ -4,11 +4,13 @@ var table = 'notificationReceipts';
 var models = require('../models').models;
 
 exports.up = async function(knex) {
-  return knex.schema.table('notifications', function(table) {
-    table.dropColumn('unread');
-  }).then(function() {
-    return createTable(knex, models[table], table);
-  });
+  return knex.schema
+    .table('notifications', function(table) {
+      table.dropColumn('unread');
+    })
+    .then(function() {
+      return createTable(knex, models[table], table);
+    });
 };
 
 exports.down = async function(knex) {

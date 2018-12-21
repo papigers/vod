@@ -27,39 +27,45 @@ function uploadFile(videoId, file) {
         if (err) {
           return reject(err);
         }
-        axios.put(`${config.api}/private/uploads/${videoId}/finish-uploading/${filename}`).then(function({ data: step }) {
-          publishStep(videoId, step, filename);
-          publishProgress(videoId, 100, filename);
-          resolve(data);
-        });
+        axios
+          .put(`${config.api}/private/uploads/${videoId}/finish-uploading/${filename}`)
+          .then(function({ data: step }) {
+            publishStep(videoId, step, filename);
+            publishProgress(videoId, 100, filename);
+            resolve(data);
+          });
       },
     );
   });
-};
+}
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com'])
+var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
 
 var channelWrapper = connection.createChannel({
   json: true,
   name: 'uploaderChannel',
   setup(ch) {
     return Promise.all([
-      ch.assertQueue(UPLOAD_QUEUE, {durable: true}),
+      ch.assertQueue(UPLOAD_QUEUE, { durable: true }),
       ch.prefetch(2),
-      ch.consume(UPLOAD_QUEUE, function(msg) {
-        var data = JSON.parse(msg.content.toString());
-        return uploadFile(data.id, data.path)
-        .then(function(data) {
-          console.log(data);
-        })
-        .then(function() {
-          return ch.ack(msg);
-        })
-        .catch(function(err) {
-          console.log(err);
-          ch.nack(msg);
-        });
-      }, { noAck: false }),
+      ch.consume(
+        UPLOAD_QUEUE,
+        function(msg) {
+          var data = JSON.parse(msg.content.toString());
+          return uploadFile(data.id, data.path)
+            .then(function(data) {
+              console.log(data);
+            })
+            .then(function() {
+              return ch.ack(msg);
+            })
+            .catch(function(err) {
+              console.log(err);
+              ch.nack(msg);
+            });
+        },
+        { noAck: false },
+      ),
     ]);
   },
 });

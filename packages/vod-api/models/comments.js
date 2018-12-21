@@ -7,7 +7,7 @@ module.exports = function(db) {
     if (!(this instanceof Comment)) {
       return new Comment();
     }
-  }
+  };
 
   comments.table = 'comments';
   comments.attributes = {
@@ -48,7 +48,13 @@ module.exports = function(db) {
 
   comments.getComments = function(user, videoId, { page, before }) {
     var query = db.knex
-      .select(`${comments.table}.id as _id`, `${comments.table}.comment as _comment`, `${comments.table}.createdAt as _createdAt`, `${db.channels.table}.id as _channel_id`, `${db.channels.table}.name as _channel_name`)
+      .select(
+        `${comments.table}.id as _id`,
+        `${comments.table}.comment as _comment`,
+        `${comments.table}.createdAt as _createdAt`,
+        `${db.channels.table}.id as _channel_id`,
+        `${db.channels.table}.name as _channel_name`,
+      )
       .from(comments.table)
       .leftJoin(db.channels.table, `${comments.table}.channelId`, `${db.channels.table}.id`)
       .leftJoin(db.videos.table, `${comments.table}.videoId`, `${db.videos.table}.id`)
@@ -64,22 +70,36 @@ module.exports = function(db) {
       query.andWhere(`${comments.table}.createdAt`, '<', before);
     }
     return db.knexnest(query, true);
-  }
+  };
 
   comments.postComment = function(user, videoId, comment) {
     var id = generateId();
     return db.knex.transaction(function(trx) {
-      return db.knex(db.knex.raw('?? (??, ??, ??, ??)', [comments.table, 'id', 'comment', 'videoId', 'channelId'])).insert(
-        db.knex.select(db.knex.raw('?, ?, ?, ?', [id, comment, videoId, user && user.id])).from(db.videos.table).transacting(trx)
-          .where(`${db.videos.table}.id`, videoId).modify(db.videos.authorizedViewSubquery, user)
-      )
-      .then(function() {
-        return db.notifications.addVideoCommentNotification(user, id, trx);
-      })
-      .then(trx.commit)
-      .catch(trx.catch);
+      return db
+        .knex(
+          db.knex.raw('?? (??, ??, ??, ??)', [
+            comments.table,
+            'id',
+            'comment',
+            'videoId',
+            'channelId',
+          ]),
+        )
+        .insert(
+          db.knex
+            .select(db.knex.raw('?, ?, ?, ?', [id, comment, videoId, user && user.id]))
+            .from(db.videos.table)
+            .transacting(trx)
+            .where(`${db.videos.table}.id`, videoId)
+            .modify(db.videos.authorizedViewSubquery, user),
+        )
+        .then(function() {
+          return db.notifications.addVideoCommentNotification(user, id, trx);
+        })
+        .then(trx.commit)
+        .catch(trx.catch);
     });
-  }
+  };
 
   return comments;
 };

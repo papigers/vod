@@ -15,7 +15,7 @@ function translateMetadata(metadata) {
     const keyValueSplit = keyValue.split(' ');
     metadatObj[keyValueSplit[0]] = Buffer.from(keyValueSplit[1], 'base64').toString();
     return metadatObj;
-  }, {}); 
+  }, {});
 }
 
 var tusServer = new tus.Server();
@@ -24,9 +24,9 @@ tusServer.datastore = new tus.FileStore({
   relativeLocation: true,
   namingFunction: function(req, res) {
     return res.locals.videoId;
-  }
+  },
 });
-tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, (event) => {
+tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, event => {
   const videoId = event.file.id;
   const file = path.join(os.tmpdir(), 'uploads', event.file.id);
   enqueueEncoding(videoId, file);
@@ -34,18 +34,19 @@ tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, (event) => {
 });
 router.post('/video', function(req, res, next) {
   const metadata = translateMetadata(req.header('upload-metadata'));
-  db.videos.initialCreate(req.user, {
-    creator: req.user && req.user.id,
-    channel: req.user && req.user.id,
-    name: metadata.name.replace(/\.[^/.]+$/, ''),
-  })
-  .then(function(video) {
-    res.locals.videoId = video.id;
-    next();
-  })
-  .catch(function(err) {
-    next(err);
-  });
+  db.videos
+    .initialCreate(req.user, {
+      creator: req.user && req.user.id,
+      channel: req.user && req.user.id,
+      name: metadata.name.replace(/\.[^/.]+$/, ''),
+    })
+    .then(function(video) {
+      res.locals.videoId = video.id;
+      next();
+    })
+    .catch(function(err) {
+      next(err);
+    });
 });
 router.use('/video', tusServer.handle.bind(tusServer));
 

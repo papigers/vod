@@ -14,7 +14,8 @@
     "lib"
   ],
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "lint": "eslint lib --ext .js"
   },
   "dependencies": {
     "aws-sdk": "^2.293.0",

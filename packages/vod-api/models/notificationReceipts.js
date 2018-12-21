@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof NotificationReceipts)) {
       return new NotificationReceipts();
     }
-  }
+  };
 
   notificationReceipts.table = 'notificationReceipts';
   notificationReceipts.attributes = {
@@ -35,13 +35,20 @@ module.exports = function(db) {
   notificationReceipts.updatedAt = false;
 
   notificationReceipts.readNotifications = function(user, notificationIds) {
-    return db.knex.raw(`${db.knex(notificationReceipts.table).insert(notificationIds.map(function(id) {
-      return {
-        notificationId: id,
-        channelId: user && user.id,
-      };
-    })).toString()} on conflict do nothing`)
-  }
+    return db.knex.raw(
+      `${db
+        .knex(notificationReceipts.table)
+        .insert(
+          notificationIds.map(function(id) {
+            return {
+              notificationId: id,
+              channelId: user && user.id,
+            };
+          }),
+        )
+        .toString()} on conflict do nothing`,
+    );
+  };
 
   return notificationReceipts;
 };

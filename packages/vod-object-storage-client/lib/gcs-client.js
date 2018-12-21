@@ -22,6 +22,6 @@ function GCSClient() {
     accessKeyId: process.env.GCS_ACCESS_KEY_ID,
     secretAccessKey: process.env.GCS_SECRET_ACCESS_KEY,
   });
-};
+}
 
 GCSClient.prototype = new Client();

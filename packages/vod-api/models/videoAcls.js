@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof VideoACL)) {
       return new VideoACL();
     }
-  }
+  };
 
   videoAcls.table = 'videoAcls';
   videoAcls.attributes = {

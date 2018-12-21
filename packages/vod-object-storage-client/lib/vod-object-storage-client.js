@@ -19,33 +19,35 @@ function Client() {
   if (!(this instanceof Client)) {
     return new Client();
   }
-};
+}
 
 Client.prototype.proxyGetObject = function(clientRequest, httpRequest, httpResponse, next) {
-  clientRequest.on('httpHeaders', function (statusCode, headers) {
+  clientRequest.on('httpHeaders', function(statusCode, headers) {
     httpResponse.status(statusCode);
     provisionHeaders.forEach(function(header) {
       if (headers[header]) {
-        httpResponse.set(header, headers[header])
+        httpResponse.set(header, headers[header]);
       }
       if (header === 'content-type' && headers[header] === 'application/octet-stream') {
         httpResponse.set(header, mime.getType(httpRequest.path));
       }
     });
     // if (!headers['cache-control']) {
-      httpResponse.set('cache-control', 'private, max-age=86400');
+    httpResponse.set('cache-control', 'private, max-age=86400');
     // }
   });
-  var stream = clientRequest.createReadStream()
-    .on('error', function(err) {
-      if (err.code === 'NotModified' || (err.code === 'PreconditionFailed' && httpRequest.header('if-none-match'))) {
-        return httpResponse.sendStatus(304);
-      }
-      if (err.code === 'NoSuchKey') {
-        return httpResponse.sendStatus(404);
-      }
-      return next(err);
-    });
+  var stream = clientRequest.createReadStream().on('error', function(err) {
+    if (
+      err.code === 'NotModified' ||
+      (err.code === 'PreconditionFailed' && httpRequest.header('if-none-match'))
+    ) {
+      return httpResponse.sendStatus(304);
+    }
+    if (err.code === 'NoSuchKey') {
+      return httpResponse.sendStatus(404);
+    }
+    return next(err);
+  });
 
   stream.pipe(httpResponse);
 };
@@ -56,25 +58,25 @@ Client.prototype.serverGetObject = function(key) {
     Key: key,
   };
   return this.downloadS3.getObject(opts).createReadStream();
-}
+};
 
 Client.prototype.getObject = function(opts, req, callback) {
   opts.Bucket = this.Bucket;
   var header = null;
   if ((header = req.header('range'))) {
-      opts.Range = header;
+    opts.Range = header;
   }
   if ((header = req.header('If-Modified-Since'))) {
-      opts.IfModifiedSince = new Date(header);
+    opts.IfModifiedSince = new Date(header);
   }
   if ((header = req.header('If-Unmodified-Since'))) {
-      opts.IfUnmodifiedSince = new Date(header);
+    opts.IfUnmodifiedSince = new Date(header);
   }
   if ((header = req.header('If-Match'))) {
-      opts.IfMatch = header;
+    opts.IfMatch = header;
   }
   if ((header = req.header('If-None-Match'))) {
-      opts.IfNoneMatch = header;
+    opts.IfNoneMatch = header;
   }
   var get = this.downloadS3.getObject(opts);
   if (callback) {
@@ -86,21 +88,21 @@ Client.prototype.getObject = function(opts, req, callback) {
     });
   }
   return get;
-}
+};
 
 Client.prototype.getVideoObject = function(req, callback) {
   var opts = {
     Key: `video/${req.params.videoId}/${req.params.object}`,
-  }
+  };
   return this.getObject(opts, req, callback);
-}
+};
 
 Client.prototype.getChannelObject = function(req, callback) {
   var opts = {
     Key: `channel/${req.params.channelId}/${req.params.img}`,
-  }
+  };
   return this.getObject(opts, req, callback);
-}
+};
 
 function uploadFile(opts, progressHandler, callback) {
   opts.Bucket = this.Bucket;
@@ -126,15 +128,25 @@ function uploadFile(opts, progressHandler, callback) {
 }
 
 Client.prototype.uploadVideo = function(videoId, fileName, body, progressHandler, callback) {
-  return uploadFile.call(this, {
-    Key: `video/${videoId}/${fileName}`,
-    Body: body,
-  }, progressHandler, callback);
-}
+  return uploadFile.call(
+    this,
+    {
+      Key: `video/${videoId}/${fileName}`,
+      Body: body,
+    },
+    progressHandler,
+    callback,
+  );
+};
 
 Client.prototype.uploadChannelImage = function(id, type, body, progressHandler, callback) {
-  return uploadFile.call(this, {
-    Key: `channel/${id}/${type}.png`,
-    Body: body,
-  }, progressHandler, callback);
+  return uploadFile.call(
+    this,
+    {
+      Key: `channel/${id}/${type}.png`,
+      Body: body,
+    },
+    progressHandler,
+    callback,
+  );
 };

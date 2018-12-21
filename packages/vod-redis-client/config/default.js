@@ -1,4 +1,4 @@
-module.exports =  {
+module.exports = {
   auth: {
     host: 'vod-auth-cache.redis.cache.windows.net',
     port: 6380,
@@ -16,5 +16,5 @@ module.exports =  {
     port: 6380,
     password: 'LYKMfO+sAyJJQGpCFOGBHUKC8t8yeO09VgP9tVNSZSI=',
     tls: true,
-  }
+  },
 };

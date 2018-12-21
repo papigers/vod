@@ -28,12 +28,17 @@ router.get('/profile', function(req, res) {
   res.json(req.user);
 });
 
-router.get('/refreshtoken', function(req, res, next) {
-  // res.clearCookie('jwt');
-  next();
-}, auth, function(req, res) {
-  res.sendStatus(200);
-});
+router.get(
+  '/refreshtoken',
+  function(req, res, next) {
+    // res.clearCookie('jwt');
+    next();
+  },
+  auth,
+  function(req, res) {
+    res.sendStatus(200);
+  },
+);
 
 /* GET home page. */
 router.get('/', function(req, res, next) {

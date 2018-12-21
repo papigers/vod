@@ -7,7 +7,7 @@ module.exports = function(db) {
     if (!(this instanceof Notifications)) {
       return new Notifications();
     }
-  }
+  };
 
   notifications.table = 'notifications';
   notifications.generateId = generateId;
@@ -49,7 +49,10 @@ module.exports = function(db) {
     var id = generateId();
     var senderId = user && user.id;
     if (type === 'UPLOAD_FINISH' || type === 'UPLOAD_ERROR') {
-      senderId = db.knex.select('creatorId').from(db.videos.table).where('id', subject);
+      senderId = db.knex
+        .select('creatorId')
+        .from(db.videos.table)
+        .where('id', subject);
     }
     var qb = db.knex(notifications.table).insert({
       id,
@@ -61,64 +64,80 @@ module.exports = function(db) {
       qb.transacting(trx);
     }
     return qb;
-  }
+  };
 
   notifications.addVideoLikeNotification = function(user, videoId, trx) {
     return notifications.addNotification(user, 'VIDEO_LIKE', videoId, trx);
-  }
+  };
 
   notifications.addVideoCommentNotification = function(user, commentId, trx) {
     return notifications.addNotification(user, 'VIDEO_COMMENT', commentId, trx);
-  }
+  };
 
   notifications.addChannelFollowNotification = function(user, channelId, trx) {
     return notifications.addNotification(user, 'CHANNEL_FOLLOW', channelId, trx);
-  }
+  };
 
   notifications.addUploadFinishNotification = function(user, videoId, trx) {
     return notifications.addNotification(user, 'UPLOAD_FINISH', videoId, trx);
-  }
+  };
 
   notifications.addUploadErrorNotification = function(user, videoId, trx) {
     return notifications.addNotification(user, 'UPLOAD_ERROR', videoId, trx);
-  }
+  };
 
   notifications.removeNotification = function(user, type, subject, trx) {
-    var qb = db.knex(notifications.table).where({
-      type,
-      senderId: user && user.id,
-      subjectId: subject,
-    }).del();
+    var qb = db
+      .knex(notifications.table)
+      .where({
+        type,
+        senderId: user && user.id,
+        subjectId: subject,
+      })
+      .del();
     if (trx) {
       qb.transacting(trx);
     }
     return qb;
-  }
+  };
 
   notifications.removeVideoLikeNotification = function(user, videoId, trx) {
     return notifications.removeNotification(user, 'VIDEO_LIKE', videoId, trx);
-  }
+  };
 
   notifications.removeVideoCommentNotification = function(user, commentId, trx) {
     return notifications.removeNotification(user, 'VIDEO_COMMENT', commentId, trx);
-  }
+  };
 
   notifications.removeChannelFollowNotification = function(user, channelId, trx) {
     return notifications.removeNotification(user, 'CHANNEL_FOLLOW', channelId, trx);
-  }
+  };
 
   notifications.removeUploadFinishNotification = function(user, videoId, trx) {
     return notifications.removeNotification(user, 'UPLOAD_FINISH', videoId, trx);
-  }
+  };
 
   notifications.removeUploadErrorNotification = function(user, videoId, trx) {
     return notifications.removeNotification(user, 'UPLOAD_ERROR', videoId, trx);
-  }
+  };
 
   notifications.getChannelNotifications = function(user, before) {
-    var unreadSubQuery = db.knex.table(db.notificationReceipts.table).select(1).where('channelId', user && user.id).andWhere('notificationId', db.knex.raw('??', [`${notifications.table}.id`])).limit(1);
+    var unreadSubQuery = db.knex
+      .table(db.notificationReceipts.table)
+      .select(1)
+      .where('channelId', user && user.id)
+      .andWhere('notificationId', db.knex.raw('??', [`${notifications.table}.id`]))
+      .limit(1);
     var query = db.knex
-      .select(db.knex.raw('?? || ? || ?? || ? || NOT EXISTS(?) as "_groupId"', [`${notifications.table}.type`, '_', `${notifications.table}.subjectId`, '_unread_', unreadSubQuery]))
+      .select(
+        db.knex.raw('?? || ? || ?? || ? || NOT EXISTS(?) as "_groupId"', [
+          `${notifications.table}.type`,
+          '_',
+          `${notifications.table}.subjectId`,
+          '_unread_',
+          unreadSubQuery,
+        ]),
+      )
       .select(`${notifications.table}.id as _notifications__id`)
       .select(`${notifications.table}.createdAt as _notifications__createdAt`)
       .select(`${notifications.table}.type as _type`)
@@ -137,76 +156,98 @@ module.exports = function(db) {
       .select(`sender.id as _senders__id`)
       .select(`sender.name as _senders__name`)
       .select(`${notifications.table}.createdAt as _createdAt`)
-      .select(db.knex.raw('NOT EXISTS(?) as ??', [
-        unreadSubQuery,
-        '_unread',
-      ]))
+      .select(db.knex.raw('NOT EXISTS(?) as ??', [unreadSubQuery, '_unread']))
       .from(notifications.table)
       .orderBy(`${notifications.table}.createdAt`, 'desc')
       .limit(10)
       .innerJoin(`${db.channels.table} as sender`, `${notifications.table}.senderId`, 'sender.id')
       .leftJoin(db.comments.table, function() {
-        this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT']))
-        .andOn(`${notifications.table}.subjectId`, `${db.comments.table}.id`);
+        this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT'])).andOn(
+          `${notifications.table}.subjectId`,
+          `${db.comments.table}.id`,
+        );
       })
       .leftJoin(db.videos.table, function() {
-        this.onIn(`${notifications.table}.type`, ['VIDEO_LIKE', 'UPLOAD_FINISH', 'UPLOAD_ERROR'])
-        .andOn(`${notifications.table}.subjectId`, `${db.videos.table}.id`);
+        this.onIn(`${notifications.table}.type`, [
+          'VIDEO_LIKE',
+          'UPLOAD_FINISH',
+          'UPLOAD_ERROR',
+        ]).andOn(`${notifications.table}.subjectId`, `${db.videos.table}.id`);
       })
       .leftJoin(`${db.videos.table} as commentVideo`, function() {
-          this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT']))
-          .andOn(`${db.comments.table}.videoId`, `commentVideo.id`);
-        }
-      )
+        this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT'])).andOn(
+          `${db.comments.table}.videoId`,
+          `commentVideo.id`,
+        );
+      })
       .leftJoin(`${db.channels.table} as commentVideoChannel`, function() {
-          this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT']))
-          .andOn(`commentVideo.channelId`, `commentVideoChannel.id`);
+        this.on(`${notifications.table}.type`, db.knex.raw('?', ['VIDEO_COMMENT'])).andOn(
+          `commentVideo.channelId`,
+          `commentVideoChannel.id`,
+        );
       })
       .leftJoin(db.channels.table, function() {
-        this.on(`${notifications.table}.type`, db.knex.raw('?', ['CHANNEL_FOLLOW']))
-        .andOn(`${notifications.table}.subjectId`, `${db.channels.table}.id`);
+        this.on(`${notifications.table}.type`, db.knex.raw('?', ['CHANNEL_FOLLOW'])).andOn(
+          `${notifications.table}.subjectId`,
+          `${db.channels.table}.id`,
+        );
       })
       .leftJoin(`${db.channels.table} as videoChannel`, function() {
-        this.onIn(`${notifications.table}.type`, ['VIDEO_LIKE', 'UPLOAD_FINISH', 'UPLOAD_ERROR'])
-          .andOn(`${db.videos.table}.channelId`, `videoChannel.id`);
+        this.onIn(`${notifications.table}.type`, [
+          'VIDEO_LIKE',
+          'UPLOAD_FINISH',
+          'UPLOAD_ERROR',
+        ]).andOn(`${db.videos.table}.channelId`, `videoChannel.id`);
       })
       .where(function() {
-        this.where(`${notifications.table}.senderId`, '<>', user && user.id)
-        .orWhereIn(`${notifications.table}.type`, ['UPLOAD_FINISH', 'UPLOAD_ERROR']);
+        this.where(`${notifications.table}.senderId`, '<>', user && user.id).orWhereIn(
+          `${notifications.table}.type`,
+          ['UPLOAD_FINISH', 'UPLOAD_ERROR'],
+        );
       })
       .where(function() {
         this.where(function() {
           this.where(function() {
             this.where(`${notifications.table}.type`, 'VIDEO_LIKE')
-            .orWhere(`${notifications.table}.type`, 'UPLOAD_FINISH')
-            .orWhere(`${notifications.table}.type`, 'UPLOAD_ERROR')
+              .orWhere(`${notifications.table}.type`, 'UPLOAD_FINISH')
+              .orWhere(`${notifications.table}.type`, 'UPLOAD_ERROR');
+          }).whereIn(`${notifications.table}.subjectId`, function() {
+            this.select(`${db.videos.table}.id`)
+              .from(db.videos.table)
+              .modify(db.videos.authorizedManageSubquery, user);
+          });
+        })
+          .orWhere(function() {
+            this.where(`${notifications.table}.type`, 'VIDEO_COMMENT').whereIn(
+              `${notifications.table}.subjectId`,
+              function() {
+                this.select(`${db.comments.table}.id`)
+                  .from(db.comments.table)
+                  .leftJoin(
+                    db.videos.table,
+                    `${db.comments.table}.videoId`,
+                    `${db.videos.table}.id`,
+                  )
+                  .modify(db.videos.authorizedManageSubquery, user);
+              },
+            );
           })
-          .whereIn(`${notifications.table}.subjectId`, function() {
-            this.select(`${db.videos.table}.id`).from(db.videos.table)
-              .modify(db.videos.authorizedManageSubquery, user);
+          .orWhere(function() {
+            this.where(`${notifications.table}.type`, 'CHANNEL_FOLLOW').whereIn(
+              `${notifications.table}.subjectId`,
+              function() {
+                this.select(`${db.channels.table}.id`)
+                  .from(db.channels.table)
+                  .modify(db.channels.authorizedManageSubquery, user);
+              },
+            );
           });
-        })
-        .orWhere(function() {
-          this.where(`${notifications.table}.type`, 'VIDEO_COMMENT')
-          .whereIn(`${notifications.table}.subjectId`, function() {
-            this.select(`${db.comments.table}.id`).from(db.comments.table)
-              .leftJoin(db.videos.table, `${db.comments.table}.videoId`, `${db.videos.table}.id`)
-              .modify(db.videos.authorizedManageSubquery, user);
-          });
-        })
-        .orWhere(function() {
-          this.where(`${notifications.table}.type`, 'CHANNEL_FOLLOW')
-          .whereIn(`${notifications.table}.subjectId`, function() {
-            this.select(`${db.channels.table}.id`).from(db.channels.table)
-              .modify(db.channels.authorizedManageSubquery, user)
-          });
-        });
       });
     if (before) {
       query.andWhere(`${notifications.table}.createdAt`, '<', before);
     }
     return db.knexnest(query, true);
-  }
+  };
 
   return notifications;
 };

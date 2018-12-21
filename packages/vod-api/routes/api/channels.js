@@ -11,31 +11,31 @@ var router = express.Router();
 var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var channelStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function(req, file, cb) {
     var dest = path.join(os.tmpdir(), req.params.id);
     fs.access(dest, function(err) {
       if (err) {
         fs.mkdir(dest, function(error) {
           cb(error, dest);
         });
-      }
-      else {
+      } else {
         cb(null, dest);
       }
     });
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     cb(null, `${file.fieldname}.png`);
-  }
+  },
 });
 var upload = multer({ storage: channelStorage });
 
 router.get('/managed', function(req, res) {
-  db.channels.getManagedChannels(req.user)
+  db.channels
+    .getManagedChannels(req.user)
     .then(function(results) {
       return res.json(results);
     })
-    .catch(function(err){
+    .catch(function(err) {
       console.error(err);
       return res.status(500).json({
         error: 'Failed to get managed channels',
@@ -50,24 +50,28 @@ router.get('/search', function(req, res) {
   limit = Math.min(limit, 60);
 
   db.knexnest(
-    db.channels.search(req.user, query)
-    .limit(limit)
-    .offset(offset)
-    .modify(db.channels.order, 'relevance')
-    .modify(db.channels.order, 'new'),
+    db.channels
+      .search(req.user, query)
+      .limit(limit)
+      .offset(offset)
+      .modify(db.channels.order, 'relevance')
+      .modify(db.channels.order, 'new'),
     true,
-  ).then(function(videos) {
-    res.json(videos);
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).json({
-      error: 'Couldn\'t fetch videos',
+  )
+    .then(function(videos) {
+      res.json(videos);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Couldn't fetch videos",
+      });
     });
-  });
 });
 
 router.get('/:id', function(req, res) {
-  db.channels.getChannel(req.user, req.params.id)
+  db.channels
+    .getChannel(req.user, req.params.id)
     .then(function(channel) {
       if (channel) {
         return res.json(channel);
@@ -76,42 +80,45 @@ router.get('/:id', function(req, res) {
         error: 'No such channel',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       return res.status(500).json({
-        error: 'Couldn\'t get channel',
+        error: "Couldn't get channel",
       });
     });
 });
 
 router.put('/:id/follow', function(req, res) {
-  db.channels.followChannel(req.user, req.params.id)
+  db.channels
+    .followChannel(req.user, req.params.id)
     .then(function() {
       res.json({});
     })
     .catch(function(err) {
       console.error(err);
       res.status(500).json({
-        error: 'Coldn\'t follow channel',
+        error: "Coldn't follow channel",
       });
-    })
+    });
 });
 
 router.put('/:id/unfollow', function(req, res) {
-  db.channels.unfollowChannel(req.user, req.params.id)
+  db.channels
+    .unfollowChannel(req.user, req.params.id)
     .then(function() {
       res.json({});
     })
     .catch(function(err) {
       console.error(err);
       res.status(500).json({
-        error: 'Coldn\'t unfollow channel',
+        error: "Coldn't unfollow channel",
       });
     });
 });
 
 router.get('/:id/followers', function(req, res) {
-  db.channels.getFollowers(req.user, req.params.id)
+  db.channels
+    .getFollowers(req.user, req.params.id)
     .then(function(followers) {
       if (!followers) {
         return res.sendStatus(404);
@@ -121,13 +128,14 @@ router.get('/:id/followers', function(req, res) {
     .catch(function(err) {
       console.error(err);
       res.status(500).json({
-        error: 'Coldn\'t get followers',
+        error: "Coldn't get followers",
       });
     });
 });
 
 router.get('/:id/following', function(req, res) {
-  db.channels.getFollowings(req.user, req.params.id)
+  db.channels
+    .getFollowings(req.user, req.params.id)
     .then(function(followings) {
       if (!followings) {
         return res.sendStatus(404);
@@ -137,13 +145,14 @@ router.get('/:id/following', function(req, res) {
     .catch(function(err) {
       console.error(err);
       res.status(500).json({
-        error: 'Coldn\'t get followings',
+        error: "Coldn't get followings",
       });
     });
 });
 
 router.put('/:id', function(req, res) {
-  db.channels.editChannel(req.user, req.params.id, req.body.channel)
+  db.channels
+    .editChannel(req.user, req.params.id, req.body.channel)
     .then(function(result) {
       if (!!result) {
         return res.json({});
@@ -152,7 +161,7 @@ router.put('/:id', function(req, res) {
         error: 'No such channel',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       res.status(500).json({
         error: 'Channel edit failed',
@@ -160,50 +169,57 @@ router.put('/:id', function(req, res) {
     });
 });
 
-var channelImagesUpload = upload.fields([{
-  name: 'profile',
-  maxCount: 1,
-}, {
-  name: 'cover',
-  maxCount: 1,
-}]);
+var channelImagesUpload = upload.fields([
+  {
+    name: 'profile',
+    maxCount: 1,
+  },
+  {
+    name: 'cover',
+    maxCount: 1,
+  },
+]);
 
 router.post('/images/:id', channelImagesUpload, function(req, res) {
-  db.channels.checkAuthManage(req.params.id, req.user)
-  .then(function({ count }) {
-    if (count == 0) {
-      return res.sendStatus(403);
-    }
-    var promises = [];
-    if (req.files.profile) {
-      promises.push(OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path));
-    }
-    if (req.files.cover) {
-      promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
-    }
-    return Promise.all(promises);
-  })
-  .then(function() {
-    res.json({});
-  })
-  .catch(function(err) {
-    // Check Form type
-    if (req.body.formType === "create") {
-      db.channels.deleteChannelAdmin(req.params.id);
-    }      
-    console.error(err);
-    res.status(500).json({
-      error: 'Failed to upload channel images',
+  db.channels
+    .checkAuthManage(req.params.id, req.user)
+    .then(function({ count }) {
+      if (count == 0) {
+        return res.sendStatus(403);
+      }
+      var promises = [];
+      if (req.files.profile) {
+        promises.push(
+          OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path),
+        );
+      }
+      if (req.files.cover) {
+        promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
+      }
+      return Promise.all(promises);
+    })
+    .then(function() {
+      res.json({});
+    })
+    .catch(function(err) {
+      // Check Form type
+      if (req.body.formType === 'create') {
+        db.channels.deleteChannelAdmin(req.params.id);
+      }
+      console.error(err);
+      res.status(500).json({
+        error: 'Failed to upload channel images',
+      });
     });
-  });
 });
 
 router.post('/', channelImagesUpload, function(req, res) {
-  db.channels.createChannel(req.body)
+  db.channels
+    .createChannel(req.body)
     .then(function(result) {
       return res.json(result);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       return res.status(500).json({
         error: 'Failed to create channel',
@@ -222,11 +238,12 @@ router.get('/:id/videos/:sort', function(req, res) {
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
-  db.channels.getChannelVideos(req.user, req.params.id, limit, offset, sort)
+  db.channels
+    .getChannelVideos(req.user, req.params.id, limit, offset, sort)
     .then(function(result) {
       return res.json(result);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       return res.status(500).json({
         error: 'Failed to get channel videos',
@@ -235,12 +252,13 @@ router.get('/:id/videos/:sort', function(req, res) {
 });
 
 router.get('/:channelId/permissions', function(req, res) {
-  db.channelAcls.getChannelAcls(req.params.channelId, req.user)
+  db.channelAcls
+    .getChannelAcls(req.params.channelId, req.user)
     .then(function(permissions) {
-      var viewACL =[];
-      var manageACL =[];
+      var viewACL = [];
+      var manageACL = [];
       permissions.forEach(function(perm) {
-        switch(perm.access) {
+        switch (perm.access) {
           case 'VIEW':
             viewACL.push(perm);
             break;
@@ -271,16 +289,16 @@ router.get('/:channelId/permissions', function(req, res) {
       //     return Promise.resolve();
       //   });
       // })).then(function() {
-        res.json({
-          viewACL,
-          manageACL,
-        });
+      res.json({
+        viewACL,
+        manageACL,
+      });
       // })
     })
     .catch(function(err) {
       console.error(err);
       res.sendStatus(500);
     });
-  });
+});
 
 module.exports = router;

@@ -14,10 +14,14 @@ var channelWrapper = connection.createChannel({
 });
 
 function enqueueEncoding(videoId, path) {
-  return channelWrapper.sendToQueue(ENCODE_QUEUE, {
-    id: videoId,
-    path,
-  }, { persistent: true });
+  return channelWrapper.sendToQueue(
+    ENCODE_QUEUE,
+    {
+      id: videoId,
+      path,
+    },
+    { persistent: true },
+  );
 }
 
 module.exports = enqueueEncoding;

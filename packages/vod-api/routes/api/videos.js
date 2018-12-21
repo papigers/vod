@@ -17,28 +17,29 @@ router.get('/list/:sort', function(req, res) {
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
   if (sort === 'recommended') {
-    db.videos.getRecommendedVideos(req.user, limit, offset)
-    .then(function(videos) {
-      res.json(videos);
-    })
-    .catch(function(err) {
-      console.error(err);
-      res.status(500).json({
-        error: 'Couldn\'t fetch videos',
+    db.videos
+      .getRecommendedVideos(req.user, limit, offset)
+      .then(function(videos) {
+        res.json(videos);
+      })
+      .catch(function(err) {
+        console.error(err);
+        res.status(500).json({
+          error: "Couldn't fetch videos",
+        });
       });
-    });
-  }
-  else {
-    db.videos.getVideos(req.user, limit, offset, sort)
-    .then(function(videos) {
-      res.json(videos);
-    })
-    .catch(function(err) {
-      console.error(err);
-      res.status(500).json({
-        error: 'Couldn\'t fetch videos',
+  } else {
+    db.videos
+      .getVideos(req.user, limit, offset, sort)
+      .then(function(videos) {
+        res.json(videos);
+      })
+      .catch(function(err) {
+        console.error(err);
+        res.status(500).json({
+          error: "Couldn't fetch videos",
+        });
       });
-    });
   }
 });
 
@@ -47,14 +48,15 @@ router.get('/related/:videoId', function(req, res) {
   var offset = req.query.offset || 0;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
-    db.videos.getRelatedVideos(req.user, limit, offset, req.params.videoId)
+  db.videos
+    .getRelatedVideos(req.user, limit, offset, req.params.videoId)
     .then(function(videos) {
       res.json(videos);
     })
     .catch(function(err) {
       console.error(err);
       res.status(500).json({
-        error: 'Couldn\'t fetch videos',
+        error: "Couldn't fetch videos",
       });
     });
 });
@@ -66,44 +68,51 @@ router.get('/search', function(req, res) {
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
   db.knexnest(
-    db.videos.search(req.user, query)
-    .limit(limit)
-    .offset(offset)
-    .modify(db.videos.order, 'relevance')
-    .modify(db.videos.order, 'new')
-  ).then(function(videos) {
-    res.json(videos);
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).json({
-      error: 'Couldn\'t fetch videos',
+    db.videos
+      .search(req.user, query)
+      .limit(limit)
+      .offset(offset)
+      .modify(db.videos.order, 'relevance')
+      .modify(db.videos.order, 'new'),
+  )
+    .then(function(videos) {
+      res.json(videos);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Couldn't fetch videos",
+      });
     });
-  });
 });
 
 // create new video - initial request.
 /**
  * PARAMS
  * creator: creator channel id
- * channel: 
+ * channel:
  */
 router.post('/', function(req, res, next) {
-  db.videos.initialCreate(req.user, {
-    creator: req.user && req.user.id,
-    channel: req.body.channel,
-    name: req.body.name,
-  }).then(function(video) {
-    res.json(video.id);
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).json({
-      error: 'Video creation failed',
+  db.videos
+    .initialCreate(req.user, {
+      creator: req.user && req.user.id,
+      channel: req.body.channel,
+      name: req.body.name,
+    })
+    .then(function(video) {
+      res.json(video.id);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.status(500).json({
+        error: 'Video creation failed',
+      });
     });
-  });
 });
 
 router.get('/video/:id', function(req, res) {
-  db.videos.getVideo(req.user, req.params.id)
+  db.videos
+    .getVideo(req.user, req.params.id)
     .then(function(video) {
       if (video) {
         return res.json(video);
@@ -112,16 +121,17 @@ router.get('/video/:id', function(req, res) {
         error: 'No such video',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       return res.status(500).json({
-        error: 'Couldn\'t get video',
+        error: "Couldn't get video",
       });
-    })
+    });
 });
 
 router.put('/video/:id/view', function(req, res) {
-  db.videos.viewVideo(req.user, req.params.id)
+  db.videos
+    .viewVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -134,7 +144,8 @@ router.put('/video/:id/view', function(req, res) {
 });
 
 router.put('/video/:id/like', function(req, res) {
-  db.videos.likeVideo(req.user, req.params.id)
+  db.videos
+    .likeVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -147,7 +158,8 @@ router.put('/video/:id/like', function(req, res) {
 });
 
 router.put('/video/:id/dislike', function(req, res) {
-  db.videos.dislikeVideo(req.user, req.params.id)
+  db.videos
+    .dislikeVideo(req.user, req.params.id)
     .then(function() {
       return res.json({});
     })
@@ -161,7 +173,8 @@ router.put('/video/:id/dislike', function(req, res) {
 
 router.put('/:id', function(req, res) {
   var video = req.body;
-  db.videos.edit(req.user, req.params.id, video)
+  db.videos
+    .edit(req.user, req.params.id, video)
     .then(function(result) {
       if (!!result) {
         generateThumbnail(req.params.id, `${(video.thumbnail + 1) * 20}%`);
@@ -171,7 +184,7 @@ router.put('/:id', function(req, res) {
         error: 'No such video',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.error(err);
       res.status(err.code || 500).json({
         error: err.message || 'Video edit failed',
@@ -180,7 +193,8 @@ router.put('/:id', function(req, res) {
 });
 
 router.delete('/:id', function(req, res) {
-  db.videos.delete(req.user, req.params.id)
+  db.videos
+    .delete(req.user, req.params.id)
     .then(function(deleted) {
       if (deleted) {
         return res.json({});
@@ -196,7 +210,8 @@ router.delete('/:id', function(req, res) {
 router.get('/:videoId/comments', function(req, res, next) {
   var page = req.query.page || 0;
   var before = req.query.before ? new Date(req.query.before) : new Date();
-  db.comments.getComments(req.user, req.params.videoId, { page, before })
+  db.comments
+    .getComments(req.user, req.params.videoId, { page, before })
     .then(function(comments) {
       res.json(comments);
     })
@@ -207,7 +222,8 @@ router.get('/:videoId/comments', function(req, res, next) {
 });
 
 router.post('/:videoId/comments', function(req, res, next) {
-  db.comments.postComment(req.user, req.params.videoId, req.body.comment)
+  db.comments
+    .postComment(req.user, req.params.videoId, req.body.comment)
     .then(function() {
       res.sendStatus(200);
     })
@@ -218,43 +234,46 @@ router.post('/:videoId/comments', function(req, res, next) {
 });
 
 router.get('/:videoId/thumbnails', function(req, res, next) {
-  db.videos.checkAuth(req.params.videoId, req.user)
-  .then(function({ count }) {
-    return Promise.resolve(count > 0);
-  }).then(function(authorized) {
-    if (!authorized) {
-      return res.sendStatus(403);
-    }
-    var count = +req.query.count || 1;
-    if (isNaN(count)) {
-      res.status(400).send('count must be a number')
-    }
-    if (count > 16 || count < 1) {
-      res.status(400).send('count must be between 1 and 16')
-    }
-    previewThumbnails(req.params.videoId, count)
-      .then(function(thumbs) {
-        if (count !== thumbs.length) {
-          return next(new Error('Encountered a problem getting video thumbnails'));
-        }
-        if (count === 1) {
-          var thumb = Buffer.from(thumbs[0].replace(/^data:image\/png;base64,/, ''), 'base64');
-          res.writeHead(200, {
-            'Content-Type': 'image/png',
-            'Content-Length': thumb.length,
-          })
-          return res.end(thumb);
-        }
-        res.json(thumbs);
-      })
-      .catch(function(err) {
-        next(err);
-      });
-  })
+  db.videos
+    .checkAuth(req.params.videoId, req.user)
+    .then(function({ count }) {
+      return Promise.resolve(count > 0);
+    })
+    .then(function(authorized) {
+      if (!authorized) {
+        return res.sendStatus(403);
+      }
+      var count = +req.query.count || 1;
+      if (isNaN(count)) {
+        res.status(400).send('count must be a number');
+      }
+      if (count > 16 || count < 1) {
+        res.status(400).send('count must be between 1 and 16');
+      }
+      previewThumbnails(req.params.videoId, count)
+        .then(function(thumbs) {
+          if (count !== thumbs.length) {
+            return next(new Error('Encountered a problem getting video thumbnails'));
+          }
+          if (count === 1) {
+            var thumb = Buffer.from(thumbs[0].replace(/^data:image\/png;base64,/, ''), 'base64');
+            res.writeHead(200, {
+              'Content-Type': 'image/png',
+              'Content-Length': thumb.length,
+            });
+            return res.end(thumb);
+          }
+          res.json(thumbs);
+        })
+        .catch(function(err) {
+          next(err);
+        });
+    });
 });
 
 router.get('/managed/:videoId', function(req, res, next) {
-  db.videos.getManagedVideos(req.user, req.params.videoId)
+  db.videos
+    .getManagedVideos(req.user, req.params.videoId)
     .then(function(video) {
       res.json(video);
     })
@@ -265,7 +284,8 @@ router.get('/managed/:videoId', function(req, res, next) {
 });
 
 router.get('/managed', function(req, res, next) {
-  db.videos.getManagedVideos(req.user, req.params.videoId)
+  db.videos
+    .getManagedVideos(req.user, req.params.videoId)
     .then(function(video) {
       res.json(video);
     })
@@ -273,6 +293,6 @@ router.get('/managed', function(req, res, next) {
       console.error(err);
       next(err);
     });
-})
+});
 
 module.exports = router;

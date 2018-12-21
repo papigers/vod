@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof VideoView)) {
       return new VideoView();
     }
-  }
+  };
 
   videoViews.table = 'videoViews';
   videoViews.attributes = {
@@ -28,9 +28,7 @@ module.exports = function(db) {
       },
     },
   };
-  videoViews.indices = [
-    { type: 'primary', columns: ['createdAt'] },
-  ];
+  videoViews.indices = [{ type: 'primary', columns: ['createdAt'] }];
   videoViews.createdAt = true;
   videoViews.updatedAt = false;
 

@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof VideoLike)) {
       return new VideoLike();
     }
-  }
+  };
 
   videoLikes.table = 'videoLikes';
   videoLikes.attributes = {

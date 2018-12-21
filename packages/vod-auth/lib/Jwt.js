@@ -10,24 +10,28 @@ var requiredFields = [
   'groups',
 ];
 
-passport.use(new JwtStrategy({
-  secretOrKey: 'cookie-secret',
-  jwtFromRequest : ExtractJwt.fromExtractors([
-    ExtractJwt.fromAuthHeaderAsBearerToken(),
-    function cookieExtractor(req) {
-      var token = null;
-      if (req && req.cookies)
-      {
-          token = req.cookies['jwt'];
-      }
-      return token;
+passport.use(
+  new JwtStrategy(
+    {
+      secretOrKey: 'cookie-secret',
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        function cookieExtractor(req) {
+          var token = null;
+          if (req && req.cookies) {
+            token = req.cookies['jwt'];
+          }
+          return token;
+        },
+      ]),
     },
-  ]),
-}, function(jwt, done) {
-  var fields = Object.keys(jwt);
-  var requiredExists = requiredFields.every(function(field) {
-    return fields.indexOf(field) !== -1;
-  });
-  // should maybe add second check that user exists
-  done(null, requiredExists && jwt);
-}));
+    function(jwt, done) {
+      var fields = Object.keys(jwt);
+      var requiredExists = requiredFields.every(function(field) {
+        return fields.indexOf(field) !== -1;
+      });
+      // should maybe add second check that user exists
+      done(null, requiredExists && jwt);
+    },
+  ),
+);

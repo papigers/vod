@@ -6,8 +6,10 @@ var ad = new ActiveDirectory(config.ad);
 var router = express.Router();
 
 function adFilter(filter, objectClass) {
-  var ldapFilter = !!objectClass ? `(&(objectClass=${objectClass})(|(distinguishedName=${filter})(anr=${filter})))` : `(|(distinguishedName=${filter})(anr=${filter}))`;
-  return new Promise(function (resolve, reject) {
+  var ldapFilter = !!objectClass
+    ? `(&(objectClass=${objectClass})(|(distinguishedName=${filter})(anr=${filter})))`
+    : `(|(distinguishedName=${filter})(anr=${filter}))`;
+  return new Promise(function(resolve, reject) {
     ad.find(ldapFilter, function(err, res) {
       if (err) {
         console.error(err);
@@ -20,7 +22,7 @@ function adFilter(filter, objectClass) {
       var allResults = allResults.concat(res.groups || []);
       return resolve(allResults);
     });
-  })
+  });
 }
 
 router.post('/search', function(req, res) {
@@ -48,7 +50,6 @@ router.post('/search/:type', function(req, res) {
       return res.sendStatus(500);
     });
 });
-
 
 module.exports = router;
 module.exports.adFilter = adFilter;

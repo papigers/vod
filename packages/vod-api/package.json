@@ -5,7 +5,8 @@
   "scripts": {
     "prestart": "knex migrate:latest",
     "start": "node ./bin/www",
-    "dev": "cross-env DEBUG=vod:api nodemon ./bin/www"
+    "dev": "cross-env DEBUG=vod:api nodemon ./bin/www",
+    "lint": "eslint . --ext .js"
   },
   "dependencies": {
     "@vod/vod-auth": "^0.0.0",

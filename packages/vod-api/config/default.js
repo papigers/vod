@@ -20,8 +20,10 @@ module.exports = {
   admin: {
     id: 's7591665',
     type: 'USER',
-    picture: 'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
-    cover: 'https://scontent.fhfa1-1.fna.fbcdn.net/v/t31.0-8/21994326_10210708722743309_2900923781613308026_o.jpg?_nc_cat=0&oh=add5e60e2256e184fe651f630f9f3a43&oe=5BD96A45',
+    picture:
+      'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
+    cover:
+      'https://scontent.fhfa1-1.fna.fbcdn.net/v/t31.0-8/21994326_10210708722743309_2900923781613308026_o.jpg?_nc_cat=0&oh=add5e60e2256e184fe651f630f9f3a43&oe=5BD96A45',
     personal: true,
     access: 'PUBLIC',
     name: 'גרשון ח פפיאשוילי',
@@ -37,6 +39,6 @@ module.exports = {
     attributes: {
       user: ['sAMAccountName', 'displayName', 'objectClass'],
       group: ['dn', 'cn', 'displayName', 'objectClass'],
-    }
+    },
   },
 };
