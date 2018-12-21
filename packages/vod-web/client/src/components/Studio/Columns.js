@@ -1,4 +1,4 @@
-export const videosColumns = [
+export default videosColumns = [
     {
         key: 'thumbnail',
         name: 'סרטון',

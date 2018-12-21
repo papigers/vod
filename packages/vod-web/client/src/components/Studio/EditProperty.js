@@ -33,7 +33,7 @@ const ErrorMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
-class EditForm extends Component {
+class EditProperty extends Component {
     constructor() {
         super();
         this.state = {
@@ -136,7 +136,7 @@ class EditForm extends Component {
         const {
             editType,
             videos,
-            onMetadataEdit,
+            onPropertyEdit,
             onTagsEdit,
             onClose,
         } = this.props;
@@ -175,7 +175,7 @@ class EditForm extends Component {
                 return {id: video.id, property: item};
             });
 
-            onMetadataEdit(items, editType)
+            onPropertyEdit(items, editType)
             .then(onClose)
             .catch(e => {
                 this.setState({
@@ -234,4 +234,4 @@ class EditForm extends Component {
     }
 }
 
-export default EditForm;
+export default EditProperty;

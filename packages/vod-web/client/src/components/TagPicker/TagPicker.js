@@ -126,7 +126,7 @@ class TagPicker extends Component {
           pickerSuggestionsProps={{
             noResultsFoundText: 'תיוג קיים'
           }}
-          disabled={this.props.disabled !== null? this.props.disabled: false}
+          disabled={this.props.disabled}
           getTextFromItem={item => item.name}
           selectedItems={this.state.selected}
           onInputChange={this.onInputChange}

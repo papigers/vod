@@ -59,8 +59,8 @@ class StudioPage extends Component {
         .finally(this.fetchVideos);
     }
 
-    editVideosMetadata = (videos, property) => {
-        return axios.put(`/videos/metadata/${property}`, videos)
+    editVideosProperty = (videos, property) => {
+        return axios.put(`/videos/property/${property}`, videos)
         .finally(this.fetchVideos);;
     }
 
@@ -79,7 +79,7 @@ class StudioPage extends Component {
             <Studio
                 videoList = {videoList}
                 onDelete = {this.deleteVideos}
-                onMetadataEdit = {this.editVideosMetadata}
+                onPropertyEdit = {this.editVideosProperty}
                 onTagsEdit = {this.editVideosTags}
                 onVideoShare = {this.editVideosPrivacy}
                 onVideoEdit = {this.editVideo}

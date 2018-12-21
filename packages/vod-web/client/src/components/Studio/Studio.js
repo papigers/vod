@@ -11,10 +11,10 @@ import { DetailsList, SelectionMode } from 'office-ui-fabric-react/lib/DetailsLi
 import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 import { TooltipHost } from 'office-ui-fabric-react/lib/Tooltip';
 
-import { videosColumns } from './Columns';
+import videosColumns from './columns';
 import VideoThumbnail from 'components/VideoThumbnail';
 import Modal from 'components/Modal';
-import EditMetadata from './EditMetadata';
+import EditProperty from './EditProperty';
 import DeleteForm from './DeleteForm';
 import EditPrivacy from './EditPrivacy';
 import VideoEditForm from 'components/VideoEditForm';
@@ -167,7 +167,7 @@ class Studio extends Component {
             } = this.state;
 
           const {
-              onMetadataEdit,
+              onPropertyEdit,
               onVideoShare,
               onDelete,
               onTagsEdit,
@@ -195,11 +195,11 @@ class Studio extends Component {
                             />   
             default:
                 if (editType === 'name' || editType === 'description' || editType === 'tags') {
-                    return <EditMetadata
+                    return <EditProperty
                             videos={selectionDetails}
                             editType={editType}
                             onClose={this.changeModalState}
-                            onMetadataEdit={onMetadataEdit}
+                            onPropertyEdit={onPropertyEdit}
                             onTagsEdit={onTagsEdit}
                             />
                 } else {

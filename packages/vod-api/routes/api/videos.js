@@ -42,23 +42,7 @@ router.get('/managed', function(req, res) {
 router.get('/video/:id/permissions', function(req, res) {
   db.videoAcls.getvideoAcls(req.user, req.params.id)
     .then(function(data) {
-      var acls = [];
-      return Promise.all(data.map(function(acl) {
-        return adFilter(acl.id, acl.type === 'USER' ? 'user' : 'group')
-        .then(function([adObject]) {
-          if (adObject) {
-            acls.push({
-              id: adObject.sAMAccountName || adObject.dn,
-              name: adObject.displayName || adObject.cn,
-              type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
-              profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
-            });
-          }
-          return Promise.resolve();
-        });
-      })).then(function() {
-        return res.json(acls);
-      })
+      return res.json(data);
     })
     .catch(function(err) {
       console.error(err);
@@ -188,8 +172,8 @@ router.put('/tags/:action', function(req, res) {
     });
 });
 
-router.put('/metadata/:property', function(req, res) {
-  db.videos.editMetadata(req.user, req.params.property, req.body)
+router.put('/property/:property', function(req, res) {
+  db.videos.editProperty(req.user, req.params.property, req.body)
     .then(function(result) {
       if (!!result) {
         return res.sendStatus(200);

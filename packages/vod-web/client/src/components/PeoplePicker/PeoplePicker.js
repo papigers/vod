@@ -64,7 +64,7 @@ class PeoplePicker extends Component {
       <PickerContainer className={this.props.className} selectedItems={this.state.currentSelectedItems}>
         <Label>{this.props.label}</Label>
         <CompactPeoplePicker
-          disabled={this.props.disabled !== null ? this.props.disabled : false}
+          disabled={this.props.disabled}
           onResolveSuggestions={this.onFilterChanged}
           getTextFromItem={this.getTextFromItem}
           selectedItems={this.state.currentSelectedItems}
