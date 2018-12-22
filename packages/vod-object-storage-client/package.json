@@ -1,5 +1,5 @@
 {
-  "name": "vod-object-storage-client",
+  "name": "@vod/vod-object-storage-client",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "Gershon Papi <papigers93@gmail.com>",
@@ -14,7 +14,8 @@
     "lib"
   ],
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "lint": "eslint lib --ext .js"
   },
   "dependencies": {
     "aws-sdk": "^2.293.0",

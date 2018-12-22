@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof ChannelACL)) {
       return new ChannelACL();
     }
-  }
+  };
 
   channelAcls.table = 'channelAcls';
   channelAcls.attributes = {
@@ -44,7 +44,7 @@ module.exports = function(db) {
       .leftJoin(db.channels.table, `${channelAcls.table}.channelId`, `${db.channels.table}.id`)
       .where(`${channelAcls.table}.channelId`, channelId)
       .modify(db.channels.authorizedManageSubquery, user);
-  }
-  
+  };
+
   return channelAcls;
 };

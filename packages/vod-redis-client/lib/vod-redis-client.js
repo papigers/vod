@@ -13,7 +13,9 @@ function createRedisClient(options) {
     console.error(`Cache server ${details.server} went down due to: ${details.messages.join('')}`);
   });
   cacheEngine.on('reconnecting', function(details) {
-    console.error(`Total downtime caused by cache server ${details.server}:${details.totalDownTime}ms`);
+    console.error(
+      `Total downtime caused by cache server ${details.server}:${details.totalDownTime}ms`,
+    );
   });
   cacheEngine.getAsync = promisify(cacheEngine.get).bind(cacheEngine);
   cacheEngine.setAsync = promisify(cacheEngine.set).bind(cacheEngine);

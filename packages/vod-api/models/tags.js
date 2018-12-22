@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof Tag)) {
       return new Tag();
     }
-  }
+  };
 
   tags.table = 'tags';
   tags.attributes = {
@@ -24,9 +24,7 @@ module.exports = function(db) {
       notNullable: true,
     },
   };
-  tags.indices = [
-    { type: 'unique', columns: ['tag', 'taggable', 'itemId']},
-  ];
+  tags.indices = [{ type: 'unique', columns: ['tag', 'taggable', 'itemId'] }];
   tags.createdAt = true;
   tags.updatedAt = true;
 

@@ -3,7 +3,7 @@ module.exports = function(db) {
     if (!(this instanceof ChannelFollower)) {
       return new ChannelFollower();
     }
-  }
+  };
 
   channelFollowers.table = 'channelFollowers';
   channelFollowers.attributes = {
