@@ -12,6 +12,9 @@ const untrapNavbarRoutes = [
     path: '/upload/:id',
     exact: true,
   },
+  {
+    path: '/studio',
+  },
 ];
 
 const globalInitialState = fromJS({

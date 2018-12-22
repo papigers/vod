@@ -33,5 +33,15 @@ module.exports = function(db) {
   videoAcls.createdAt = true;
   videoAcls.updatedAt = true;
 
+  videoAcls.getvideoAcls = function(user, id) {
+    return db.knex
+      .select(`${videoAcls.table}.id`, `${videoAcls.table}.type`, `${videoAcls.table}.videoId`)
+      .from(videoAcls.table)
+      .leftJoin(db.videos.table, `${videoAcls.table}.videoId`, `${db.videos.table}.id`)
+      .leftJoin(db.channels.table, `${videoAcls.table}.id`, `${db.channels.table}.id`)
+      .where(`${videoAcls.table}.videoId`, id)
+      .modify(db.videos.authorizedManageSubquery, user);
+  };
+
   return videoAcls;
 };

@@ -104,6 +104,7 @@ class TagPicker extends Component {
   };
 
   onChange = () => {
+    console.log(this.state.selected);
     if (this.props.onChange) {
       this.props.onChange(this.state.selected.map(tag => tag.name));
     }
@@ -124,7 +125,6 @@ class TagPicker extends Component {
   };
 
   onRenderItem = item => {
-    console.log(item);
     return (
       <TagItem {...item.props}>
         <TagItemText>{item.item.name}</TagItemText>
@@ -145,6 +145,7 @@ class TagPicker extends Component {
           pickerSuggestionsProps={{
             noResultsFoundText: 'תיוג קיים',
           }}
+          disabled={this.props.disabled}
           getTextFromItem={item => item.name}
           selectedItems={this.state.selected}
           onInputChange={this.onInputChange}

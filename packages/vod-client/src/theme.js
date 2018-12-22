@@ -78,7 +78,7 @@ const GlobalThemeStyle = createGlobalStyle`
 
   body {
     margin: 0;
-    font-family: ${({ theme }) => theme.typography.families.default};
+    font-family: ${({ theme }) => theme.fonts.medium.fontFamily};
     color: ${({ theme }) => theme.palette.bodyText};
   }
 
@@ -226,17 +226,17 @@ export default class ThemeProvider extends Component {
   render() {
     return (
       <Provider theme={this.state.theme}>
-        <Fragment>
-          <GlobalThemeStyle />
-          <ThemeContext.Provider
-            value={{
-              theme: this.state.theme,
-              toggleTheme: this.toggleTheme,
-            }}
-          >
+        <ThemeContext.Provider
+          value={{
+            theme: this.state.theme,
+            toggleTheme: this.toggleTheme,
+          }}
+        >
+          <Fragment>
+            <GlobalThemeStyle />
             {this.props.children}
-          </ThemeContext.Provider>
-        </Fragment>
+          </Fragment>
+        </ThemeContext.Provider>
       </Provider>
     );
   }

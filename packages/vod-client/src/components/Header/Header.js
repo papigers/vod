@@ -63,7 +63,9 @@ const StyledSearchBox = styled(SearchBox)`
 `;
 
 export const StyledCommandBar = styled(CommandBar)`
-  background-color: transparent;
+  .ms-CommandBar {
+    background-color: transparent;
+  }
 
   .ms-Button-icon {
     font-size: 19px;
@@ -320,6 +322,14 @@ export default class Header extends Component {
         to: '/upload',
         iconProps: {
           iconName: 'Upload',
+        },
+      },
+      {
+        key: 'studio',
+        text: 'סטודיו',
+        to: '/studio',
+        iconProps: {
+          iconName: 'MyMoviesTV',
         },
       },
       {

@@ -14,6 +14,7 @@ const PanelHost = styled(LayerHost)`
   position: fixed;
   margin-top: 64px;
   height: calc(100% - 64px);
+  z-index: 1000;
 `;
 
 const StyledPanel = styled(Panel)`
@@ -93,7 +94,7 @@ export default class Sidebar extends Component {
                 isFooterAtBottom
                 onDismissed={isSidebarTrapped ? null : onDismissed}
                 isLightDismiss={true}
-                innerRef={panel => {
+                componentRef={panel => {
                   this.panel = panel;
                 }}
               >

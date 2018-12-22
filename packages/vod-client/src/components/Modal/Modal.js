@@ -67,10 +67,10 @@ const ModalContent = styled.div`
 
 class Modal extends Component {
   render() {
-    const { title, isOpen, isBlocking, onDismiss, children } = this.props;
+    const { title, isOpen, isBlocking, onDismiss, children, size } = this.props;
 
     return (
-      <StyledModal isOpen={isOpen} onDismiss={onDismiss} isBlocking={isBlocking}>
+      <StyledModal isOpen={isOpen} onDismiss={onDismiss} isBlocking={isBlocking} size={size}>
         <ModalHeader>{title}</ModalHeader>
         <ModalContent>
           {React.Children.map(children, child => React.cloneElement(child, { onDismiss }))}

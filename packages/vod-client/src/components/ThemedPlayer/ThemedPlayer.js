@@ -225,8 +225,8 @@ const StyledVideoContainer = styled.div`
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: ${({ theme }) => theme.typography.families.default};
-      font-size: ${({ theme }) => theme.typography.sizes.large} !important;
+      font-family: ${({ theme }) => theme.fonts.large.fontFamily};
+      font-size: ${({ theme }) => theme.fonts.large.fontSize} !important;
     }
   }
 `;
