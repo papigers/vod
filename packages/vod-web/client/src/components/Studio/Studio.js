@@ -71,6 +71,26 @@ class Studio extends Component {
             editType: '',
         };
       }
+    
+    getVideoState(state, upload) {
+        let display = '';
+        switch (state) {
+            case 'PUBLISHED':
+                display =  'מפורסם';
+                break;
+            case 'UNLISTED':
+                display = 'קישור בלבד';
+                break;
+            case 'DRAFT':
+            default:
+                display = 'טיוטה';
+                break;
+        }
+        if (!!upload) {
+            display += ' - בתהליך העלאה';
+        }
+        return display;
+    }
 
     getVideoList = () => {
         const options = {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit',minute: '2-digit',second: '2-digit'}
@@ -85,6 +105,8 @@ class Studio extends Component {
                 description: video.description,
                 privacy: video.privacy,
                 privacyDisplay: video.privacy === 'PUBLIC'? 'ציבורי' : 'פרטי',
+                state: video.state,
+                stateDisplay: this.getVideoState(video.state, video.upload),
                 acls: video.acls,
                 tags: video.tags,
                 channelName: `${video.channel.name} (${video.channel.id})`,
@@ -131,7 +153,6 @@ class Studio extends Component {
       }
       
     onSelectionChanged = () => {
-        console.log(this.state.selection.getSelection());
         this.setState({
             selectionDetails: this.state.selection.getSelection()
           });
@@ -145,8 +166,11 @@ class Studio extends Component {
       }
 
     changeModalState = ()  => {
+        if (this.state.modalIsOpen) {
+            this.state.selection.setAllSelected(false);
+        }
         this.setState({
-            modalIsOpen: !this.state.modalIsOpen
+            modalIsOpen: !this.state.modalIsOpen,
         });
       }
 
@@ -192,19 +216,20 @@ class Studio extends Component {
                             video={selectionDetails[0]}
                             onClose={this.changeModalState}
                             onSubmit={onVideoEdit}
-                            />   
-            default:
-                if (editType === 'name' || editType === 'description' || editType === 'tags') {
-                    return <EditProperty
+                            />
+            case 'name':
+            case 'description':
+            case 'tags':
+            case 'state':
+                return <EditProperty
                             videos={selectionDetails}
                             editType={editType}
                             onClose={this.changeModalState}
                             onPropertyEdit={onPropertyEdit}
                             onTagsEdit={onTagsEdit}
                             />
-                } else {
-                    return <p>404</p>
-                }
+            default:
+                return <p>500</p>
           }
       }
 
@@ -279,6 +304,15 @@ class Studio extends Component {
                                                     },
                                                     onClick: () => {
                                                         this.onMenuClick('tags');
+                                                    }
+                                                }, {
+                                                    key: 'state',
+                                                    name: 'מצב פרסום',
+                                                    iconProps: {
+                                                        iconName: 'RedEye',
+                                                    },
+                                                    onClick: () => {
+                                                        this.onMenuClick('state');
                                                     }
                                                 }]
                                             }

@@ -1,4 +1,4 @@
-export default videosColumns = [
+export default [
     {
         key: 'thumbnail',
         name: 'סרטון',
@@ -22,6 +22,13 @@ export default videosColumns = [
         minWidth: 100,
         maxWidth: 200,
         isResizable: true
+    },
+    {
+        key: 'stateDisplay',
+        name: 'מצב פרסום',
+        fieldName: 'stateDisplay',
+        minWidth: 80,
+        maxWidth: 120,
     },
     {
         key: 'privacyDisplay',

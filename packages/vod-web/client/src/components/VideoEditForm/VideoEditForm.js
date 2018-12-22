@@ -11,6 +11,7 @@ import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
 import TagPicker from 'components/TagPicker';
+import VideoStateDropdown from 'components/VideoStateDropdown';
 
 const Form = styled.form`
   .ms-BasePicker {
@@ -74,6 +75,7 @@ class VideoEditForm extends Component {
             tags: [],
             privacy: 'PUBLIC',
             acls: [],
+            state: 'DRAFT',
             error: null,
             loading: false,
         };
@@ -97,6 +99,7 @@ class VideoEditForm extends Component {
             name: video.name,
             description: video.description,
             tags: video.tags,
+            state: video.state,
             privacy: video.privacy,
           }
         }
@@ -120,6 +123,7 @@ class VideoEditForm extends Component {
     onChangeName = ({ target }) => this.setState({name: target.value});
     onChangeDescription = ({ target }) => this.setState({description: target.value});
     onChangePrivacy = (e, { key: privacy }) => {this.setState({ privacy })};
+    onChangeState = (e, { key: state }) => {this.setState({ state })};
     onChangeACL = (acls) => this.setState({ acls: this.formatACL(acls) });
     onChangeTags = (tags) => this.setState({ tags: tags });
     
@@ -176,14 +180,16 @@ class VideoEditForm extends Component {
             description,
             privacy,
             acls,
+            state,
             tags,
         } = this.state;
 
         const video = {
-            id: id,
-            name: name,
-            description: description,
-            privacy: privacy,
+            id,
+            name,
+            description,
+            privacy,
+            state,
             acls: privacy === 'PUBLIC'? [] : acls,
             tags: tags.map(tag => tag.tag),
         };
@@ -210,6 +216,7 @@ class VideoEditForm extends Component {
             privacy,
             acls,
             tags,
+            state,
             error,
             loading
           } = this.state;
@@ -217,16 +224,22 @@ class VideoEditForm extends Component {
         return (
             <FormContainer>
                 <Form onSubmit={this.onSubmit}>
-                    <Flex alignItems="flex-end">
-                        <TextField
-                            label="שם סרטון"
-                            disabled={loading}
-                            required
-                            value={name}
-                            onChange={this.onChangeName}
-                            errorMessage={this.state.nameError}
-                        />
-                    </Flex>
+                    <VideoStateDropdown
+                        required
+                        label="מצב פרסום"
+                        disabled={loading}
+                        selectedKey={state}
+                        onChange={this.onChangeState}
+                        placeHolder="בחר/י באיזו צורה הסרטון יוצג"
+                    />
+                    <TextField
+                        label="שם סרטון"
+                        disabled={loading}
+                        required
+                        value={name}
+                        onChange={this.onChangeName}
+                        errorMessage={this.state.nameError}
+                    />
                     <TextField
                         label="תיאור"
                         disabled={loading}
@@ -266,6 +279,13 @@ class VideoEditForm extends Component {
                     <ContentContainer>
                         {loading ? 
                             <Spinner size={SpinnerSize.large} ariaLive="loading" />
+                            : 
+                            null
+                        }
+                    </ContentContainer>
+                    <ContentContainer>
+                        {loading ? 
+                            null
                             : 
                             <FormButton
                                 text="שמור"

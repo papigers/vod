@@ -80,6 +80,13 @@ class DeleteForm extends Component {
                         {loading ? 
                             <Spinner size={SpinnerSize.large} ariaLive="loading" />
                             :
+                            null
+                        }
+                    </ContentContainer>
+                    <ContentContainer>
+                        {loading ? 
+                            null
+                            :
                             <FormButton
                                 primary
                                 disabled={loading}

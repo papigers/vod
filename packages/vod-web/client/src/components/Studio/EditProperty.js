@@ -8,6 +8,7 @@ import { DefaultButton} from 'office-ui-fabric-react/lib/Button';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import TagPicker from 'components/TagPicker';
+import VideoStateDropdown from 'components/VideoStateDropdown';
 
 const Form = styled.form`
   align-content: center;
@@ -41,6 +42,7 @@ class EditProperty extends Component {
             action: '',
             options: [],
             tags: [],
+            state: null,
             error: null,
             loading: false,
         };
@@ -51,7 +53,7 @@ class EditProperty extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.videos.length !== prevProps.videos.length) {
+        if (this.props.editType !== prevProps.editType) {
             this.initOptions();
         }
     }
@@ -59,35 +61,39 @@ class EditProperty extends Component {
     initOptions(){
         const { editType } = this.props;
         const options = [];
-            switch (editType) {
-                case 'name':
-                    options.push(
-                        { key: 'beginning', text: 'הכנס בהתחלה' },
-                        { key: 'end', text: 'הכנס בסוף' },
-                        { key: 'replace', text: 'החלף הכל' },
-                    );
-                    break;
-                case 'tags':
-                    options.push(
-                        { key: 'add', text: 'הוסף תגיות' },
-                        { key: 'remove', text: 'הסר תגיות' },
-                        { key: 'replace', text: 'החלף הכל' },
-                        { key: 'clean', text: 'מחק הכל' },
-                    );
-                    break;
-                default:
-                    options.push(
-                        { key: 'beginning', text: 'הכנס בהתחלה' },
-                        { key: 'end', text: 'הכנס בסוף' },
-                        { key: 'replace', text: 'החלף הכל' },
-                        { key: 'clean', text: 'נקה הכל' },
-                    );
-                    break;
-            }
-            this.setState ({
-                options : options,
-                action: options[0].key
-            });
+        switch (editType) {
+            case 'name':
+                options.push(
+                    { key: 'beginning', text: 'הכנס בהתחלה' },
+                    { key: 'end', text: 'הכנס בסוף' },
+                    { key: 'replace', text: 'החלף הכל' },
+                );
+                break;
+            case 'tags':
+                options.push(
+                    { key: 'add', text: 'הוסף תגיות' },
+                    { key: 'remove', text: 'הסר תגיות' },
+                    { key: 'replace', text: 'החלף הכל' },
+                    { key: 'clean', text: 'מחק הכל' },
+                );
+                break;
+            case 'state':
+                options.push({ key: 'replace', text: 'שנה מצב פירסום' });
+                break;
+            case 'description':
+            default:
+                options.push(
+                    { key: 'beginning', text: 'הכנס בהתחלה' },
+                    { key: 'end', text: 'הכנס בסוף' },
+                    { key: 'replace', text: 'החלף הכל' },
+                    { key: 'clean', text: 'נקה הכל' },
+                );
+                break;
+        }
+        this.setState ({
+            options : options,
+            action: options[0].key
+        });
     }
 
     onTextChannge = ({target}) => {
@@ -95,6 +101,11 @@ class EditProperty extends Component {
             text: target.value,
         });
     }
+    
+    onChangeState = (e, { key }) =>
+        this.setState({
+            state: key,
+        });
 
     onChangeTags = (tags) => {
         this.setState({
@@ -109,7 +120,7 @@ class EditProperty extends Component {
     }
 
     renderInput = () => {
-        const {action, text, loading} = this.state;
+        const {action, text, loading, state} = this.state;
         const {editType} = this.props;
         if (editType === 'tags') {
             return <TagPicker
@@ -117,6 +128,18 @@ class EditProperty extends Component {
                 disabled={loading}
                 onChange={this.onChangeTags}
                 />
+        }
+        else if (editType === 'state') {
+            return (
+                <VideoStateDropdown
+                    required
+                    label="מצב פרסום"
+                    disabled={loading}
+                    selectedKey={state}
+                    onChange={this.onChangeState}
+                    placeHolder="בחר/י באיזו צורה הסרטונים יוצגו"
+                />
+            );
         }
         if (action !== 'clean') {
             return <TextField
@@ -132,7 +155,7 @@ class EditProperty extends Component {
     }
 
     onSubmit = () => {
-        const { text, action, tags} = this.state;
+        const { text, action, state, tags} = this.state;
         const {
             editType,
             videos,
@@ -166,10 +189,23 @@ class EditProperty extends Component {
                         item = video[editType].concat(text.trim());
                         break;
                     case 'replace':
-                        item = text.trim();
+                        if (editType === 'state') {
+                            if (!state) {
+                                this.setState({
+                                    error: 'חייב לבחור מצב פרסום',
+                                    loading: false,
+                                });
+                            }
+                            item = state;
+                        }
+                        else {
+                            item = text.trim();
+                        }
                         break;
                     case 'clean':
                         item = '';
+                        break;
+                    default:
                         break;
                 }
                 return {id: video.id, property: item};
@@ -192,19 +228,25 @@ class EditProperty extends Component {
         return (
             <FormContainer>
                 <Form>
-                    <Dropdown
-                        required
-                        label="סוג עריכה"
-                        disabled={loading}
-                        selectedKey={action}
-                        onChange={this.onSelectionChannge}
-                        options={options}
-                    />
-                    {/* Render Content */}
+                    {options.length > 1 ? (
+                        <Dropdown
+                            required
+                            label="סוג עריכה"
+                            disabled={loading}
+                            selectedKey={action}
+                            onChange={this.onSelectionChannge}
+                            options={options}
+                        />
+                    ) : <h3>{!!options.length && options[0].text}</h3>}
                     {this.renderInput()}
                     <ContentContainer>
                         {loading ? 
                             <Spinner size={SpinnerSize.large} ariaLive="loading" />
+                        : null}
+                    </ContentContainer>
+                    <ContentContainer>
+                        {loading ? 
+                            null
                             : 
                             <FormButton
                                 text="שמור"

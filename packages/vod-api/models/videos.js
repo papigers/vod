@@ -189,15 +189,48 @@ module.exports = function(db) {
         })
         .where('id', video.id)
         .modify(videos.authorizedManageSubquery, user)
-        .then(function() {
-          return trx(db.videoAcls.table).where('videoId', video.id)
-          .whereIn(`${db.videoAcls.table}.videoId`, function() {
-            this.select(`${videos.table}.id`).from(videos.table).where(`${videos.table}.id`, videoId).modify(videos.authorizedManageSubquery, user);
-          }).del()
-          
+        .then(function(updated) {
+          if (!!updated) {
+            return trx(db.videoAcls.table).where(`${db.videoAcls.table}.videoId`, video.id)
+            .whereIn(`${db.videoAcls.table}.videoId`, function() {
+              this.select(`${videos.table}.id`).from(videos.table).where(`${videos.table}.id`, videoId).modify(videos.authorizedManageSubquery, user);
+            }).del();
+          }
+          throw new VideoError('Video not found or unathorized', 403);
         })
-        .then(function(deletes) {
-          if (deletes) {
+        .then(function() {
+          if (video.privacy !== 'PUBLIC') {
+            return Promise.all(video.acls.map(function(acl) {
+              return trx(db.videoAcls.table).insert({
+                videoId: id,
+                id: acl.id,
+                type: acl.type,
+              });
+            }));
+          }
+          return Promise.resolve(video);
+        });
+      }))
+      .catch(function(err){
+        return trx.rollback(new VideoError(err, 500));
+      });
+    });
+  }
+
+  videos.editPrivacy = function(user, id, video) {
+    return db.knex(videos.table).where('id', id).limit(1).modify(videos.authorizedManageSubquery, user)
+    .then(function(videos) {
+      if (videos && videos.length) {
+        return db.knex.transaction(function(trx) {
+          return trx(videos.table)
+            .update({
+              privacy: video.privacy,
+            })
+            .where('id', video.id)
+          .then( function() {
+            return trx(db.videoAcls.table).where('videoId', id).del()
+          })
+          .then(function() {
             if (video.privacy !== 'PUBLIC') {
               return Promise.all(video.acls.map(function(acl) {
                 return trx(db.videoAcls.table).insert({
@@ -208,90 +241,57 @@ module.exports = function(db) {
               }));
             }
             return Promise.resolve(video);
-          }
-          return null;
+          })
+          .catch(function(err){
+            return trx.rollback(new VideoError(err, 500));
+          });
         });
-      }))
-      .catch(function(err){
-        return trx.rollback(new VideoError(err, 500));
-        });
-    });
-  }
-
-  videos.editPrivacy = function(user, id, video) {
-    var managedVideo = db.knex(videos.table).where('id', id).modify(videos.authorizedManageSubquery, user);
-
-    if (!managedVideo) {
-      return null;
-    }
-    return db.knex.transaction(function(trx) {
-      return trx(videos.table)
-        .update({
-          privacy: video.privacy,
-        })
-        .where('id', video.id)
-      .then( function() {
-        return trx(db.videoAcls.table).where('videoId', id).del()
-      })
-      .then(function() {
-        if (video.privacy !== 'PUBLIC') {
-          return Promise.all(video.acls.map(function(acl) {
-            return trx(db.videoAcls.table).insert({
-              videoId: id,
-              id: acl.id,
-              type: acl.type,
-            });
-          }));
-        }
-        return Promise.resolve(video);
-      })
-      .catch(function(err){
-        return trx.rollback(new VideoError(err, 500));
-        });
-    });
+      }
+      throw new VideoError('Video not found or not authorized', 403);
+     });
   }
 
   videos.editTags = function(user, action, items) {
     var { videosId, tags } = items;
-    var managedVideos = db.knex(videos.table).whereIn('id', videosId).modify(videos.authorizedManageSubquery, user);
-
-    if (managedVideos.length === videosId.length) {
-      return null;
-    }
-
-    return db.knex.transaction(function(trx) {
-      switch (action) {
-        case 'clean':
-          return trx(db.tags.table).whereIn(`${db.tags.table}.itemId`, videosId).del();
-        case 'replace':
-          return Promise.all(videosId.map(function(videoId) {
-            return Promise.all(tags.map(function(tag) {
-              return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId']))
-                .insert(trx.select(trx.raw('?, ?, ?', [tag, 'VIDEO', videoId]))
-                  .whereNotExists(function() {
-                      this.select('tag').from(db.tags.table).where('tag', tag).andWhere('itemId', videoId).andWhere('taggable', 'VIDEO');
-                    })
-                  .limit(1)
-                );
-            })).then(function() {
-              return trx(db.tags.table).where('itemId', videoId).whereNotIn('tag', tags).del();
-            });          
-          }));
-        case 'remove':
-              return trx(db.tags.table).whereIn(`${db.tags.table}.itemId`, videosId).whereIn('tag', tags).del();
-        case 'add':
-        default:
-          return Promise.all(videosId.map(function(videoId) {
-            return Promise.all(tags.map(function(tag) {
-              return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId']))
-                .insert(trx.select(trx.raw('?, ?, ?', [tag, 'VIDEO', videoId]))
-                  .whereNotExists(function() {
-                      this.select('tag').from(db.tags.table).where('tag', tag).andWhere('itemId', videoId).andWhere('taggable', 'VIDEO');
-                    })
-                );
-            }));
-          }));
+    return db.knex(videos.table).whereIn('id', videosId).modify(videos.authorizedManageSubquery, user)
+    .then(function(managedVideos) {
+      if (managedVideos.length === videosId.length) {
+        return db.knex.transaction(function(trx) {
+          switch (action) {
+            case 'clean':
+              return trx(db.tags.table).whereIn(`${db.tags.table}.itemId`, videosId).del();
+            case 'replace':
+              return Promise.all(videosId.map(function(videoId) {
+                return Promise.all(tags.map(function(tag) {
+                  return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId']))
+                    .insert(trx.select(trx.raw('?, ?, ?', [tag, 'VIDEO', videoId]))
+                      .whereNotExists(function() {
+                          this.select('tag').from(db.tags.table).where('tag', tag).andWhere('itemId', videoId).andWhere('taggable', 'VIDEO');
+                        })
+                      .limit(1)
+                    );
+                })).then(function() {
+                  return trx(db.tags.table).where('itemId', videoId).whereNotIn('tag', tags).del();
+                });          
+              }));
+            case 'remove':
+                  return trx(db.tags.table).whereIn(`${db.tags.table}.itemId`, videosId).whereIn('tag', tags).del();
+            case 'add':
+            default:
+              return Promise.all(videosId.map(function(videoId) {
+                return Promise.all(tags.map(function(tag) {
+                  return trx(trx.raw('?? (??, ??, ??)', [db.tags.table, 'tag', 'taggable', 'itemId']))
+                    .insert(trx.select(trx.raw('?, ?, ?', [tag, 'VIDEO', videoId]))
+                      .whereNotExists(function() {
+                          this.select('tag').from(db.tags.table).where('tag', tag).andWhere('itemId', videoId).andWhere('taggable', 'VIDEO');
+                        })
+                    );
+                }));
+              }));
+          }
+        }); 
       }
+      throw new VideoError('Videos not found or not authorized', 403);
     });
   }
 
@@ -332,7 +332,7 @@ module.exports = function(db) {
             name: video.name,
             description: video.description,
             privacy: video.privacy,
-            published: video.published,
+            state: video.state,
           })
           .where('id', id)
           .modify(videos.authorizedManageSubquery, user);
@@ -458,7 +458,7 @@ module.exports = function(db) {
       `${videos.table}.name as _name`,
       `${videos.table}.description as _description`,
       `${db.tags.table}.tag as _tags__tag`,
-      `${videos.table}.published as _published`,
+      `${videos.table}.state as _state`,
       `${videos.table}.privacy as _privacy`,
       `${db.channels.table}.id as _channel_id`,
       `${db.channels.table}.name as _channel_name`,

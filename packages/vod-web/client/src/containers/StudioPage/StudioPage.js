@@ -29,8 +29,6 @@ class StudioPage extends Component {
     fetchVideos = () => {
         axios.get(`/videos/managed`)
             .then(({ data }) => {
-                console.log(data);
-                
                 this.setState({
                     videoList: data,
                 });
@@ -61,7 +59,7 @@ class StudioPage extends Component {
 
     editVideosProperty = (videos, property) => {
         return axios.put(`/videos/property/${property}`, videos)
-        .finally(this.fetchVideos);;
+        .finally(this.fetchVideos);
     }
 
     editVideosTags = (videosId, action, tags) => {
@@ -74,7 +72,6 @@ class StudioPage extends Component {
 
     render() {
         const { videoList } = this.state;
-        console.log(videoList);
         return (
             <Studio
                 videoList = {videoList}

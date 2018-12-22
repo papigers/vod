@@ -163,8 +163,6 @@ router.put('/tags/:action', function(req, res) {
       });
     })
     .catch(function (err) {
-      console.log(err);
-      
       var statusCode = err.code || 500;
       res.status(statusCode).json({
         error: err.message || 'Videos edit failed',
@@ -222,7 +220,7 @@ router.put('/permissions', function(req, res) {
     });
 });
 
-router.put('/video/:id', function(req, res) {
+router.put('/video/:id', function(req, res, next) {
   db.videos.edit(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
@@ -233,9 +231,7 @@ router.put('/video/:id', function(req, res) {
       });
     })
     .catch(function (err) {
-      res.status(err.code).json({
-        error: err.message || 'Video edit failed',
-      });
+      next(err);
     });
 });
 
