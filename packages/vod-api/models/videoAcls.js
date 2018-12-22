@@ -41,7 +41,7 @@ module.exports = function(db) {
       .leftJoin(db.channels.table, `${videoAcls.table}.id`, `${db.channels.table}.id`)
       .where(`${videoAcls.table}.videoId`, id)
       .modify(db.videos.authorizedManageSubquery, user);
-  }
+  };
 
   return videoAcls;
 };

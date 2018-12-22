@@ -62,20 +62,22 @@ router.get('/related/:videoId', function(req, res) {
 });
 
 router.get('/managed', function(req, res) {
-  db.videos.getManagedVideos(req.user)
+  db.videos
+    .getManagedVideos(req.user)
     .then(function(videos) {
       return res.json(videos);
     })
     .catch(function(err) {
       console.error(err);
       return res.status(500).json({
-        error: 'Couldn\'t fetch videos',
+        error: "Couldn't fetch videos",
       });
     });
 });
 
 router.get('/video/:id/permissions', function(req, res) {
-  db.videoAcls.getvideoAcls(req.user, req.params.id)
+  db.videoAcls
+    .getvideoAcls(req.user, req.params.id)
     .then(function(data) {
       return res.json(data);
     })
@@ -198,7 +200,8 @@ router.put('/video/:id/dislike', function(req, res) {
 });
 
 router.put('/tags/:action', function(req, res) {
-  db.videos.editTags(req.user, req.params.action, req.body)
+  db.videos
+    .editTags(req.user, req.params.action, req.body)
     .then(function(result) {
       if (!!result) {
         return res.sendStatus(200);
@@ -207,7 +210,7 @@ router.put('/tags/:action', function(req, res) {
         error: 'No such videos',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       var statusCode = err.code || 500;
       res.status(statusCode).json({
         error: err.message || 'Videos edit failed',
@@ -216,7 +219,8 @@ router.put('/tags/:action', function(req, res) {
 });
 
 router.put('/property/:property', function(req, res) {
-  db.videos.editProperty(req.user, req.params.property, req.body)
+  db.videos
+    .editProperty(req.user, req.params.property, req.body)
     .then(function(result) {
       if (!!result) {
         return res.sendStatus(200);
@@ -225,7 +229,7 @@ router.put('/property/:property', function(req, res) {
         error: 'No such videos',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       var statusCode = err.code || 500;
       res.status(statusCode).json({
         error: err.message || 'Videos edit failed',
@@ -234,7 +238,8 @@ router.put('/property/:property', function(req, res) {
 });
 
 router.put('/video/:id/permissions', function(req, res) {
-  db.videos.editPrivacy(req.user, req.params.id, req.body)
+  db.videos
+    .editPrivacy(req.user, req.params.id, req.body)
     .then(function(result) {
       if (!!result) {
         return res.sendStatus(200);
@@ -243,7 +248,7 @@ router.put('/video/:id/permissions', function(req, res) {
         error: 'No such video',
       });
     })
-    .catch(function (err) {
+    .catch(function(err) {
       res.status(err.code).json({
         error: err.message || 'Video edit failed',
       });
@@ -251,14 +256,15 @@ router.put('/video/:id/permissions', function(req, res) {
 });
 
 router.put('/permissions', function(req, res) {
-  db.videos.editVideosPrivacy(req.user, req.body)
+  db.videos
+    .editVideosPrivacy(req.user, req.body)
     .then(function(result) {
       if (!!result) {
         return res.sendStatus(200);
       }
       return res.status(404);
     })
-    .catch(function (err) {
+    .catch(function(err) {
       res.status(err.code).json({
         error: err.message || 'Video edit failed',
       });

@@ -10,10 +10,12 @@ const DropdownOption = styled.div`
   align-items: end;
   justify-content: center;
   height: 100%;
+
   .ms-Dropdown-item:hover &,
   .ms-Dropdown-item:hover & .ms-Persona-primaryText {
     color: ${({ theme }) => theme.palette.themePrimary};
   }
+
   i {
     margin-left: 8px;
   }
@@ -25,7 +27,6 @@ const DropdownSubtext = styled.div`
 `;
 
 class VideoStateDropdown extends Component {
-  
   onRenderStateOption = (item, render, type) => {
     const option = item[0] || item;
     return (
@@ -39,7 +40,7 @@ class VideoStateDropdown extends Component {
         {type !== 'title' ? <DropdownSubtext>{option.data.subText}</DropdownSubtext> : null}
       </DropdownOption>
     );
-  }
+  };
 
   getStateKey(key) {
     switch (key) {
