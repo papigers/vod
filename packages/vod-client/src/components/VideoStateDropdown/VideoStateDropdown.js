@@ -11,6 +11,8 @@ const DropdownOption = styled.div`
   justify-content: center;
   height: 100%;
 
+  ${props => console.log(props)}
+
   .ms-Dropdown-item:hover &,
   .ms-Dropdown-item:hover & .ms-Persona-primaryText {
     color: ${({ theme }) => theme.palette.themePrimary};

@@ -63,7 +63,9 @@ const StyledSearchBox = styled(SearchBox)`
 `;
 
 export const StyledCommandBar = styled(CommandBar)`
-  background-color: transparent;
+  .ms-CommandBar {
+    background-color: transparent;
+  }
 
   .ms-Button-icon {
     font-size: 19px;
@@ -323,6 +325,14 @@ export default class Header extends Component {
         },
       },
       {
+        key: 'studio',
+        text: 'סטודיו',
+        to: '/studio',
+        iconProps: {
+          iconName: 'MyMoviesTV',
+        },
+      },
+      {
         key: 'night',
         text: theme.name === 'light' ? 'מצב לילה' : 'מצב יום',
         onClick: toggleTheme,
@@ -340,14 +350,6 @@ export default class Header extends Component {
           iconName: 'Ringer',
         },
         itemRef: this.notificationRef,
-      },
-      {
-        key: 'studio',
-        name: 'סטודיו',
-        to: '/studio',
-        iconProps: {
-          iconName: 'MyMoviesTV',
-        },
       },
       {
         key: 'channel',

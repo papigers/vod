@@ -14,7 +14,7 @@ const FormContainer = styled(Flex)`
   justify-content: center;
 `;
 
-const ContentContainer = FormContainer.extend`
+const ContentContainer = styled(FormContainer)`
   margin: 1em 0;
 `;
 

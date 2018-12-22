@@ -328,9 +328,9 @@ class UploadEdit extends Component {
       video: { id, name, description, privacy, channel, tags, acls, state },
       upload,
     } = this.state;
-    var finished = upload.step === 'FINISH';
+    var playable = (!upload || upload.step === 'FINISH') && state !== 'DRAFT';
     axios
-      .put(`/videos/${id}`, {
+      .put(`/videos/video/${id}`, {
         name,
         privacy,
         description,
@@ -342,7 +342,7 @@ class UploadEdit extends Component {
       })
       .then(({ data }) => {
         if (!data.error) {
-          return this.props.history.push(finished ? `/watch?v=${id}` : '/');
+          return this.props.history.push(playable ? `/watch?v=${id}` : '/');
         }
         this.setUploadError('לא ניתן היה לשמור את הסרטון');
       })

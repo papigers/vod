@@ -94,7 +94,7 @@ export default class Sidebar extends Component {
                 isFooterAtBottom
                 onDismissed={isSidebarTrapped ? null : onDismissed}
                 isLightDismiss={true}
-                innerRef={panel => {
+                componentRef={panel => {
                   this.panel = panel;
                 }}
               >

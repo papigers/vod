@@ -267,7 +267,7 @@ module.exports = function(db) {
                   .whereIn(`${db.videoAcls.table}.videoId`, function() {
                     this.select(`${videos.table}.id`)
                       .from(videos.table)
-                      .where(`${videos.table}.id`, videoId)
+                      .where(`${videos.table}.id`, video.id)
                       .modify(videos.authorizedManageSubquery, user);
                   })
                   .del();
@@ -279,7 +279,7 @@ module.exports = function(db) {
                 return Promise.all(
                   video.acls.map(function(acl) {
                     return trx(db.videoAcls.table).insert({
-                      videoId: id,
+                      videoId: video.id,
                       id: acl.id,
                       type: acl.type,
                     });
@@ -289,9 +289,9 @@ module.exports = function(db) {
               return Promise.resolve(video);
             });
         }),
-      ).catch(function(err) {
-        return trx.rollback(new VideoError(err, 500));
-      });
+      )
+        .then(trx.commit)
+        .catch(trx.rollback);
     });
   };
 
@@ -467,7 +467,7 @@ module.exports = function(db) {
               name: video.name,
               description: video.description,
               privacy: video.privacy,
-              channelId: video.channel.id,
+              channelId: video.channel && video.channel.id,
               state: video.state,
             })
             .where('id', id)

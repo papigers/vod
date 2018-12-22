@@ -271,13 +271,15 @@ router.put('/permissions', function(req, res) {
     });
 });
 
-router.put('/:id', function(req, res) {
+router.put('/video/:id', function(req, res) {
   var video = req.body;
   db.videos
     .edit(req.user, req.params.id, video)
     .then(function(result) {
       if (!!result) {
-        generateThumbnail(req.params.id, `${(video.thumbnail + 1) * 20}%`);
+        if (video.thumbnail !== undefined) {
+          generateThumbnail(req.params.id, `${(video.thumbnail + 1) * 20}%`);
+        }
         return res.sendStatus(200);
       }
       return res.status(404).json({

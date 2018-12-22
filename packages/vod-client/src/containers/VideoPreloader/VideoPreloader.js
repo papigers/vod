@@ -4,6 +4,7 @@ import videojs from 'video.js';
 import { createStructuredSelector } from 'reselect';
 
 import createReduxContainer from 'utils/createReduxContainer';
+import axios from 'utils/axios';
 
 import { makeSelectPreloadId } from './selectors';
 
@@ -42,11 +43,18 @@ class VideoPreloader extends Component {
     if (this.player) {
       this.player.reset();
       if (this.props.preloadId) {
-        this.player.src({
-          src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.preloadId}/mpd.mpd`,
-          type: 'application/dash+xml',
-        });
-        this.player.load();
+        axios
+          .get(`/videos/video/${this.props.preloadId}`)
+          .then(() => {
+            this.player.src({
+              src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.preloadId}/mpd.mpd`,
+              type: 'application/dash+xml',
+            });
+            this.player.load();
+          })
+          .catch(err => {
+            // just don't preload
+          });
       }
     }
   }

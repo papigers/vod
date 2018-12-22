@@ -18,7 +18,7 @@ const FormContainer = styled(Flex)`
   justify-content: center;
 `;
 
-const ContentContainer = FormContainer.extend`
+const ContentContainer = styled(FormContainer)`
   margin: 1em 0;
 `;
 
@@ -75,16 +75,7 @@ class EditPrivacy extends Component {
   onChangeACL = acls => this.setState({ acls: this.formatACL(acls) });
 
   formatACL = acls => {
-    return acls
-      .map(acl => {
-        return {
-          id: acl.secondaryText,
-          name: acl.text,
-          profile: acl.imageUrl,
-          type: acl.type,
-        };
-      })
-      .filter(acl => !!acl);
+    return acls.filter(acl => !!acl);
   };
 
   onChangePrivacy = (e, index) => {
@@ -146,13 +137,14 @@ class EditPrivacy extends Component {
               label="הרשאות צפייה"
               disabled={loading}
               onChange={this.onChangeACL}
-              selectedItems={acls}
+              value={acls}
             />
           ) : null}
           <ContentContainer>
-            {loading ? (
-              <Spinner size={SpinnerSize.large} ariaLive="loading" />
-            ) : (
+            {loading ? <Spinner size={SpinnerSize.large} ariaLive="loading" /> : null}
+          </ContentContainer>
+          <ContentContainer>
+            {loading ? null : (
               <FormButton
                 primary
                 disabled={loading}

@@ -31,7 +31,7 @@ const FormContainer = styled(Flex)`
   justify-content: center;
 `;
 
-const ContentContainer = FormContainer.extend`
+const ContentContainer = styled(FormContainer)`
   margin: 1em 0;
 `;
 
@@ -98,7 +98,7 @@ class VideoEditForm extends Component {
         id: video.id,
         name: video.name,
         description: video.description,
-        tags: video.tags,
+        tags: video.tags.map(tag => tag.tag),
         state: video.state,
         privacy: video.privacy,
       };
@@ -158,16 +158,7 @@ class VideoEditForm extends Component {
   };
 
   formatACL = acls => {
-    return acls
-      .map(acl => {
-        return {
-          id: acl.secondaryText,
-          name: acl.text,
-          profile: acl.imageUrl,
-          type: acl.type,
-        };
-      })
-      .filter(acl => !!acl);
+    return acls.filter(acl => !!acl);
   };
 
   onSubmit() {
@@ -180,7 +171,7 @@ class VideoEditForm extends Component {
       privacy,
       state,
       acls: privacy === 'PUBLIC' ? [] : acls,
-      tags: tags.map(tag => tag.tag),
+      tags,
     };
 
     this.setState({
@@ -251,12 +242,12 @@ class VideoEditForm extends Component {
           {privacy !== 'PUBLIC' ? (
             <PeoplePicker
               disabled={loading}
-              selectedItems={acls}
+              value={acls}
               label={privacy === 'CHANNEL' ? 'הסרטון משותף בנוסף עם:' : 'הסרטון משותף עם:'}
               onChange={this.onChangeACL}
             />
           ) : null}
-          <TagPicker disabled={loading} tags={tags} label="תגיות:" onChange={this.onChangeTags} />
+          <TagPicker disabled={loading} value={tags} label="תגיות:" onChange={this.onChangeTags} />
           <ContentContainer>
             {loading ? <Spinner size={SpinnerSize.large} ariaLive="loading" /> : null}
           </ContentContainer>
