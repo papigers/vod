@@ -155,7 +155,7 @@ function handleThumbnailMessage(type, body) {
             })
             .then(resolve)
             .catch(function() {
-              downloadVideo(videoId)
+              downloadVideo(body.id)
                 .then(function(path) {
                   return previewThumbnails(path, outputFolder, body.count);
                 })
@@ -177,7 +177,7 @@ function handleThumbnailMessage(type, body) {
             })
             .then(resolve)
             .catch(function() {
-              downloadVideo(videoId)
+              downloadVideo(body.id)
                 .then(function(path) {
                   return generateThumbnail(
                     body.id,
