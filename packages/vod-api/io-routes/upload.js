@@ -125,7 +125,7 @@ function ioUpload(io) {
         subscriptions.push(sub);
       })
       .catch(function(err) {
-        console.error(e);
+        console.error(err);
       });
 
     socket.on('disconnect', function() {

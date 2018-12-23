@@ -154,7 +154,6 @@ class UploadEdit extends Component {
   }
 
   subscribeAndLoadVideoData() {
-    debugger;
     if (this.uploadSocket) {
       this.uploadSocket.disconnect();
     }
@@ -205,12 +204,9 @@ class UploadEdit extends Component {
   setUploadStep = ({ id, step }) => {
     if (id === this.state.videoId) {
       this.setState({
-        video: {
-          ...this.state.video,
-          upload: {
-            ...this.state.video.upload,
-            step,
-          },
+        upload: {
+          ...this.state.upload,
+          step,
         },
       });
     }

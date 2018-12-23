@@ -13,13 +13,18 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 var channelStorage = multer.diskStorage({
   destination: function(req, file, cb) {
     var dest = path.join(os.tmpdir(), req.params.id);
-    fs.access(dest, function(err) {
-      if (err) {
+    fs.stat(dest, function(err) {
+      if (err == null) {
+        return cb(null, dest);
+      } else if (err.code === 'ENOENT') {
         fs.mkdir(dest, function(error) {
-          cb(error, dest);
+          if (error && error.code !== 'EEXIST') {
+            return cb(error, dest);
+          }
+          cb(null, dest);
         });
       } else {
-        cb(null, dest);
+        cb(err, dest);
       }
     });
   },

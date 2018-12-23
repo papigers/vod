@@ -52,10 +52,15 @@ class PeoplePicker extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    console.log(this.props.value, prevProps.value, this.state.currentSelectedItems);
     if (
-      this.props.value &&
-      this.props.value.length &&
-      this.props.value.length !== prevProps.value.length
+      (this.props.value &&
+        this.props.value.length &&
+        this.props.value.length !== (prevProps.value && prevProps.value.length)) ||
+      (this.props.value &&
+        this.props.value.length &&
+        this.props.value.length !==
+          (this.state.currentSelectedItems && this.state.currentSelectedItems.length))
     ) {
       this.propsADLookup();
     }
@@ -81,7 +86,9 @@ class PeoplePicker extends Component {
           }),
       ),
     ).then(results => {
-      this.onChange(results.filter(res => !!res));
+      const selected = results.filter(res => !!res);
+      this.setState({ currentSelectedItems: selected });
+      this.onChange(selected);
     });
   }
 
@@ -109,6 +116,7 @@ class PeoplePicker extends Component {
   }
 
   onChange = currentSelectedItems => {
+    console.log(currentSelectedItems);
     if (this.props.onChange) {
       this.props.onChange(
         currentSelectedItems.map(item => ({

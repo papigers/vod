@@ -234,13 +234,13 @@ class VideoPage extends Component {
                     error={error}
                     onTimeUpdate={this.onTimeUpdate}
                   />
-                  <Box mt={20} className="ms-font-xxl">
+                  <Box mt={20}>
                     <Shimmer
                       shimmerElements={[{ type: ElemType.line, height: 32 }]}
                       width="40%"
                       isDataLoaded={!!video}
                     >
-                      {video && video.name}
+                      <span className="ms-font-xxl">{video && video.name}</span>
                     </Shimmer>
                   </Box>
                   <VideoSection>
