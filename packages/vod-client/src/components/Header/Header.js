@@ -23,7 +23,7 @@ const HeaderContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 1000;
+  z-index: 1001;
   position: fixed;
   top: 0;
   left: 0;

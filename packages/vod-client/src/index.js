@@ -23,23 +23,36 @@ initializeIcons(`${window.location.origin}/fonts/`);
 const history = createHistory();
 const store = configureStore({}, history);
 
-ReactDOM.render(
-  <Provider store={store}>
-    <ConnectedRouter history={history}>
-      <ScrollContext>
-        <ThemeProvider>
-          <Fabric>
-            <Route
-              render={props => (
-                <AuthRequired>
-                  <App {...props} />
-                </AuthRequired>
-              )}
-            />
-          </Fabric>
-        </ThemeProvider>
-      </ScrollContext>
-    </ConnectedRouter>
-  </Provider>,
-  document.getElementById('root'),
-);
+function render(App) {
+  ReactDOM.render(
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        <ScrollContext>
+          <ThemeProvider>
+            <Fabric>
+              <Route
+                render={props => (
+                  <AuthRequired>
+                    <App {...props} />
+                  </AuthRequired>
+                )}
+              />
+            </Fabric>
+          </ThemeProvider>
+        </ScrollContext>
+      </ConnectedRouter>
+    </Provider>,
+    document.getElementById('root'),
+  );
+}
+
+render(App);
+
+if (process.env.NODE_ENV !== 'production') {
+  if (module.hot) {
+    module.hot.accept('./containers/App', () => {
+      const NextApp = require('./containers/App').default;
+      render(NextApp);
+    });
+  }
+}

@@ -22,5 +22,14 @@ export default function configureStore(initialState = {}, history) {
 
   const store = createStore(reducers, fromJS(initialState), composeEnhancers(...enhancers));
 
+  if (process.env.NODE_ENV !== 'production') {
+    if (module.hot) {
+      module.hot.accept('./reducers', () => {
+        store.replaceReducer(reducers);
+      });
+    }
+  }
+
+
   return store;
 }
