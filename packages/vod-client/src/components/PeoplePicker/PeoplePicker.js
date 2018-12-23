@@ -93,6 +93,7 @@ class PeoplePicker extends Component {
       >
         <Label>{this.props.label}</Label>
         <CompactPeoplePicker
+          disabled={this.props.disabled}
           onResolveSuggestions={this.onFilterChanged}
           getTextFromItem={this.getTextFromItem}
           selectedItems={this.state.currentSelectedItems}
