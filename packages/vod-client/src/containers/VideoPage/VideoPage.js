@@ -31,10 +31,10 @@ const VideoContainer = styled.div`
   width: 100%;
 `;
 
-const VideoSection = styled(Box).attrs({
+const VideoSection = styled(Box).attrs(() => ({
   my: 10,
   pb: 12,
-})`
+}))`
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 `;
 

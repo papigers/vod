@@ -30,7 +30,7 @@ tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, event => {
   const videoId = event.file.id;
   const file = path.join(os.tmpdir(), 'uploads', event.file.id);
   enqueueEncoding(videoId, file);
-  generateThumbnail(videoId, '20%');
+  generateThumbnail(videoId, '20%', true);
 });
 router.post('/video', function(req, res, next) {
   const metadata = translateMetadata(req.header('upload-metadata'));

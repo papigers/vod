@@ -25,9 +25,9 @@ const sizes = {
   [MODAL_SIZE.AUTO]: css([]),
 };
 
-const StyledModal = styled(FabricModal).attrs({
-  isDarkOverlay: ({ theme }) => theme.name === 'dark',
-})`
+const StyledModal = styled(FabricModal).attrs(({ theme }) => ({
+  isDarkOverlay: theme.name === 'dark',
+}))`
   top: -2vh;
 
   .ms-Dialog-main {

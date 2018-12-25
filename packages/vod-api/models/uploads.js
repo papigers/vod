@@ -60,7 +60,7 @@ module.exports = function(db) {
           },
           ['id', 'uploaded'],
         )
-        .then(function(ret) {
+        .then(function() {
           return db
             .knex(uploads.table)
             .where(

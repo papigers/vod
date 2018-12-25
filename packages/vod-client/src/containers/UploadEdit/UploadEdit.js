@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { createStructuredSelector } from 'reselect';
 import { Box, Flex } from 'grid-styled';
@@ -23,13 +23,13 @@ import PeoplePicker from 'components/PeoplePicker';
 import TagPicker from 'components/TagPicker';
 import VideoThumbnail from 'components/VideoThumbnail';
 
-const Container = styled(Box).attrs({
+const Container = styled(Box).attrs(() => ({
   mx: 'auto',
   mt: 35,
   py: 30,
   px: 20,
   width: [1, 1, 2 / 3, 0.55],
-})`
+}))`
   background-color: ${({ theme }) => theme.palette.neutralLighterAlt};
   border: 2px solid;
   border-color: ${({ theme }) => theme.palette.neutralLight};
@@ -121,7 +121,7 @@ class UploadEdit extends Component {
     metadata: {},
     upload: {},
     thumbnails: [],
-    selectedThumbnail: null,
+    selectedThumbnail: 0,
     errors: {},
   };
 
@@ -164,10 +164,10 @@ class UploadEdit extends Component {
     this.uploadSocket = io.connect(
       `${process.env.REACT_APP_API_HOSTNAME}/upload?id=${this.state.videoId}`,
     );
+    this.uploadSocket.on('step', this.setUploadStep);
     this.uploadSocket.on('init', this.initUploadData);
     this.uploadSocket.on('progress', this.setUploadProgress);
     this.uploadSocket.on('metadata', this.setUploadMetadata);
-    this.uploadSocket.on('step', this.setUploadStep);
     this.uploadSocket.on('upload-error', this.setUploadError);
   }
 
@@ -436,7 +436,7 @@ class UploadEdit extends Component {
       progress,
       thumbnails,
       selectedThumbnail,
-      video: { id, name, description, privacy, channel, tags, acls, state },
+      video: { name, description, privacy, channel, tags, acls, state },
     } = this.state;
 
     return (
@@ -475,10 +475,7 @@ class UploadEdit extends Component {
               <VideoThumbnail
                 width={210}
                 height={118}
-                src={
-                  (thumbnails && thumbnails[selectedThumbnail]) ||
-                  `${process.env.REACT_APP_STREAMER_HOSTNAME}/${id}/thumbnail.png`
-                }
+                src={thumbnails && thumbnails[selectedThumbnail]}
               />
               <Label>בחר תמונת תצוגה:</Label>
               {[0, 1, 2, 3].map(k => (
@@ -551,28 +548,38 @@ class UploadEdit extends Component {
                   <ActivityItem
                     isCompact
                     activityIcon={<Icon iconName="SizeLegacy" />}
-                    activityDescription={[<b>גודל:</b>, ` ${this.sizeString(metadata.size)}`]}
+                    activityDescription={
+                      <Fragment>
+                        <b>גודל:</b> {this.sizeString(metadata.size)}
+                      </Fragment>
+                    }
                   />
                   <ActivityItem
                     isCompact
                     activityIcon={<Icon iconName="Timer" />}
-                    activityDescription={[
-                      <b>אורך סרטון:</b>,
-                      ` ${this.durationString(metadata.duration)}`,
-                    ]}
+                    activityDescription={
+                      <Fragment>
+                        <b>אורך סרטון:</b> {this.durationString(metadata.duration)}
+                      </Fragment>
+                    }
                   />
                   <ActivityItem
                     isCompact
                     activityIcon={<Icon iconName="PictureStretch" />}
-                    activityDescription={[<b>רזולוציה:</b>, ` ${metadata.resolution}p`]}
+                    activityDescription={
+                      <Fragment>
+                        <b>רזולוציה:</b> {metadata.resolution}p
+                      </Fragment>
+                    }
                   />
                   <ActivityItem
                     isCompact
                     activityIcon={<Icon iconName="AspectRatio" />}
-                    activityDescription={[
-                      <b>יחס גודל:</b>,
-                      ` ${this.ratioString(metadata.width, metadata.height)}`,
-                    ]}
+                    activityDescription={
+                      <Fragment>
+                        <b>יחס גודל:</b> {this.ratioString(metadata.width, metadata.height)}
+                      </Fragment>
+                    }
                   />
                 </Metadata>
               ) : null}

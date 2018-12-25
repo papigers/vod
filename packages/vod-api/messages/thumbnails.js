@@ -9,11 +9,11 @@ var channelWrapper = connection.createChannel({
   json: true,
   name: 'encodeMessager',
   setup(ch) {
-    return ch.assertQueue(THUMBNAIL_QUEUE, { durable: false });
+    return ch.assertQueue(THUMBNAIL_QUEUE, { durable: false, maxPriority: 1 });
   },
 });
 
-function generateThumbnail(videoId, timestamp) {
+function generateThumbnail(videoId, timestamp, initial) {
   return new Promise(function(resolve, reject) {
     function replySetup(ch) {
       ch.assertQueue('', { exclusive: true, autoDelete: true })
@@ -50,6 +50,7 @@ function generateThumbnail(videoId, timestamp) {
               correlationId: videoId,
               replyTo: q.queue,
               type: 'GENERATE_THUMBNAIL',
+              priority: initial ? 1 : 0,
             },
           );
         });
