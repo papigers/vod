@@ -46,7 +46,7 @@ export default function VideoList(props) {
       <ThumbnailList type={type}>
         {!showPlaceholder
           ? videos.map(video => (
-              <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} video={video} key={video.id} />
+              <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} item={video} key={video.id} />
             ))
           : Array.from(Array(realCount).keys()).map(k => (
               <VideoCard compact={type !== VIDEO_LIST_TYPE.GRID} loading key={k} />

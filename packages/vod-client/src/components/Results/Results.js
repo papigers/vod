@@ -82,7 +82,7 @@ class Results extends Component {
               return <ChannelResult channel={result} />;
             case 'video':
             default:
-              return <VideoCard compact video={result} key={result.id} />;
+              return <VideoCard compact item={result} key={result.id} />;
           }
         })}
       </ThumbnailList>
