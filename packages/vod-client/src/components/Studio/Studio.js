@@ -11,7 +11,7 @@ import { DetailsList, SelectionMode } from 'office-ui-fabric-react/lib/DetailsLi
 import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 import { TooltipHost } from 'office-ui-fabric-react/lib/Tooltip';
 
-import videosColumns from './columns';
+import {videosColumns, playlistsColumns} from './columns';
 import VideoThumbnail from 'components/VideoThumbnail';
 import Modal from 'components/Modal';
 import EditProperty from './EditProperty';
@@ -19,10 +19,7 @@ import DeleteForm from './DeleteForm';
 import EditPrivacy from './EditPrivacy';
 import VideoEditForm from 'components/VideoEditForm';
 
-const ActionsBox = styled(Box).attrs({
-  // pt: 15,
-  // pb: 15,
-})`
+const ActionsBox = styled(Box)`
   max-height: ${({ hasItems }) => (hasItems ? 40 : 0)}px;
   overflow: hidden;
   transition: max-height 200ms ease-in-out;
@@ -62,7 +59,6 @@ const CategoryHeader = styled.h2`
 `;
 
 const StudioContainer = styled(Flex)`
-  /* width: ${({ sidebarisopen }) => (sidebarisopen ? 'calc(100vw - 240px)' : '100vw')}; */
   height: calc(100vh - 64px);
   transition: width 300ms ease-in-out;
   box-sizing: border-box;
@@ -101,7 +97,22 @@ class Studio extends Component {
     return display;
   }
 
-  getVideoList = () => {
+  getPlaylistState(state) {
+    console.log(state);
+    
+    switch (state) {
+      case 'PUBLISHED':
+        return 'מפורסם';
+      case 'UNLISTED':
+        return 'קישור בלבד';
+      case 'PRIVATE':
+        return 'פרטי';
+      default:
+        return 404;
+    }
+  }
+
+  getItemList = (itemsList) => {
     const options = {
       year: 'numeric',
       month: 'numeric',
@@ -110,50 +121,72 @@ class Studio extends Component {
       minute: '2-digit',
       second: '2-digit',
     };
-    if (!this.props.videoList.length) {
+    if (!itemsList.length) {
       return [];
     }
-    return this.props.videoList.map(video => {
+    return itemsList.map(item => {
+      if (Object.keys(item).includes('videos')) {
+        return {
+          thumbnail: (
+            <VideoThumbnail
+              src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.videos[0].id}/thumbnail.png`}
+              width={180}
+              height={101}
+            />
+          ),
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          state: item.state,
+          stateDisplay: this.getPlaylistState(item.state),
+          channelName: item.channel.name,
+          channelId: item.channel.id,
+          videosCount: item.videos.length,
+          videos: item.videos,
+          createdAt: new Date(item.createdAt).toLocaleDateString('hebrew', options),
+          updatedAt: new Date(item.updatedAt).toLocaleDateString('hebrew', options),
+        };
+      }
       return {
         thumbnail: (
           <VideoThumbnail
-            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${video.id}/thumbnail.png`}
+            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`}
             width={180}
             height={101}
           />
         ),
-        id: video.id,
-        name: video.name,
-        description: video.description,
-        privacy: video.privacy,
-        privacyDisplay: video.privacy === 'PUBLIC' ? 'ציבורי' : 'פרטי',
-        state: video.state,
-        stateDisplay: this.getVideoState(video.state, video.upload),
-        acls: video.acls,
-        tags: video.tags,
-        channelName: `${video.channel.name} (${video.channel.id})`,
-        channelId: video.channel.id,
-        viewsCount: video.viewsCount,
-        likesCount: video.likesCount,
-        commentsCount: video.commentsCount,
-        createdAt: new Date(video.createdAt).toLocaleDateString('hebrew', options),
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        privacy: item.privacy,
+        privacyDisplay: item.privacy === 'PUBLIC' ? 'ציבורי' : 'פרטי',
+        state: item.state,
+        stateDisplay: this.getVideoState(item.state, item.upload),
+        acls: item.acls,
+        tags: item.tags,
+        channelName: item.channel.name,
+        channelId: item.channel.id,
+        viewsCount: item.viewsCount,
+        likesCount: item.likesCount,
+        commentsCount: item.commentsCount,
+        createdAt: new Date(item.createdAt).toLocaleDateString('hebrew', options),
       };
     });
   };
 
-  getGroupsList = () => {
+  getGroupsList = (itemsList) => {
     let startIndex = 0;
     const channels = [];
 
-    if (!this.props.videoList.length) {
+    if (!itemsList.length) {
       return [];
     }
 
-    this.props.videoList.forEach(video => {
-      if (!channels[video.channel.id]) {
-        channels[video.channel.id] = { name: video.channel.name, videos: [] };
+    itemsList.forEach(item => {
+      if (!channels[item.channel.id]) {
+        channels[item.channel.id] = { name: item.channel.name, videos: [] };
       }
-      channels[video.channel.id].videos.push(video);
+      channels[item.channel.id].videos.push(item);
     });
 
     return Object.keys(channels).map(id => {
@@ -169,6 +202,7 @@ class Studio extends Component {
   };
 
   onLinkClick = item => {
+    this.state.selection.setAllSelected(false);
     this.setState({
       activeTab: item.props.itemKey,
     });
@@ -258,7 +292,7 @@ class Studio extends Component {
   renderTab() {
     const { activeTab, selection, selectionDetails } = this.state;
 
-    const { videoList } = this.props;
+    const { videoList, playlistList } = this.props;
 
     switch (activeTab) {
       case 'videos':
@@ -384,14 +418,14 @@ class Studio extends Component {
                 <Box>
                   <MarqueeSelection selection={selection}>
                     <DetailsList
-                      setKey="items"
-                      items={this.getVideoList()}
-                      groups={this.getGroupsList()}
+                      setKey="videos"
+                      items={this.getItemList(videoList)}
+                      groups={this.getGroupsList(videoList)}
                       columns={videosColumns}
                       selection={selection}
                       selectionPreservedOnEmptyClick={true}
-                      ariaLabelForSelectAllCheckbox="Toggle selection for all items"
-                      ariaLabelForSelectionColumn="Toggle selection"
+                      ariaLabelForSelectAllCheckbox="לחץ לבחירת כל הסרטונים"
+                      ariaLabelForSelectionColumn="לחץ לבחירה"
                       groupProps={{
                         showEmptyGroups: true,
                       }}
@@ -406,7 +440,56 @@ class Studio extends Component {
           </Fragment>
         );
       case 'playlists':
-        return <span>playlists</span>;
+        return (
+        <Fragment>
+          <ActionsBox hasItems={selectionDetails.length}>
+            <CommandBar
+              items={
+                [
+                  {
+                    key: 'editPlaylist',
+                    name: 'ערוך פלייליסט',
+                    iconProps: {
+                      iconName: 'Edit',
+                    },
+                    onClick: () => {
+                      this.onMenuClick('editPlaylist');
+                    },
+                  },
+                  {
+                    key: 'delete',
+                    name: 'מחק',
+                    iconProps: {
+                      iconName: 'Delete',
+                    },
+                    onClick: () => {
+                      this.onMenuClick('delete');
+                    },
+                  },
+                ]
+              }
+            />
+          </ActionsBox>
+          <div style={{ position: 'relative', flexGrow: 1, flexShrink: 0 }}>
+            <ScrollablePane scrollbarVisibility={ScrollbarVisibility.always}>
+              <Box>
+                  <DetailsList
+                    setKey="playlists"
+                    items={this.getItemList(playlistList)}
+                    groups={this.getGroupsList(playlistList)}
+                    columns={playlistsColumns}
+                    selection={selection}
+                    selectionPreservedOnEmptyClick={true}
+                    ariaLabelForSelectionColumn="לחץ לבחירה"
+                    selectionMode={SelectionMode.single}
+                    onRenderDetailsHeader={this.onRenderDetailsHeader}
+                    listProps={{ renderedWindowsAhead: 1, renderedWindowsBehind: 1 }}
+                  />
+              </Box>
+            </ScrollablePane>
+          </div>
+        </Fragment>
+        );
       case 'analytics':
         return <span>analytics</span>;
       default:
@@ -415,7 +498,7 @@ class Studio extends Component {
   }
 
   render() {
-    const { modalIsOpen } = this.state;
+    const { modalIsOpen, selectionDetails } = this.state;
     return (
       <Fragment>
         <StudioContainer flexDirection="column">
@@ -431,7 +514,7 @@ class Studio extends Component {
             {this.renderTab()}
           </Flex>
         </StudioContainer>
-        <Modal isOpen={modalIsOpen} title="עריכת סרטון" onDismiss={this.changeModalState}>
+        <Modal isOpen={modalIsOpen} title={selectionDetails.length > 1? "עריכת סרטונים":"עריכת סרטון"} onDismiss={this.changeModalState}>
           {this.renderModal()}
         </Modal>
       </Fragment>
