@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 import debounce from 'debounce';
 import { Link } from 'react-router-dom';
+import { transparentize } from 'polished';
 import {
   DocumentCard,
   DocumentCardActivity,
@@ -80,10 +81,14 @@ const StyledVideoCard = styled(DocumentCard)`
 const LikeBox = styled(Flex)`
   padding: 0 6px;
   font-size: 12px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: ${({ theme }) => transparentize(0.4, theme.palette.white)};
 
   i {
     padding-left: 6px;
-    color: ${({ theme }) => theme.palette.neutralTertiary};
+    color: ${({ theme }) => theme.palette.themeDarkAlt};
     margin-top: 1px;
   }
 `;
@@ -190,6 +195,12 @@ class VideoCard extends Component {
                   },
                 ]}
               />
+              {video && (
+                <LikeBox alignItems="center">
+                  <Icon iconName="LikeSolid" />
+                  {video.likeCount}
+                </LikeBox>
+              )}
             </Shimmer>
             <div className="ms-DocumentCard-details">
               <Shimmer
@@ -197,15 +208,7 @@ class VideoCard extends Component {
                 width="100%"
                 isDataLoaded={!showShimmer}
               >
-                {video && (
-                  <Flex justifyContent="space-between" alignItems="baseline">
-                    <DocumentCardTitle title={video.name} shouldTruncate />
-                    <LikeBox alignItems="center">
-                      <Icon iconName="LikeSolid" />
-                      {video.likeCount}
-                    </LikeBox>
-                  </Flex>
-                )}
+                {video && <DocumentCardTitle title={video.name} shouldTruncate />}
                 <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
                   <DocumentCardActivity
                     // activity={video && `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}`}

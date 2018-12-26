@@ -121,7 +121,9 @@ function uploadFile(opts, progressHandler, callback) {
     if (callback) {
       return callback(err, data);
     }
-    console.error(err);
+    if (err) {
+      console.error(err);
+    }
   }
   upload.send(callbackWrapper);
   return upload;

@@ -19,19 +19,16 @@ import DeleteForm from './DeleteForm';
 import EditPrivacy from './EditPrivacy';
 import VideoEditForm from 'components/VideoEditForm';
 
-const ActionsBox = styled(Box).attrs({
-  // pt: 15,
-  // pb: 15,
-})`
+const ActionsBox = styled(Box)`
   max-height: ${({ hasItems }) => (hasItems ? 40 : 0)}px;
   overflow: hidden;
   transition: max-height 200ms ease-in-out;
 `;
 
-const TitleBox = styled(Box).attrs({
+const TitleBox = styled(Box).attrs(() => ({
   pr: 30,
   pl: 30,
-})`
+}))`
   .ms-Shimmer-shimmerWrapper {
     background: ${({ theme }) =>
       `linear-gradient(to left, ${theme.palette.neutralLight} 0%, ${

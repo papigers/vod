@@ -80,7 +80,9 @@ router.put('/uploads/:videoId/finish-encoding', function(req, res, next) {
       res.status(200).send('S3_UPLOAD');
     })
     .catch(function(err) {
-      next(err);
+      console.log(err);
+      res.status(200).send('FINISH');
+      // next(err);
     });
 });
 
@@ -91,7 +93,9 @@ router.put('/uploads/:videoId/finish-uploading/:file', function(req, res, next) 
       res.status(200).send(step);
     })
     .catch(function(err) {
-      next(err);
+      console.log(err);
+      res.status(200).send('FINISH');
+      // next(err);
     });
 });
 

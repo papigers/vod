@@ -23,10 +23,10 @@ const VideoComment = styled(Comment)`
   margin-bottom: 1.5em;
 `;
 
-const Section = styled(Box).attrs({
+const Section = styled(Box).attrs(() => ({
   px: 20,
   py: '8px',
-})([]);
+}))([]);
 
 const NoComments = styled.div`
   text-align: center;

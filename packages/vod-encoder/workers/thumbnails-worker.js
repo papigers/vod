@@ -149,7 +149,7 @@ function handleThumbnailMessage(type, body) {
     return Promise.all([ensurePath(cacheFolder), ensurePath(outputFolder)]).then(function() {
       switch (type) {
         case 'PREVIEW_THUMBNAILS':
-          ensureVideoPath(body.id)
+          return ensureVideoPath(body.id)
             .then(function(path) {
               return previewThumbnails(path, outputFolder, body.count);
             })
@@ -162,9 +162,8 @@ function handleThumbnailMessage(type, body) {
                 .then(resolve)
                 .catch(reject);
             });
-          break;
         case 'GENERATE_THUMBNAIL':
-          ensureVideoPath(body.id)
+          return ensureVideoPath(body.id)
             .then(function(path) {
               return generateThumbnail(
                 body.id,
@@ -192,7 +191,7 @@ function handleThumbnailMessage(type, body) {
                 .catch(reject);
             });
         default:
-          resolve({ error: 'Unrecognized Request ' });
+          resolve({ error: `Unrecognized Request: ${type}` });
       }
     });
   });
@@ -204,7 +203,7 @@ var channelWrapper = connection.createChannel({
   setup(ch) {
     var self = this;
     return Promise.all([
-      ch.assertQueue(THUMBNAIL_QUEUE, { durable: false }),
+      ch.assertQueue(THUMBNAIL_QUEUE, { durable: false, maxPriority: 1 }),
       ch.assertQueue(UPLOAD_QUEUE, { durable: true }),
       ch.prefetch(2),
       ch.consume(

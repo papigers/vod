@@ -121,7 +121,7 @@ module.exports = function(db) {
     return notifications.removeNotification(user, 'UPLOAD_ERROR', videoId, trx);
   };
 
-  notifications.getChannelNotifications = function(user, before) {
+  notifications.getChannelNotifications = function(user, before, after) {
     var unreadSubQuery = db.knex
       .table(db.notificationReceipts.table)
       .select(1)
@@ -245,6 +245,9 @@ module.exports = function(db) {
       });
     if (before) {
       query.andWhere(`${notifications.table}.createdAt`, '<', before);
+    }
+    if (after) {
+      query.andWhere(`${notifications.table}.createdAt`, '>', after);
     }
     return db.knexnest(query, true);
   };

@@ -296,6 +296,7 @@ class ThemedPlayer extends Component {
       this.player.on('timeupdate', () => {
         this.props.onTimeUpdate(this.player.currentTime(), this.player.duration());
       });
+      this.player.on('ended', () => this.player.hasStarted(false));
       this.player.qualityPickerPlugin();
     }
   }

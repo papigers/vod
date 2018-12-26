@@ -19,9 +19,9 @@ import {
 import { makeSelectUser } from '../ChannelPage/selectors';
 import * as actions from './actions';
 
-const ContentPadding = styled(Box).attrs({
+const ContentPadding = styled(Box).attrs(() => ({
   p: 12,
-})([]);
+}))([]);
 
 const ScrollableContent = styled.div`
   overflow-y: auto;

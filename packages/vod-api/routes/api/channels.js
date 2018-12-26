@@ -204,12 +204,12 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
       return Promise.all(promises);
     })
     .then(function() {
-      res.json({});
+      res.sendStatus(200);
     })
     .catch(function(err) {
       // Check Form type
       if (req.body.formType === 'create') {
-        db.channels.deleteChannelAdmin(req.params.id);
+        db.channels.deleteChannelAdmin(req.params.id).then();
       }
       console.error(err);
       res.status(500).json({

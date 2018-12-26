@@ -6,7 +6,11 @@ import {
 } from 'constants/actionTypes';
 import axios from 'utils/axios';
 
-import { makeSelectLastNotificationDate, makeSelectUnreadIds } from './selectors';
+import {
+  makeSelectLastNotificationDate,
+  makeSelectUnreadIds,
+  makeSelectLastNotificationCheckDate,
+} from './selectors';
 
 function setNotifications(notifications, concat) {
   return {
@@ -29,13 +33,33 @@ function loadNotifications() {
   };
 }
 
+let checkInterval;
+export function syncNotifications() {
+  return (dispatch, getState) => {
+    const after = makeSelectLastNotificationCheckDate()(getState());
+    dispatch(loadNotifications());
+    return axios
+      .get(`notifications?after=${after}`)
+      .then(result => dispatch(setNotifications(result.data, 'start')))
+      .catch(error => {
+        dispatch(setNotificationsError(error));
+        console.log('Could not fetch notifications');
+        console.error(error);
+      });
+  };
+}
+
 export function getNotifications(more) {
+  clearInterval(checkInterval);
   return (dispatch, getState) => {
     dispatch(loadNotifications());
     var before = more ? makeSelectLastNotificationDate()(getState()) : '';
     return axios
       .get(`notifications?before=${before}`)
-      .then(result => dispatch(setNotifications(result.data, more)))
+      .then(result => {
+        dispatch(setNotifications(result.data, more ? 'end' : null));
+        checkInterval = setInterval(() => dispatch(syncNotifications()), 20000);
+      })
       .catch(error => {
         dispatch(setNotificationsError(error));
         console.log('Could not fetch notifications');

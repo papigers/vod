@@ -132,7 +132,7 @@ class EditProperty extends Component {
           disabled={loading}
           selectedKey={state}
           onChange={this.onChangeState}
-          placeHolder="בחר/י באיזו צורה הסרטונים יוצגו"
+          placeholder="בחר/י באיזו צורה הסרטונים יוצגו"
         />
       );
     }

@@ -124,7 +124,7 @@ class EditPrivacy extends Component {
             onChange={this.onChangePrivacy}
             onRenderTitle={this.onRenderPrivacyOption}
             onRenderOption={this.onRenderPrivacyOption}
-            placeHolder="בחר/י גישה לערוץ"
+            placeholder="בחר/י גישה לערוץ"
             options={[
               { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
               { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
