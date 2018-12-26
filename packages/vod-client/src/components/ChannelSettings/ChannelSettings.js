@@ -297,7 +297,7 @@ class ChannelSettings extends Component {
             onChange={this.onChangePrivacy}
             onRenderTitle={this.onRenderPrivacyOption}
             onRenderOption={this.onRenderPrivacyOption}
-            placeHolder="בחר/י גישה לערוץ"
+            placeholder="בחר/י גישה לערוץ"
             options={[
               { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
               { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },

@@ -88,6 +88,14 @@ const GlobalThemeStyle = createGlobalStyle`
     outline: inherit;
   }
 
+  .ms-Button--primary {
+    &,
+    &:hover,
+    &:active {
+      color: #fff;
+    }
+  }
+
   .ms-fontWeight-light {
     font-weight: 100;
   }

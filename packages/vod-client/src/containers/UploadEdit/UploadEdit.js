@@ -180,6 +180,8 @@ class UploadEdit extends Component {
     });
   initUploadData = videoData => {
     const { tags, metadata, upload, ...video } = videoData;
+    console.log('received upload', upload);
+
     if (video.id === this.state.videoId) {
       this.setState({
         video: {
@@ -202,6 +204,7 @@ class UploadEdit extends Component {
     }
   };
   setUploadStep = ({ id, step }) => {
+    console.log('received step', step);
     if (id === this.state.videoId) {
       this.setState({
         upload: {
@@ -458,7 +461,7 @@ class UploadEdit extends Component {
             onChange={this.onChangeState}
             onRenderTitle={(...args) => this.onRenderPrivacyOption(...args, 'title')}
             onRenderOption={this.onRenderPrivacyOption}
-            placeHolder="בחר/י כיצד לפרסם את הסרטון"
+            placeholder="בחר/י כיצד לפרסם את הסרטון"
             errorMessage={errors.state}
             options={['DRAFT', 'PUBLISHED', 'UNLISTED'].map(this.getStateKey)}
           />
@@ -529,7 +532,7 @@ class UploadEdit extends Component {
                   onChange={this.onChangePrivacy}
                   onRenderTitle={this.onRenderPrivacyOption}
                   onRenderOption={this.onRenderPrivacyOption}
-                  placeHolder="בחר/י גישה לסרטון"
+                  placeholder="בחר/י גישה לסרטון"
                   errorMessage={errors.privacy}
                   options={[
                     { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },

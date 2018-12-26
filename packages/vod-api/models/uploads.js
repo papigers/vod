@@ -80,7 +80,12 @@ module.exports = function(db) {
                 return Promise.resolve('FINISH');
               });
           }
-          return Promise.resolve('S3_UPLOAD');
+          return db.knex.select('step').from(uploads.table).where('id', videoId).then(function(results) {
+              if (results.length) {
+                return Promise.resolve(results[0].step);
+              }
+              throw new Error('Upload Not Found');
+            });
         })
         .then(trx.commit)
         .catch(trx.rollback);
