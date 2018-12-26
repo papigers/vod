@@ -46,44 +46,74 @@ class StudioPage extends Component {
     this.setState({
       playlistList: [
         {
-          "id": "p~fbJZsR4n5W",
-          "createdAt": "2018-12-18T15:27:13.250Z",
-          "name": "הדרכות",
-          "description": "sdfsdfsdf",
-          "state": "PUBLISHED",
-          "videosCount": 2,
-          "updatedAt": "2018-12-18T15:27:13.250Z",
-          "firstVideoId": "7hapkzV6LjE4",
-          "channel": {
-              "id": "s7591665",
-              "name": "גרשון ח פפיאשוילי",
+          id: "1",
+          createdAt: "2018-12-18T15:27:13.250Z",
+          name: "הדרכות",
+          description: "sdfsdfsdf",
+          state: "PUBLISHED",
+          videos: [
+            {
+              id: '4SAHL6TrwPBG',
+              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
+              description: 'DOTA DOTA DOTA'
+            },
+            {
+              id: 'qztxN1SMfFQ2',
+              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
+              description: 'נו מההה'
+            }
+          ],
+          updatedAt: "2018-12-18T15:27:13.250Z",
+          channel: {
+              id: "s7591665",
+              name: "גרשון ח פפיאשוילי",
           }
         }
         ,{
-          "id": "p~fbJZsR4n5W",
-          "createdAt": "2018-12-18T15:27:13.250Z",
-          "name": "הדרכות",
-          "description": "sdfsdfsdf",
-          "state": "PRIVATE",
-          "videosCount": 7,
-          "updatedAt": "2018-13-18T15:27:13.250Z",
-          "firstVideoId": "7hapkzV6LjE4",
-          "channel": {
-              "id": "s7591665",
-              "name": "גרשון ח פפיאשוילי",
+          id: "2",
+          createdAt: "2018-12-18T15:27:13.250Z",
+          name: "שטויות",
+          description: "sdfsdfsdf",
+          state: "PUBLISHED",
+          videos: [
+            {
+              id: '4SAHL6TrwPBG',
+              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
+              description: 'DOTA DOTA DOTA'
+            },
+            {
+              id: 'qztxN1SMfFQ2',
+              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
+              description: 'נו מההה'
+            }
+          ],
+          updatedAt: "2018-12-18T15:27:13.250Z",
+          channel: {
+              id: "s7591665",
+              name: "גרשון ח פפיאשוילי",
           }
         },{
-          "id": "p~fbJZsR4n5W",
-          "createdAt": "2018-12-18T15:27:13.250Z",
-          "name": "הדרכות",
-          "description": "sdfsdfsdf",
-          "state": "UNLISTED",
-          "videosCount": 6,
-          "updatedAt": "2018-13-18T15:27:13.250Z",
-          "firstVideoId": "7hapkzV6LjE4",
-          "channel": {
-              "id": "s1231231",
-              "name": 'שגיא לוי',
+          id: "3",
+          createdAt: "2018-12-18T15:27:13.250Z",
+          name: "דברים",
+          description: "sdfsdfsdf",
+          state: "PUBLISHED",
+          videos: [
+            {
+              id: 'qztxN1SMfFQ2',
+              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
+              description: 'נו מההה'
+            },
+            {
+              id: '4SAHL6TrwPBG',
+              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
+              description: 'DOTA DOTA DOTA'
+            }
+          ],
+          updatedAt: "2018-12-18T15:27:13.250Z",
+          channel: {
+              id: "cj",
+              name: "שגיא לוי",
           }
         }
       ]
