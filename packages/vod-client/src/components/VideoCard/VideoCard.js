@@ -173,15 +173,15 @@ class VideoCard extends Component {
   }
 
   onHover() {
-    const { preload, item, playlist } = this.props;
+    const { preload, item } = this.props;
     item
     if (item && item.id) {
-      preload(playlist ? item.firstVideoId : item.id);
+      preload(Object.keys(item).includes('videos') ? item.videos[0].id : item.id);
     }
   }
 
   render() {
-    const { compact, loading, item, playlist } = this.props;
+    const { compact, loading, item } = this.props;
 
     const showShimmer = loading || !item;
     const LinkOnLoad = item ? Link : 'div';
@@ -193,8 +193,8 @@ class VideoCard extends Component {
       >
         <LinkOnLoad
         to={item ?
-          playlist ?
-            `/watch?l=${item['id']}&v=${item['firstVideoId']}` :
+          Object.keys(item).includes('videos') ?
+            `/watch?l=${item.id}&v=${item.videos[0].id}` :
             `/watch?v=${item.id}`
         : null}>
           <StyledVideoCard
@@ -211,13 +211,13 @@ class VideoCard extends Component {
                   {
                     previewImageSrc:
                       item &&
-                      `${process.env.REACT_APP_STREAMER_HOSTNAME}/${playlist ? item.firstVideoId : item.id}/thumbnail.png`,
+                      `${process.env.REACT_APP_STREAMER_HOSTNAME}/${Object.keys(item).includes('videos') ? item.videos[0].id : item.id}/thumbnail.png`,
                     width: compact ? null : 208,
                     height: compact ? 118 : null,
                   },
                 ]}
               />
-              {playlist &&
+              {Object.keys(item).includes('videos') &&
                   <Overlay>
                     <PlaylistOverlay>
                         <PlaylistCount>50</PlaylistCount>
