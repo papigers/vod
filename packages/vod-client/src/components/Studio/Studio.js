@@ -490,7 +490,7 @@ class Studio extends Component {
                     columns={playlistsColumns}
                     selection={selection}
                     ariaLabelForSelectionColumn="לחץ לבחירה"
-                    selectionMode={SelectionMode.single}
+                    selectionMode={SelectionMode.none}
                     onRenderDetailsHeader={this.onRenderDetailsHeader}
                     listProps={{ renderedWindowsAhead: 1, renderedWindowsBehind: 1 }}
                   />

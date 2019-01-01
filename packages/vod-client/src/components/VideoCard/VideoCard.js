@@ -222,7 +222,7 @@ class VideoCard extends Component {
                   },
                 ]}
               />
-              {Object.keys(item).includes('videos') &&
+              {item && Object.keys(item).includes('videos') &&
                   <Overlay>
                     <PlaylistOverlay>
                         <PlaylistCount>{item.videos.length}</PlaylistCount>
