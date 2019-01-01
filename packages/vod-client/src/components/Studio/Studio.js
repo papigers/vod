@@ -18,6 +18,7 @@ import EditProperty from './EditProperty';
 import DeleteForm from './DeleteForm';
 import EditPrivacy from './EditPrivacy';
 import VideoEditForm from 'components/VideoEditForm';
+import PlaylistEditForm from 'components/PlaylistEditForm';
 
 const ActionsBox = styled(Box)`
   max-height: ${({ hasItems }) => (hasItems ? 40 : 0)}px;
@@ -98,8 +99,6 @@ class Studio extends Component {
   }
 
   getPlaylistState(state) {
-    console.log(state);
-    
     switch (state) {
       case 'PUBLISHED':
         return 'מפורסם';
@@ -130,8 +129,8 @@ class Studio extends Component {
           thumbnail: (
             <VideoThumbnail
               src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.videos[0].id}/thumbnail.png`}
-              width={180}
-              height={101}
+              width={200}
+              height={120}
             />
           ),
           id: item.id,
@@ -151,8 +150,8 @@ class Studio extends Component {
         thumbnail: (
           <VideoThumbnail
             src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`}
-            width={180}
-            height={101}
+            width={200}
+            height={120}
           />
         ),
         id: item.id,
@@ -209,9 +208,13 @@ class Studio extends Component {
   };
 
   onSelectionChanged = () => {
-    this.setState({
-      selectionDetails: this.state.selection.getSelection(),
-    });
+    if (this.state.activeTab === 'playlists' && this.state.selection.getSelection().length > 1) {
+      this.state.selection.setAllSelected(false);      
+    } else {
+      this.setState({
+        selectionDetails: this.state.selection.getSelection(),
+      });
+    }
   };
 
   onMenuClick = key => {
@@ -271,6 +274,13 @@ class Studio extends Component {
             onSubmit={onVideoEdit}
           />
         );
+      case 'editPlaylist':
+          return (
+          <PlaylistEditForm
+            playlist={selectionDetails[0]}
+            onClose={this.changeModalState}
+          />
+          );
       case 'name':
       case 'description':
       case 'tags':
@@ -479,7 +489,6 @@ class Studio extends Component {
                     groups={this.getGroupsList(playlistList)}
                     columns={playlistsColumns}
                     selection={selection}
-                    selectionPreservedOnEmptyClick={true}
                     ariaLabelForSelectionColumn="לחץ לבחירה"
                     selectionMode={SelectionMode.single}
                     onRenderDetailsHeader={this.onRenderDetailsHeader}
@@ -498,7 +507,7 @@ class Studio extends Component {
   }
 
   render() {
-    const { modalIsOpen, selectionDetails } = this.state;
+    const { modalIsOpen, selectionDetails, editType} = this.state;
     return (
       <Fragment>
         <StudioContainer flexDirection="column">
@@ -514,7 +523,17 @@ class Studio extends Component {
             {this.renderTab()}
           </Flex>
         </StudioContainer>
-        <Modal isOpen={modalIsOpen} title={selectionDetails.length > 1? "עריכת סרטונים":"עריכת סרטון"} onDismiss={this.changeModalState}>
+        <Modal
+          isOpen={modalIsOpen}
+          title={
+            editType === 'editPlaylist' ?
+            'עריכת פלייליסט'
+            : selectionDetails.length > 1 ?
+            "עריכת סרטונים"
+            :"עריכת סרטון"
+            }
+          onDismiss={this.changeModalState}
+        >
           {this.renderModal()}
         </Modal>
       </Fragment>
