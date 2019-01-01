@@ -222,23 +222,14 @@ class VideoCard extends Component {
                   },
                 ]}
               />
-<<<<<<< HEAD
               {Object.keys(item).includes('videos') &&
                   <Overlay>
                     <PlaylistOverlay>
-                        <PlaylistCount>50</PlaylistCount>
+                        <PlaylistCount>{item.videos.length}</PlaylistCount>
                         <PlaylistLogo iconName={'Stack'}/>
                     </PlaylistOverlay>
                   </Overlay>
                 }
-=======
-              {video && (
-                <LikeBox alignItems="center">
-                  <Icon iconName="LikeSolid" />
-                  {video.likeCount}
-                </LikeBox>
-              )}
->>>>>>> 0758683a70672453e21c44bdf4a3dd0a969996a3
             </Shimmer>
             <div className="ms-DocumentCard-details">
               <Shimmer
@@ -246,7 +237,6 @@ class VideoCard extends Component {
                 width="100%"
                 isDataLoaded={!showShimmer}
               >
-<<<<<<< HEAD
                 {item && (
                   <Flex justifyContent="space-between" alignItems="baseline">
                     <DocumentCardTitle title={item.name} shouldTruncate />
@@ -257,10 +247,6 @@ class VideoCard extends Component {
                   </Flex>
                 )}
                 <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
-=======
-                {video && <DocumentCardTitle title={video.name} shouldTruncate />}
-                <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
->>>>>>> 0758683a70672453e21c44bdf4a3dd0a969996a3
                   <DocumentCardActivity
                     // activity={item && `הועלה ב: ${(new Date(item.createdAt)).toLocaleString()}`}
                     activity={item && `${item.viewCount} צפיות`}

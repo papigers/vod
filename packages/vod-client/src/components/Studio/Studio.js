@@ -502,7 +502,7 @@ class Studio extends Component {
       case 'analytics':
         return <span>analytics</span>;
       default:
-        return <span>404</span>;
+        return <span>אין פה כלום</span>;
     }
   }
 
