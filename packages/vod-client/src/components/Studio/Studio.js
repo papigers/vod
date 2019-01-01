@@ -26,10 +26,10 @@ const ActionsBox = styled(Box)`
   transition: max-height 200ms ease-in-out;
 `;
 
-const TitleBox = styled(Box).attrs({
+const TitleBox = styled(Box).attrs(() => ({
   pr: 30,
   pl: 30,
-})`
+}))`
   .ms-Shimmer-shimmerWrapper {
     background: ${({ theme }) =>
       `linear-gradient(to left, ${theme.palette.neutralLight} 0%, ${

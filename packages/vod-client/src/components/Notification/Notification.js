@@ -12,9 +12,9 @@ const NotificationPersona = styled(Persona)`
   }
 `;
 
-const NotificationButton = styled(Box).attrs({
+const NotificationButton = styled(Box).attrs(() => ({
   p: 12,
-})`
+}))`
   cursor: pointer;
   background-color: ${({ theme, unread }) =>
     unread ? theme.palette.themeLighterAlt : 'transparent'};

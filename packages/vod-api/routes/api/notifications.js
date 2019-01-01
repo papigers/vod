@@ -3,9 +3,10 @@ var router = express.Router();
 var db = require('../../models');
 
 router.get('/', function(req, res, next) {
-  var before = req.query.before ? new Date(req.query.before) : new Date();
+  var before = req.query.before ? new Date(req.query.before) : null;
+  var after = req.query.after ? new Date(req.query.after) : null;
   db.notifications
-    .getChannelNotifications(req.user, before)
+    .getChannelNotifications(req.user, before, after)
     .then(function(results) {
       res.json(results);
     })

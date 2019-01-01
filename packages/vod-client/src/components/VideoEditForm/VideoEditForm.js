@@ -202,7 +202,7 @@ class VideoEditForm extends Component {
             disabled={loading}
             selectedKey={state}
             onChange={this.onChangeState}
-            placeHolder="בחר/י באיזו צורה הסרטון יוצג"
+            placeholder="בחר/י באיזו צורה הסרטון יוצג"
           />
           <TextField
             label="שם סרטון"
@@ -229,7 +229,7 @@ class VideoEditForm extends Component {
               onChange={this.onChangePrivacy}
               onRenderTitle={this.onRenderPrivacyOption}
               onRenderOption={this.onRenderPrivacyOption}
-              placeHolder="בחר/י גישה לסרטון"
+              placeholder="בחר/י גישה לסרטון"
               errorMessage={this.state.privacyError}
               options={[
                 { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },

@@ -193,9 +193,9 @@ const NotificationTooltip = styled(Tooltip)`
   }
 `;
 
-const HeaderButtons = styled(StyledCommandBar).attrs({
+const HeaderButtons = styled(StyledCommandBar).attrs(() => ({
   as: 'div',
-})`
+}))`
   display: flex;
   padding: 0 16px;
   height: 40px;
@@ -226,14 +226,15 @@ export default class Header extends Component {
       text,
       iconOnly,
       tooltipHostProps,
+      key,
       ...other
     } = props;
 
-    let component = <CommandBarButton text={!iconOnly ? text : undefined} {...other} />;
+    let component = <CommandBarButton key={key} text={!iconOnly ? text : undefined} {...other} />;
 
     if (to && to.indexOf('/channel') !== -1) {
       component = (
-        <StyledChannelButton {...other}>
+        <StyledChannelButton key={key} {...other}>
           <Link to={to}>
             <Persona
               imageUrl={`/profile/${this.props.user && this.props.user.id}/profile.png`}
@@ -244,14 +245,22 @@ export default class Header extends Component {
         </StyledChannelButton>
       );
     } else if (to) {
-      component = <Link to={to}>{component}</Link>;
+      component = (
+        <Link key={key} to={to}>
+          {component}
+        </Link>
+      );
     }
 
-    component = <HeaderButton innerRef={itemRef}>{component}</HeaderButton>;
+    component = (
+      <HeaderButton key={key} ref={itemRef}>
+        {component}
+      </HeaderButton>
+    );
 
     if (iconOnly && text !== undefined) {
       component = (
-        <TooltipHost content={text} {...tooltipHostProps}>
+        <TooltipHost key={key} content={text} {...tooltipHostProps}>
           {component}
         </TooltipHost>
       );

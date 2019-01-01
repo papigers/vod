@@ -24,6 +24,12 @@ const makeSelectLastNotificationDate = () =>
     },
   );
 
+const makeSelectLastNotificationCheckDate = () =>
+  createSelector(
+    selectNotifications,
+    notificationState => notificationState.get('checkTime'),
+  );
+
 const makeSelectNotificationsError = () =>
   createSelector(
     selectNotifications,
@@ -59,4 +65,5 @@ export {
   makeSelectNotificationsError,
   makeSelectNotificationsLoading,
   makeSelectUnreadIds,
+  makeSelectLastNotificationCheckDate,
 };

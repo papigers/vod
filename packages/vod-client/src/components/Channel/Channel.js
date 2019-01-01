@@ -12,10 +12,10 @@ import ChannelRow from 'containers/ChannelRow';
 import axios from 'utils/axios';
 import ChannelSettings from 'components/ChannelSettings';
 
-const ContentBox = styled(Box).attrs({
+const ContentBox = styled(Box).attrs(() => ({
   pr: 100,
   pl: 30,
-})([]);
+}))([]);
 
 const TitleBox = styled(ContentBox)`
   .ms-Shimmer-shimmerWrapper {

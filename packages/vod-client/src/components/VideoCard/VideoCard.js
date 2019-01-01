@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 import debounce from 'debounce';
 import { Link } from 'react-router-dom';
+import { transparentize } from 'polished';
 import {
   DocumentCard,
   DocumentCardActivity,
@@ -81,10 +82,14 @@ const StyledVideoCard = styled(DocumentCard)`
 const LikeBox = styled(Flex)`
   padding: 0 6px;
   font-size: 12px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: ${({ theme }) => transparentize(0.4, theme.palette.white)};
 
   i {
     padding-left: 6px;
-    color: ${({ theme }) => theme.palette.neutralTertiary};
+    color: ${({ theme }) => theme.palette.themeDarkAlt};
     margin-top: 1px;
   }
 `;
@@ -217,6 +222,7 @@ class VideoCard extends Component {
                   },
                 ]}
               />
+<<<<<<< HEAD
               {Object.keys(item).includes('videos') &&
                   <Overlay>
                     <PlaylistOverlay>
@@ -225,6 +231,14 @@ class VideoCard extends Component {
                     </PlaylistOverlay>
                   </Overlay>
                 }
+=======
+              {video && (
+                <LikeBox alignItems="center">
+                  <Icon iconName="LikeSolid" />
+                  {video.likeCount}
+                </LikeBox>
+              )}
+>>>>>>> 0758683a70672453e21c44bdf4a3dd0a969996a3
             </Shimmer>
             <div className="ms-DocumentCard-details">
               <Shimmer
@@ -232,6 +246,7 @@ class VideoCard extends Component {
                 width="100%"
                 isDataLoaded={!showShimmer}
               >
+<<<<<<< HEAD
                 {item && (
                   <Flex justifyContent="space-between" alignItems="baseline">
                     <DocumentCardTitle title={item.name} shouldTruncate />
@@ -242,6 +257,10 @@ class VideoCard extends Component {
                   </Flex>
                 )}
                 <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
+=======
+                {video && <DocumentCardTitle title={video.name} shouldTruncate />}
+                <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
+>>>>>>> 0758683a70672453e21c44bdf4a3dd0a969996a3
                   <DocumentCardActivity
                     // activity={item && `הועלה ב: ${(new Date(item.createdAt)).toLocaleString()}`}
                     activity={item && `${item.viewCount} צפיות`}

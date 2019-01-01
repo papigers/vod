@@ -193,7 +193,7 @@ class NewChannelForm extends Component {
         data.append('cover', cover.file);
       }
       // Form type
-      data.set('formType', 'edit');
+      data.set('formType', 'create');
       axios
         .post('/channels', {
           id,
@@ -209,11 +209,13 @@ class NewChannelForm extends Component {
           });
         })
         .then(() => {
-          this.props.onDismiss();
-          if (this.props.onSubmit) {
-            this.props.onSubmit();
-          }
-          this.props.history.push(`/channel/${id}`);
+          setTimeout(() => {
+            this.props.onDismiss();
+            if (this.props.onSubmit) {
+              this.props.onSubmit();
+            }
+            this.props.history.push(`/channel/${id}`);
+          }, 3000);
         })
         .catch(error => {
           console.error(error);
@@ -267,7 +269,7 @@ class NewChannelForm extends Component {
             onChange={this.onChangePrivacy}
             onRenderTitle={this.onRenderPrivacyOption}
             onRenderOption={this.onRenderPrivacyOption}
-            placeHolder="בחר/י גישה לערוץ"
+            placeholder="בחר/י גישה לערוץ"
             options={[
               { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
               { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },

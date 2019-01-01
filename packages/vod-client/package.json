@@ -32,7 +32,6 @@
     "styled-sanitize": "^1.0.2",
     "tus-js-client": "^1.5.2",
     "video.js": "^7.1.0",
-    "videojs-contrib-dash": "^2.10.0",
     "videojs-hlsjs-plugin": "^0.3.1"
   },
   "scripts": {
