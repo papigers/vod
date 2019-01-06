@@ -88,6 +88,10 @@ const GlobalThemeStyle = createGlobalStyle`
     outline: inherit;
   }
 
+  .recharts-wrapper {
+    direction: ltr;
+  }
+
   .ms-Button--primary {
     &,
     &:hover,

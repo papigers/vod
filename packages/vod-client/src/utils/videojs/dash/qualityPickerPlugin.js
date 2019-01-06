@@ -90,7 +90,7 @@ function qualityPickerPluginDASH() {
         player.controlBar.removeChild(qualityPickerButton);
       }
 
-      if (qualityData[track] && qualityData[track].length > 1) {
+      if (qualityData[track] && qualityData[track].length > 0) {
         qualityData[track].forEach(console.log);
         qualityPickerButton = new QualityPickerButton(player, {
           name,

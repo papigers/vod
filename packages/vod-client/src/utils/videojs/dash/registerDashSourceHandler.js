@@ -259,6 +259,8 @@ class Html5DashJS {
     // Dash.js autoplays by default, video.js will handle autoplay
     this.mediaPlayer_.setAutoPlay(false);
 
+    this.mediaPlayer_.setStableBufferTime(8);
+
     // Setup audio tracks
     setupAudioTracks.call(null, this.player, tech);
 
@@ -300,7 +302,7 @@ class Html5DashJS {
     const bitrateInfo = this.mediaPlayer_.getBitrateInfoListFor('video');
 
     if (bitrateInfo) {
-      if (bitrateInfo.length > 1) {
+      if (bitrateInfo.length > 0) {
         trackList.push({
           id: -1,
           label: 'auto',
