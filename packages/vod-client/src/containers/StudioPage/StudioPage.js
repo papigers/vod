@@ -84,6 +84,38 @@ class StudioPage extends Component {
               },
               privacy: 'PUBLIC',
               state: 'UNLISTED'
+            },{
+              id: '2',
+              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
+              description: 'DOTA DOTA DOTA',
+              channel: {
+                id: "s7591665",
+                name: "גרשון ח פפיאשוילי",
+              },
+              privacy: 'PUBLIC',
+              state: 'UNLISTED'
+            },
+            {
+              id: '3',
+              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
+              description: 'נו מההה',
+              channel: {
+                id: "s7591665",
+                name: "גרשון ח פפיאשוילי",
+              },
+              privacy: 'PUBLIC',
+              state: 'UNLISTED'
+            },
+            {
+              id: '4',
+              name: 'עומר אדם - שני משוגעים',
+              description: 'איזה אומן איזהההה',
+              channel: {
+                id: "s7591665",
+                name: "גרשון ח פפיאשוילי",
+              },
+              privacy: 'PUBLIC',
+              state: 'UNLISTED'
             }
           ],
           updatedAt: "2018-12-18T15:27:13.250Z",

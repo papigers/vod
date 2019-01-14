@@ -10,8 +10,8 @@ export default [
       key: 'name',
       name: 'שם',
       fieldName: 'name',
-      minWidth: 100,
-      maxWidth: 100,
+      minWidth: 250,
+      maxWidth: 300,
       isResizable: true,
     },
     {
@@ -32,8 +32,7 @@ export default [
       key: 'channelName',
       name: 'ערוץ',
       fieldName: 'channelName',
-      minWidth: 100,
-      maxWidth: 100,
-      isResizable: true,
+      minWidth: 150,
+      maxWidth: 150,
     }
   ];

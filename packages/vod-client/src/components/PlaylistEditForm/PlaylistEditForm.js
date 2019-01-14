@@ -3,16 +3,14 @@ import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { DetailsList, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { Selection } from 'office-ui-fabric-react/lib/Selection';
-import { MarqueeSelection } from 'office-ui-fabric-react/lib/MarqueeSelection';
 import { Sticky, StickyPositionType } from 'office-ui-fabric-react/lib/Sticky';
 import { TooltipHost } from 'office-ui-fabric-react/lib/Tooltip';
-import { IDragDropEvents, IDragDropContext } from 'office-ui-fabric-react/lib/utilities/dragdrop/interfaces';
+import { ScrollablePane, ScrollbarVisibility } from 'office-ui-fabric-react/lib/ScrollablePane';
 
 import VideoStateDropdown from 'components/VideoStateDropdown';
 import VideoThumbnail from 'components/VideoThumbnail';
@@ -36,19 +34,25 @@ const ThumbnailContainer = styled.div`
     display: block;
 `;
 
-const PlaylistPropsContainer = styled(Flex)`
-  flex-direction: row-reverse;
+const PlaylistContainer = styled.div`
+    position: relative;
+    width: 60em;
 `;
 
-const FormContainer = styled(Flex)`
+const PlaylistPropsContainer = styled(Flex)`
+  flex-direction: column;
+`;
+
+const CenterContainer = styled(Flex)`
+  margin: 1em 0;
   justify-content: center;
 `;
 
-const ContentContainer = styled(FormContainer)`
-  margin: 1em 0;
+const ContentContainer = styled(CenterContainer)`
+  flex-direction: row;
 `;
 
-const FiledsContainer = styled(FormContainer)`
+const FiledsContainer = styled(CenterContainer)`
   flex-direction: column;
 `;
 
@@ -152,7 +156,6 @@ class PlaylistEditForm extends Component {
     }
 
     getItems = () => {
-        debugger;
         return this.state.videos.map(video => {
             return {
                 id: video.id,
@@ -171,7 +174,6 @@ class PlaylistEditForm extends Component {
 
     getDragDropEvents = () => {
         var draggedItems = null;
-        debugger;
         return {
             canDrop: (dropContext, dragContext) => {
                 return true;
@@ -200,12 +202,9 @@ class PlaylistEditForm extends Component {
     }
 
     insertBeforeItem = (item, draggedItems) => {
-        this.state.selection.setAllSelected(false);
         const selectedVideos = draggedItems.map(item => {
             return this.state.videos.find(video => item.id === video.id);
         });
-       
-        debugger;
         const videos = this.state.videos.filter((video) => selectedVideos.indexOf(video) === -1);
         let insertIndex = this.state.videos.indexOf(
             this.state.videos.find(video => item.id === video.id)
@@ -215,14 +214,18 @@ class PlaylistEditForm extends Component {
         if (insertIndex === -1) {
           insertIndex = 0;
         }
-
+        // reorder videos
         videos.splice(insertIndex, 0, ...selectedVideos);
+
+        this.state.selection.setAllSelected(false);
         this.setState({ videos: videos });
-      }
+    }
 
     onSubmit = () => {
         console.log('submit');
-        this.setState()
+        this.setState({
+            loading: true
+        });
     }
 
     render() {
@@ -231,23 +234,22 @@ class PlaylistEditForm extends Component {
             description,
             videos,
             state,
+            selection,
             error,
             loading,
         } = this.state;
 
         return (
-            <FormContainer>
-                <Form onSubmit={this.onSubmit}>
+            <Form onSubmit={this.onSubmit}>
                 <ContentContainer>
                     <PlaylistPropsContainer>
                         <ThumbnailContainer>
                             <VideoThumbnail
                                 src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${videos && videos[0] && videos[0].id}/thumbnail.png`}
-                                width={200}
-                                height={120}
+                                width={318}
+                                height={180}
                             />
                         </ThumbnailContainer>
-                        <Box mx={3} />
                         <FiledsContainer>
                             <VideoStateDropdown
                                 required
@@ -275,25 +277,29 @@ class PlaylistEditForm extends Component {
                             />
                         </FiledsContainer>
                     </PlaylistPropsContainer>
+                    <Box mx={3} />
+                    <PlaylistContainer>
+                        <ScrollablePane scrollbarVisibility={ScrollbarVisibility.always}>
+                            <DetailsList
+                                setKey="playlists"
+                                items={this.getItems()}
+                                columns={videosColumns}
+                                selection={selection}
+                                selectionPreservedOnEmptyClick={true}
+                                ariaLabelForSelectAllCheckbox="לחץ לבחירת כל הסרטונים"
+                                ariaLabelForSelectionColumn="לחץ לבחירה"
+                                dragDropEvents={this.getDragDropEvents()}
+                                groupProps={{
+                                    showEmptyGroups: true,
+                                }}
+                                selectionMode={SelectionMode.none}
+                                onRenderDetailsHeader={this.onRenderDetailsHeader}
+                                listProps={{ renderedWindowsAhead: 1, renderedWindowsBehind: 1 }}
+                            />
+                        </ScrollablePane>
+                    </PlaylistContainer>
                 </ContentContainer>
-                <ContentContainer>
-                    <DetailsList
-                        setKey="playlists"
-                        items={this.getItems()}
-                        columns={videosColumns}
-                        selectionPreservedOnEmptyClick={true}
-                        ariaLabelForSelectAllCheckbox="לחץ לבחירת כל הסרטונים"
-                        ariaLabelForSelectionColumn="לחץ לבחירה"
-                        dragDropEvents={this.getDragDropEvents()}
-                        groupProps={{
-                            showEmptyGroups: true,
-                        }}
-                        selectionMode={SelectionMode.multiple}
-                        onRenderDetailsHeader={this.onRenderDetailsHeader}
-                        listProps={{ renderedWindowsAhead: 1, renderedWindowsBehind: 1 }}
-                    />
-                </ContentContainer>
-                <ContentContainer>
+                <CenterContainer>
                     {loading ?
                     <Spinner size={SpinnerSize.large} ariaLive="loading" />
                     :
@@ -312,13 +318,11 @@ class PlaylistEditForm extends Component {
                             onClick={this.props.onClose}
                         />
                     </Fragment>}
-                </ContentContainer>
-                <ContentContainer>
+                </CenterContainer>
+                <CenterContainer>
                     {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
-                </ContentContainer>
-
-                </Form>
-            </FormContainer>
+                </CenterContainer>
+            </Form>
         );
     }
 }
