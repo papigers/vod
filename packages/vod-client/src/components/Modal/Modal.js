@@ -35,8 +35,6 @@ const StyledModal = styled(FabricModal).attrs(({ theme }) => ({
 
     & > div {
       ${size => (size && sizes[size]) || sizes[MODAL_SIZE.AUTO]}
-      max-height: 80vh;
-      max-width: 80vw;
       display: flex;
       flex-flow: column nowrap;
       align-items: stretch;
