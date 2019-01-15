@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
-import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
-import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IconButton } from 'office-ui-fabric-react/lib/Button';
+import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
+
+import ChannelSelector from 'components/ChannelSelector';
+import VideoSelector from 'components/VideoSelector';
 
 const Card = styled(Box)`
   background-color: ${({ theme }) => theme.palette.neutralLighterAlt};
@@ -41,27 +43,11 @@ const Title = styled.h3`
   margin: 0.2em auto;
 `;
 
-const CardDropdown = styled(Dropdown)`
-  max-width: 300px;
+const CardChannelSelector = styled(ChannelSelector)`
+  width: 300px;
 `;
 
-const DropdownOption = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  justify-content: center;
-  height: 100%;
-  overflow: hidden;
-
-  .ms-Dropdown-item:hover &,
-  .ms-Dropdown-item:hover & .ms-Persona-primaryText {
-    color: ${({ theme }) => theme.palette.themePrimary};
-  }
-
-  i {
-    margin-left: 8px;
-  }
-`;
+const CardVideoSelector = props => <CardChannelSelector {...props} as={VideoSelector} />;
 
 const SlidingOptions = styled(Box)`
   overflow: hidden;
@@ -79,6 +65,7 @@ class DashboardCard extends Component {
     const channel = ((props.channelSelector && props.channelSelector.channels) || [])[0];
     this.state = {
       selectedChannels: [channel && channel.id],
+      selectedVideos: 'all',
       expanded: true,
     };
   }
@@ -87,91 +74,22 @@ class DashboardCard extends Component {
     const prevChannels = (prevProps.channelSelector && prevProps.channelSelector.channels) || [];
     const currChannels = (this.props.channelSelector && this.props.channelSelector.channels) || [];
     if (prevChannels.length !== currChannels.length) {
-      this.setState({ selectedChannels: [currChannels[0] && currChannels[0].id] });
+      this.setState({
+        selectedChannels: [currChannels[0] && currChannels[0].id],
+        selectedVideos: [],
+      });
     }
   }
 
   onToggleExpanded = () => this.setState({ expanded: !this.state.expanded });
 
-  onRenderChannelTitle = item => this.onRenderChannelOption(item, 'title');
-
-  onRenderChannelOption = (item, type) => {
-    const option = item[0] || item;
-    const {
-      channelSelector: { multiSelect, allSelect, channels },
-    } = this.props;
-
-    if (type === 'title' && multiSelect) {
-      if (allSelect && item.length === channels.length + 1) {
-        console.log('got here');
-        return <DropdownOption>כל הערוצים בניהולי</DropdownOption>;
-      }
-      return (
-        <DropdownOption>
-          <Flex>
-            {item.map(option => (
-              <Persona
-                imageUrl={`/profile/${option.key}/profile.png`}
-                text={option.text}
-                size={PersonaSize.size24}
-                secondaryText={option.key}
-              />
-            ))}
-          </Flex>
-        </DropdownOption>
-      );
-    }
-    return (
-      <DropdownOption>
-        <Box mr={multiSelect && type !== 'title' ? '2' : 0}>
-          {option.key === 'all' ? (
-            'כל הערוצים בניהולי'
-          ) : (
-            <Persona
-              imageUrl={`/profile/${option.key}/profile.png`}
-              text={option.text}
-              size={type === 'title' ? PersonaSize.size24 : PersonaSize.size40}
-              secondaryText={option.key === 'all' ? null : option.key}
-            />
-          )}
-        </Box>
-      </DropdownOption>
-    );
-  };
-
-  onChannelChange = (e, item) => {
-    const { channelSelector } = this.props;
-    if (channelSelector.multiSelect) {
-      let channels = this.state.selectedChannels;
-      if (item.key === 'all') {
-        if (item.selected) {
-          this.setState({
-            selectedChannels: ['all'].concat(channelSelector.channels.map(ch => ch.id)),
-          });
-        } else {
-          this.setState({ selectedChannels: [channelSelector.channels[0].id] });
-        }
-        return;
-      }
-      if (item.selected) {
-        if (channelSelector.allSelect && channels.length + 1 === channelSelector.channels.length) {
-          this.setState({
-            selectedChannels: ['all'].concat(channelSelector.channels.map(ch => ch.id)),
-          });
-        } else {
-          this.setState({ selectedChannels: channels.concat([item.key]) });
-        }
-      } else if (channels.length > 1) {
-        this.setState({ selectedChannels: channels.filter(ch => ch !== item.key && ch !== 'all') });
-      }
-    } else {
-      this.setState({ selectedChannels: [item.key] });
-    }
-  };
+  onChannelChange = selectedChannels => this.setState({ selectedChannels });
+  onVideoChange = selectedVideos => this.setState({ selectedVideos });
+  onTabChange = selectedTab => this.setState({ selectedTab });
 
   render() {
-    const { title, children, channelSelector, ...props } = this.props;
-    const { selectedChannels, expanded } = this.state;
+    const { title, children, channelSelector, videoSelector, tabs, ...props } = this.props;
+    const { selectedChannels, selectedVideos, selectedTab, expanded } = this.state;
     return (
       <Card px="1em" m={2} {...props}>
         <Box my="0.6em">
@@ -183,30 +101,41 @@ class DashboardCard extends Component {
             expanded={expanded}
           />
           <SlidingOptions expanded={expanded}>
-            {channelSelector && channelSelector.channels ? (
-              <CardDropdown
-                label="ערוץ:"
-                selectedKeys={channelSelector.multiSelect ? selectedChannels : selectedChannels[0]}
-                selectedKey={channelSelector.multiSelect ? selectedChannels : selectedChannels[0]}
-                onChange={this.onChannelChange}
-                multiSelect={channelSelector.multiSelect}
-                onRenderTitle={this.onRenderChannelTitle}
-                onRenderOption={this.onRenderChannelOption}
-                options={[
-                  ...(channelSelector.multiSelect && channelSelector.allSelect
-                    ? [
-                        { key: 'all', text: 'כל הערוצים בניהולי' },
-                        { key: 'divider', text: '-', itemType: DropdownMenuItemType.Divider },
-                      ]
-                    : []),
-                  ...channelSelector.channels.map(({ id: key, name: text, ...data }) => ({
-                    key,
-                    text,
-                    ...data,
-                  })),
-                ]}
-              />
-            ) : null}
+            <Flex alignItems="flex-end">
+              {tabs && tabs.length ? (
+                <Box flex="1 0 0">
+                  <Pivot
+                    linkSize={PivotLinkSize.large}
+                    selectedKey={selectedTab}
+                    onLinkClick={this.onTabChange}
+                    headersOnly
+                    linkFormat={PivotLinkFormat.tabs}
+                  >
+                    {tabs.map(tab => (
+                      <PivotItem linkText={tab.label} itemKey={tab.key} />
+                    ))}
+                  </Pivot>
+                </Box>
+              ) : null}
+              <Box mx={2} />
+              <Flex alignItems="flex-end">
+                {channelSelector && channelSelector.channels ? (
+                  <CardChannelSelector
+                    selected={selectedChannels}
+                    onChange={this.onChannelChange}
+                    {...channelSelector}
+                  />
+                ) : null}
+                <Box mx={2} />
+                {videoSelector && videoSelector.videos ? (
+                  <CardVideoSelector
+                    selected={selectedVideos}
+                    onChange={this.onVideoChange}
+                    {...videoSelector}
+                  />
+                ) : null}
+              </Flex>
+            </Flex>
           </SlidingOptions>
         </Box>
         <FlexGrow alignItems="center" justifyContent="center">

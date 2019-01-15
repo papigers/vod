@@ -4,6 +4,7 @@ import { Flex, Box } from 'grid-styled';
 
 import DashboardCard from 'components/DashboardCard';
 import QuotaChart from 'components/QuotaChart';
+import AnalyticsLineChart from 'components/AnalyticsLineChart';
 
 const QuantityStat = styled(Box)`
   text-align: center;
@@ -75,8 +76,26 @@ class StudioAnalytics extends Component {
                 <span>תגובות</span>
               </QuantityStat>
             </DashboardCard>
-            <DashboardCard flex="1 1 0" title="תרשים חשיפה">
-              <div />
+            <DashboardCard
+              flex="1 1 0"
+              title="תרשים חשיפה"
+              channelSelector={{
+                channels: managedChannels,
+                multiSelect: true,
+                allSelect: true,
+              }}
+              videoSelector={{
+                videos: [{ id: 'qztxN1SMfFQ2', name: 'משפחת שווץ פרק 2 - מבצר כריות' }],
+                multiSelect: false,
+                allSelect: true,
+              }}
+              tabs={[
+                { id: 'likes', label: 'לייקים' },
+                { id: 'comments', label: 'תגובות' },
+                { id: 'views', label: 'צפיות' },
+              ]}
+            >
+              <AnalyticsLineChart />
             </DashboardCard>
           </Flex>
         </Box>

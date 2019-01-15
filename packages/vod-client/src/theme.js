@@ -100,6 +100,11 @@ const GlobalThemeStyle = createGlobalStyle`
     }
   }
 
+  .ms-Pivot--tabs .ms-Pivot-link.is-selected {
+    color: #fff;
+    font-weight: normal;
+  }
+
   .ms-fontWeight-light {
     font-weight: 100;
   }
