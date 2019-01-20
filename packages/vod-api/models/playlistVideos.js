@@ -13,7 +13,9 @@ module.exports = function(db) {
   playlistVideos.attributes = {
     playlistId: {
       type: 'char',
+      length: 8,
       notNullable: true,
+      primaryKey: true,
       references: {
         column: 'id',
         table: 'playlists',
@@ -23,7 +25,9 @@ module.exports = function(db) {
     },
     videoId: {
       type: 'char',
+      length: 12,
       notNullable: true,
+      primaryKey: true,
       references: {
         column: 'id',
         table: 'videos',
@@ -31,8 +35,8 @@ module.exports = function(db) {
         onDelete: 'cascade',
       },
     },
-    index: {
-      type: 'SMALLINT',
+    orderId: {
+      type: 'smallint',
       notNullable: true,
     },
   };
