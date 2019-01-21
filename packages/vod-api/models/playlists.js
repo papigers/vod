@@ -1,6 +1,12 @@
 var nanoid = require('nanoid');
 
-var generateId = nanoid.bind(this, 10);
+var generateId = nanoid.bind(this, 8);
+
+function PlaylistError(message, code) {
+  this.message = message;
+  this.code = code;
+}
+PlaylistError.prototype = new Error();
 
 module.exports = function(db) {
   var playlists = function Playlist() {
@@ -13,7 +19,7 @@ module.exports = function(db) {
   playlists.attributes = {
     id: {
       type: 'char',
-      length: 12,
+      length: 8,
       primaryKey: true,
       notNullable: true,
     },
@@ -54,7 +60,7 @@ module.exports = function(db) {
         `${db.videos.table}.id as _videos__id`,
         `${db.videos.table}.name as _videos__name`,
         `${db.videos.table}.description as _videos__description`,
-        `${db.playlistVideos.table}.index as _videos__index`,
+        `${db.playlistVideos.table}.position as _videos__position`,
         `${db.channels.table}.id as _channel_id`,
         `${db.channels.table}.name as _channel_name`,
         `${db.channels.table}.personal as _channel_personal`,
@@ -68,7 +74,7 @@ module.exports = function(db) {
       .orderBy(`${playlists.table}.personal`, 'desc')
       .orderBy(`${playlists.table}.name`, 'desc')
       .orderBy(`${playlists.table}.createdAt`, 'desc')
-      .orderBy('_videos__index')
+      .orderBy('_videos__position')
       .modify(db.channels.authorizedViewSubquery, user)
     , true);
   };
@@ -83,7 +89,7 @@ module.exports = function(db) {
         `${db.videos.table}.id as _videos__id`,
         `${db.videos.table}.name as _videos__name`,
         `${db.videos.table}.description as _videos__description`,
-        `${db.playlistVideos.table}.index as _videos__index`,
+        `${db.playlistVideos.table}.position as _videos__position`,
         `${db.channels.table}.id as _channel_id`,
         `${db.channels.table}.name as _channel_name`,
         `${db.channels.table}.personal as _channel_personal`,
@@ -98,19 +104,113 @@ module.exports = function(db) {
       .orderBy(`${playlists.table}.personal`, 'desc')
       .orderBy(`${playlists.table}.name`, 'desc')
       .orderBy(`${playlists.table}.createdAt`, 'desc')
-      .orderBy('_videos__index')
+      .orderBy('_videos__position')
       .modify(db.channels.authorizedViewSubquery, user)
     , true);
   };
 
-  // TODO: create playlist
-  playlists.createPlaylist = function(user, id) {
-    return true;
+  playlists.createPlaylist = function(user, playlist) {
+    var playlistId = generateId();
+    return db.knex.transaction(function(trx) {
+      return trx(playlists.table)
+        .insert({
+          id: playlistId,
+          name: playlist.name,
+          description: playlist.description,
+          state: playlist.state,
+          channelId: playlist.channelId,
+        })
+        .modify(channels.authorizedManageSubquery, user, playlists)
+        .then(({data}) => {
+          if (data) {
+            return trx(playlistVideos.table)
+            .where('playlistId', data.id)
+            .modify(db.channels.authorizedManageSubquery, user)
+            .del()
+            .then(() => {
+              var videos = playlist.videos || [];
+              var position;
+              return videos.map(video => {
+                position = videos.indexOf(video);
+                return trx(playlistVideos.table)
+                .insert({
+                  playlistId: playlistId,
+                  videoId: video.id,
+                  position: position,
+                })
+              });
+            });
+          }
+          return trx.rollback(
+            new PlaylistError(
+            "you don't have permissionsn to create this playlist",
+            403
+            ));
+        })
+        .catch(function(err) {
+          return trx.rollback(new PlaylistError(err, 500));
+        });
+      });
   };
 
-  // TODO: update playlist
-  playlists.updatePlaylist = function(user, id) {
-    return true;
+  playlists.updatePlaylist = function(user, playlist) {
+    return db.knex.transaction(function(trx) {
+      return trx(playlists.table)
+        .update({
+          name: playlist.name,
+          description: playlist.description,
+          state: playlist.state,
+        })
+        .where('id', playlist.id)
+        .modify(channels.authorizedManageSubquery, user, playlists)
+        .then(({data}) => {
+          if (data) {
+            return trx(playlistVideos.table)
+            .where('playlistId', data.id)
+            .modify(db.channels.authorizedManageSubquery, user)
+            .del()
+            .then(() => {
+              var videos = playlist.videos || [];
+              var position;
+              return videos.map(video => {
+                position = videos.indexOf(video);
+                return trx(playlistVideos.table)
+                .insert({
+                  playlistId: playlistId,
+                  videoId: video.id,
+                  position: position,
+                })
+              });
+            });
+          }
+          return trx.rollback(
+            new PlaylistError(
+            "you don't have permissionsn to update this playlist",
+            403
+            ));
+        })
+        .catch(function(err) {
+          return trx.rollback(new PlaylistError(err.message, err.code));
+        });
+      });
+  };
+
+  playlists.deletePlaylist = function(user, id) {
+    return db.knex(playlists.table)
+    .where('id', id)
+    .modify(db.channels.authorizedManageSubquery, user)
+    .del()
+    .then(({data}) => {
+      if (!data) {
+        return trx.rollback(
+          new PlaylistError(
+            "you don't have permissionsn to delete this playlist",
+            403
+            ));
+      }})
+    .catch(function(err) {
+      return trx.rollback(new PlaylistError(err.message, err.code));
+    });
   };
 
   return playlists;
