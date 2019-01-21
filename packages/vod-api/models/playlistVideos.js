@@ -35,7 +35,7 @@ module.exports = function(db) {
         onDelete: 'cascade',
       },
     },
-    orderId: {
+    position: {
       type: 'smallint',
       notNullable: true,
     },
