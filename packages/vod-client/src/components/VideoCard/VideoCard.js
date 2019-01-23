@@ -179,7 +179,6 @@ class VideoCard extends Component {
 
   onHover() {
     const { preload, item } = this.props;
-    item
     if (item && item.id) {
       preload(Object.keys(item).includes('videos') ? item.videos[0].id : item.id);
     }
