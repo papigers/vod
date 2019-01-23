@@ -68,4 +68,19 @@ router.put('/:id', function(req, res) {
     });
 });
 
+router.delete('/:id', function(req, res) {
+  db.videos
+    .deletePlaylist(req.user, req.params.id)
+    .then(function(deleted) {
+      if (deleted) {
+        return res.json(deleted);
+      }
+      return res.sendStatus(404);
+    })
+    .catch(function(err) {
+      console.error(err);
+      res.sendStatus(500);
+    });
+});
+
 module.exports = router;
