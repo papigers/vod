@@ -128,7 +128,7 @@ class Studio extends Component {
         return {
           thumbnail: (
             <VideoThumbnail
-              src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.videos[0].id}/thumbnail.png`}
+              src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.videos && item.videos[0] && item.videos[0].id}/thumbnail.png`}
               width={200}
               height={120}
             />
@@ -247,7 +247,14 @@ class Studio extends Component {
   renderModal() {
     const { editType, selectionDetails } = this.state;
 
-    const { onPropertyEdit, onVideoShare, onDelete, onTagsEdit, onVideoEdit } = this.props;
+    const {
+      onPropertyEdit,
+      onVideoShare,
+      onDelete,
+      onTagsEdit,
+      onVideoEdit,
+      onPlaylistUpdate
+    } = this.props;
 
     switch (editType) {
       case 'delete':
@@ -279,6 +286,7 @@ class Studio extends Component {
           <PlaylistEditForm
             playlist={selectionDetails[0]}
             onClose={this.changeModalState}
+            onSubmit={onPlaylistUpdate}
           />
           );
       case 'name':
