@@ -43,161 +43,22 @@ class StudioPage extends Component {
   };
 
   fetchPlaylists = () => {
-    this.setState({
-      playlistList: [
-        {
-          id: "1",
-          createdAt: "2018-12-18T15:27:13.250Z",
-          name: "הדרכות",
-          description: "sdfsdfsdf",
-          state: "PUBLISHED",
-          videos: [
-            {
-              id: '4SAHL6TrwPBG',
-              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
-              description: 'DOTA DOTA DOTA',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },
-            {
-              id: 'qztxN1SMfFQ2',
-              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
-              description: 'נו מההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },
-            {
-              id: 'QKnHTWn4Ee6X',
-              name: 'עומר אדם - שני משוגעים',
-              description: 'איזה אומן איזהההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },{
-              id: '2',
-              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
-              description: 'DOTA DOTA DOTA',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },
-            {
-              id: '3',
-              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
-              description: 'נו מההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },
-            {
-              id: '4',
-              name: 'עומר אדם - שני משוגעים',
-              description: 'איזה אומן איזהההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            }
-          ],
-          updatedAt: "2018-12-18T15:27:13.250Z",
-          channel: {
-              id: "s7591665",
-              name: "גרשון ח פפיאשוילי",
-          }
-        }
-        ,{
-          id: "2",
-          createdAt: "2018-12-18T15:27:13.250Z",
-          name: "שטויות",
-          description: "sdfsdfsdf",
-          state: "PUBLISHED",
-          videos: [
-            {
-              id: 'QKnHTWn4Ee6X',
-              name: 'עומר אדם - שני משוגעים',
-              description: 'איזה אומן איזהההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },
-            {
-              id: 'qztxN1SMfFQ2',
-              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
-              description: 'נו מההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            }
-          ],
-          updatedAt: "2018-12-18T15:27:13.250Z",
-          channel: {
-              id: "s7591665",
-              name: "גרשון ח פפיאשוילי",
-          }
-        },{
-          id: "3",
-          createdAt: "2018-12-18T15:27:13.250Z",
-          name: "דברים",
-          description: "sdfsdfsdf",
-          state: "PUBLISHED",
-          videos: [
-            {
-              id: 'qztxN1SMfFQ2',
-              name: 'משפחת שווץ  פרק 2 - מבצר כריות",',
-              description: 'נו מההה',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            },
-            {
-              id: '4SAHL6TrwPBG',
-              name: 'LAKAD MATATAAAG NORMALIN NORMALIN',
-              description: 'DOTA DOTA DOTA',
-              channel: {
-                id: "s7591665",
-                name: "גרשון ח פפיאשוילי",
-              },
-              privacy: 'PUBLIC',
-              state: 'UNLISTED'
-            }
-          ],
-          updatedAt: "2018-12-18T15:27:13.250Z",
-          channel: {
-              id: "cj",
-              name: "שגיא לוי",
-          }
-        }
-      ]
-    });
+    axios
+      .get(`/playlists/managed`)
+      .then(({ data }) => {
+        this.setState({
+          playlistList: data,
+        });
+      })
+      .catch(err => {
+        console.error(err);
+      });
   };
+
+  updatePlaylist = (playlist) => {
+    return axios.put(`/playlists/${playlist.id}`, playlist).finally(this.fetchPlaylists);
+  };
+
 
   deleteVideos = videos => {
     return Promise.all(
@@ -242,6 +103,7 @@ class StudioPage extends Component {
         onTagsEdit={this.editVideosTags}
         onVideoShare={this.editVideosPrivacy}
         onVideoEdit={this.editVideo}
+        onPlaylistUpdate={this.updatePlaylist}
       />
     );
   }
