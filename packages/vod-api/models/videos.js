@@ -1135,5 +1135,97 @@ module.exports = function(db) {
     return db.knexnest(query, true);
   };
 
+  videos.getVideoExposure = function(user, channels, video, type) {
+    const now = new Date();
+    now.setHours(0);
+    now.setMinutes(0);
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+    const start = new Date(now);
+    start.setDate(start.getDate() - 14 * 6);
+    const query = db.knex
+      .with(
+        'times',
+        db.knex.raw(
+          `select ??, lead(??) over (order by ??) as ?? from (\
+            select GENERATE_SERIES(?, ?, INTERVAL '2 weeks') as ?? \
+          ) x`,
+          ['startTime', 'startTime', 'startTime', 'endTime', start, now, 'startTime'],
+        ),
+      )
+      .with(
+        'filteredVideos',
+        db.knex
+          .select(`${videos.table}.id`)
+          .from(videos.table)
+          .where(
+            `${videos.table}.id`,
+            video === 'all' ? db.knex.raw('??', `${videos.table}.id`) : video,
+          )
+          .whereIn(`${videos.table}.channelId`, channels)
+          .modify(videos.authorizedViewSubquery, user),
+      )
+      .select('endTime as _date___ID')
+      .from('times')
+      .groupBy('times.endTime')
+      .orderBy('times.endTime');
+    switch (type) {
+      case 'views':
+        query
+          .select(
+            db.knex.raw('count(distinct ??) filter (where ?? in ?) as _value', [
+              `${db.videoViews.table}.videoId`,
+              `${db.videoViews.table}.videoId`,
+              db.knex.select('id').from('filteredVideos'),
+            ]),
+          )
+          .leftJoin(db.videoViews.table, function() {
+            this.on(`${db.videoViews.table}.createdAt`, '>', 'times.startTime').on(
+              `${db.videoViews.table}.createdAt`,
+              '<=',
+              'times.endTime',
+            );
+          })
+          .leftJoin('filteredVideos', `${db.videoViews.table}.videoId`, `filteredVideos.id`);
+        break;
+      case 'comments':
+        query
+          .select(
+            db.knex.raw('count(distinct ??) filter (where ?? in ?) as _value', [
+              `${db.comments.table}.videoId`,
+              `${db.comments.table}.videoId`,
+              db.knex.select('id').from('filteredVideos'),
+            ]),
+          )
+          .leftJoin(db.comments.table, function() {
+            this.on(`${db.comments.table}.createdAt`, '>', 'times.startTime').on(
+              `${db.comments.table}.createdAt`,
+              '<=',
+              'times.endTime',
+            );
+          })
+          .leftJoin(videos.table, `${db.comments.table}.videoId`, `${videos.table}.id`);
+        break;
+      case 'likes':
+        query
+          .select(
+            db.knex.raw('count(distinct ??) filter (where ?? in ?) as _value', [
+              `${db.videoLikes.table}.videoId`,
+              `${db.videoLikes.table}.videoId`,
+              db.knex.select('id').from('filteredVideos'),
+            ]),
+          )
+          .leftJoin(db.videoLikes.table, function() {
+            this.on(`${db.videoLikes.table}.createdAt`, '>', 'times.startTime').on(
+              `${db.videoLikes.table}.createdAt`,
+              '<=',
+              'times.endTime',
+            );
+          })
+          .leftJoin(videos.table, `${db.videoLikes.table}.videoId`, `${videos.table}.id`);
+        break;
+    }
+    return db.knexnest(query);
+  };
   return videos;
 };

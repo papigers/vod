@@ -9,6 +9,17 @@ const StyledVideoContainer = styled.div`
   --fg-color: #fff;
   --bg-color: ${({ theme }) => theme.palette.themePrimary};
 
+  .vjs-custom-waiting .vjs-loading-spinner {
+    display: block;
+    visibility: visible;
+  }
+
+  .video-js.vjs-custom-waiting .vjs-loading-spinner::before,
+  .video-js.vjs-custom-waiting .vjs-loading-spinner::after {
+    animation: vjs-spinner-spin 1.1s cubic-bezier(0.6, 0.2, 0, 0.8) infinite,
+      vjs-spinner-fade 1.1s linear infinite;
+  }
+
   .video-js {
     /* The base font size controls the size of everything, not just text.
       All dimensions use em-based sizes so that the scale along with the font size.
@@ -291,8 +302,20 @@ class ThemedPlayer extends Component {
         src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/mpd.mpd`,
         type: 'application/dash+xml',
       });
+      videojs.log.level('all');
       this.player.load();
       this.player.play();
+      this.player.on('waiting', () => {
+        console.log('waiting');
+        this.player.addClass('vjs-custom-waiting');
+        this.player.pause();
+        setTimeout(() => {
+          if (this.player) {
+            this.player.play();
+          }
+        }, 2000);
+      });
+      this.player.on('playing', () => this.player.removeClass('vjs-custom-waiting'));
       this.player.on('timeupdate', () => {
         this.props.onTimeUpdate(this.player.currentTime(), this.player.duration());
       });
@@ -318,6 +341,7 @@ class ThemedPlayer extends Component {
       <StyledVideoContainer>
         <video
           className="video-js vjs-16-9"
+          preload="auto"
           ref={node => {
             this.videoNode = node;
           }}

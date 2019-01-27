@@ -23,6 +23,7 @@
     "react-router-scroll-4": "^1.0.0-beta.2",
     "react-scripts": "1.1.4",
     "react-waypoint": "^8.1.0",
+    "recharts": "^1.4.2",
     "redux": "^4.0.0",
     "redux-immutable": "^4.0.0",
     "redux-thunk": "^2.3.0",

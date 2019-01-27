@@ -24,6 +24,9 @@ router.use('/channels', channels);
 var search = require('./search');
 router.use('/search', search);
 
+var analytics = require('./analytics');
+router.use('/analytics', analytics);
+
 router.get('/profile', function(req, res) {
   res.json(req.user);
 });
