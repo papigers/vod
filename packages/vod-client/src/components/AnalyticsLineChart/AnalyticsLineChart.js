@@ -74,7 +74,7 @@ class AnalyticsLineChart extends Component {
         ))}
       </TooltipContent>
     );
-  }
+  };
 
   formatData() {
     if (this.state.data) {
