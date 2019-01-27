@@ -36,6 +36,8 @@ const Content = styled.div`
   min-height: calc(100vh - 64px);
   transition: margin 0.1s ease-in-out;
   margin-top: 64px;
+  overflow-y: auto;
+  height: calc(100vh - 64px);
 `;
 
 class App extends Component {

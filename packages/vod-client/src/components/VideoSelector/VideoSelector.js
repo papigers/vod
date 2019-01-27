@@ -6,7 +6,7 @@ import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 
 const DropdownOption = styled.div`
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   align-items: end;
   justify-content: center;

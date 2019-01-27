@@ -1,30 +1,10 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 
 import DashboardCard from 'components/DashboardCard';
 import QuotaChart from 'components/QuotaChart';
 import AnalyticsLineChart from 'components/AnalyticsLineChart';
-
-const QuantityStat = styled(Box)`
-  text-align: center;
-  background-color: ${({ theme }) => theme.palette.white};
-  padding: 2em;
-  margin: 2em 0.5em;
-  border: 2px solid;
-  border-color: ${({ theme }) => theme.palette.neutralLight};
-  border-radius: 4px;
-  flex: 1 1 0;
-
-  div {
-    font-size: 3.5em;
-    color: ${({ theme }) => theme.palette.themePrimary};
-  }
-
-  span {
-    font-size: 1.5em;
-  }
-`;
+import AnalyticsStats from 'components/AnalyticsStats';
 
 class StudioAnalytics extends Component {
   getManagedChannels() {
@@ -59,22 +39,7 @@ class StudioAnalytics extends Component {
                 allSelect: true,
               }}
             >
-              <QuantityStat>
-                <div>45</div>
-                <span>סרטונים</span>
-              </QuantityStat>
-              <QuantityStat>
-                <div>12</div>
-                <span>פלייליסטים</span>
-              </QuantityStat>
-              <QuantityStat>
-                <div>23</div>
-                <span>עוקבים</span>
-              </QuantityStat>
-              <QuantityStat>
-                <div>230</div>
-                <span>תגובות</span>
-              </QuantityStat>
+              <AnalyticsStats />
             </DashboardCard>
             <DashboardCard
               flex="1 1 0"
@@ -85,14 +50,14 @@ class StudioAnalytics extends Component {
                 allSelect: true,
               }}
               videoSelector={{
-                videos: [{ id: 'qztxN1SMfFQ2', name: 'משפחת שווץ פרק 2 - מבצר כריות' }],
+                videos: 'channel',
                 multiSelect: false,
                 allSelect: true,
               }}
               tabs={[
-                { id: 'likes', label: 'לייקים' },
-                { id: 'comments', label: 'תגובות' },
-                { id: 'views', label: 'צפיות' },
+                { key: 'likes', label: 'לייקים' },
+                { key: 'comments', label: 'תגובות' },
+                { key: 'views', label: 'צפיות' },
               ]}
             >
               <AnalyticsLineChart />

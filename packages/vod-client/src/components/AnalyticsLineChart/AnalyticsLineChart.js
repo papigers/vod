@@ -3,6 +3,8 @@ import styled, { withTheme } from 'styled-components';
 import { transparentize, mix } from 'polished';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
+import axios from 'utils/axios';
+
 const Container = styled(ResponsiveContainer)`
   background: ${({ theme }) => transparentize(0.7, theme.palette.white)};
 `;
@@ -22,31 +24,89 @@ const TooltipContent = styled.div`
   }
 `;
 
-const data = [
-  { date: 'Page A', value: 2400 },
-  { date: 'Page B', value: 1398 },
-  { date: 'Page C', value: 9800 },
-  { date: 'Page D', value: 3908 },
-  { date: 'Page E', value: 4800 },
-  { date: 'Page F', value: 3800 },
-  { date: 'Page G', value: 4300 },
-];
-
 class AnalyticsLineChart extends Component {
-  renderTooltip(props) {
-    console.log(props);
+  constructor() {
+    super();
+    this.state = { data: null };
+  }
+
+  componentDidMount() {
+    this.loadData();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      this.props.selectedChannels.length !== prevProps.selectedChannels.length ||
+      this.props.selectedVideo !== prevProps.selectedVideo ||
+      this.props.selectedTab !== prevProps.selectedTab
+    ) {
+      this.loadData();
+    }
+  }
+
+  loadData() {
+    const { selectedVideos, selectedChannels, selectedTab } = this.props;
+    const channelQuery = (selectedChannels || []).join('&channel=');
+    console.log(this.props);
+    this.setState({ data: null }, () => {
+      axios
+        .get(
+          `/analytics/exposure?video=${selectedVideos}&type=${
+            selectedTab.key
+          }&channel=${channelQuery}`,
+        )
+        .then(({ data }) => this.setState({ data }))
+        .catch(err => {
+          console.error(err);
+          this.setState({ data: null });
+        });
+    });
+  }
+
+  renderTooltip = props => {
     return (
       <TooltipContent>
         {`${props.label}: `}
         {props.payload.map(d => (
-          <span>{d.payload.value}</span>
+          <span>
+            {d.payload.value} {this.props.selectedTab.label}
+          </span>
         ))}
       </TooltipContent>
     );
   }
 
+  formatData() {
+    if (this.state.data) {
+      return this.state.data.map(d => ({
+        date: new Date(d.date).toLocaleDateString(),
+        value: d.value,
+      }));
+    }
+    const now = new Date();
+    now.setMilliseconds(0);
+    now.setSeconds(0);
+    now.setMinutes(0);
+    now.setHours(0);
+    return [0, 1, 2, 3, 4, 5].reverse().map(num => {
+      const date = new Date(now);
+      date.setDate(date.getDate() - 14 * num);
+      return {
+        value: 0,
+        date,
+      };
+    });
+  }
+
+  getPaddedYDomain(data) {
+    const min = 0;
+    const max = data.reduce((max, curr) => Math.max(max, curr.value), 0);
+    return [min, Math.round(max * 1.2 + 1)];
+  }
+
   render() {
     const { theme } = this.props;
+    const data = this.formatData(this.state.data);
 
     return (
       <Container width="100%" height={400}>
@@ -67,6 +127,7 @@ class AnalyticsLineChart extends Component {
             axisLine={{ stroke: theme.palette.black, strokeWidth: 2 }}
             tickLine={{ stroke: theme.palette.black }}
             tick={{ fill: theme.palette.black }}
+            domain={this.getPaddedYDomain(data)}
           />
           <Tooltip content={this.renderTooltip} />
           <Area

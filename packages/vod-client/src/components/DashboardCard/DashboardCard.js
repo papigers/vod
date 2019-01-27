@@ -7,6 +7,7 @@ import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabr
 
 import ChannelSelector from 'components/ChannelSelector';
 import VideoSelector from 'components/VideoSelector';
+import axios from 'utils/axios';
 
 const Card = styled(Box)`
   background-color: ${({ theme }) => theme.palette.neutralLighterAlt};
@@ -66,30 +67,90 @@ class DashboardCard extends Component {
     this.state = {
       selectedChannels: [channel && channel.id],
       selectedVideos: 'all',
+      selectedTab: props.tabs && props.tabs.length ? props.tabs[0].key : null,
+      channelVideos: [],
       expanded: true,
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidMount() {
+    const { videoSelector, channelSelector } = this.props;
+    if (videoSelector && videoSelector.videos === 'channel' && channelSelector) {
+      this.getChannelVideos();
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
     const prevChannels = (prevProps.channelSelector && prevProps.channelSelector.channels) || [];
     const currChannels = (this.props.channelSelector && this.props.channelSelector.channels) || [];
     if (prevChannels.length !== currChannels.length) {
-      this.setState({
-        selectedChannels: [currChannels[0] && currChannels[0].id],
-        selectedVideos: [],
-      });
+      this.setState(
+        {
+          selectedChannels: [currChannels[0] && currChannels[0].id],
+          selectedVideos: [],
+        },
+        this.getChannelVideos,
+      );
     }
+  }
+
+  getChannelVideos() {
+    let channels = this.state.selectedChannels;
+    if (!Array.isArray(channels)) {
+      channels = [channels];
+    }
+    this.setState({ channelVideos: [] }, () => {
+      Promise.all(channels.map(ch => axios.get(`/channels/${ch}/videos?attr=id&attr=name`)))
+        .then(allVideos => {
+          const channelVideos = allVideos.reduce((all, currVideos) => {
+            return all.concat(currVideos.data);
+          }, []);
+          const selectedVideos = channelVideos.find(vid => vid.id === this.state.selectedVideos);
+          this.setState({
+            channelVideos,
+            selectedVideos: (selectedVideos && selectedVideos.id) || 'all',
+          });
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    });
   }
 
   onToggleExpanded = () => this.setState({ expanded: !this.state.expanded });
 
-  onChannelChange = selectedChannels => this.setState({ selectedChannels });
+  onChannelChange = selectedChannels => this.setState({ selectedChannels }, this.getChannelVideos);
   onVideoChange = selectedVideos => this.setState({ selectedVideos });
-  onTabChange = selectedTab => this.setState({ selectedTab });
+  onTabChange = selectedTab => this.setState({ selectedTab: selectedTab.props.itemKey });
 
   render() {
     const { title, children, channelSelector, videoSelector, tabs, ...props } = this.props;
-    const { selectedChannels, selectedVideos, selectedTab, expanded } = this.state;
+    const { selectedChannels, selectedVideos, selectedTab, expanded, channelVideos } = this.state;
+    const child = React.Children.map(children, child =>
+      React.cloneElement(child, {
+        selectedChannels:
+          channelSelector && channelSelector.multiSelect
+            ? selectedChannels
+            : Array.isArray(selectedChannels)
+            ? selectedChannels[0]
+            : selectedChannels,
+        selectedVideos:
+          videoSelector && videoSelector.multiSelect
+            ? selectedVideos
+            : Array.isArray(selectedVideos)
+            ? selectedVideos[0]
+            : selectedVideos,
+        selectedTab: tabs && tabs.find(t => t.key === selectedTab),
+      }),
+    );
+
+    const overrideVideos =
+      videoSelector && videoSelector.videos === 'channel'
+        ? {
+            videos: channelVideos,
+          }
+        : {};
+
     return (
       <Card px="1em" m={2} {...props}>
         <Box my="0.6em">
@@ -132,6 +193,7 @@ class DashboardCard extends Component {
                     selected={selectedVideos}
                     onChange={this.onVideoChange}
                     {...videoSelector}
+                    {...overrideVideos}
                   />
                 ) : null}
               </Flex>
@@ -139,7 +201,7 @@ class DashboardCard extends Component {
           </SlidingOptions>
         </Box>
         <FlexGrow alignItems="center" justifyContent="center">
-          {this.props.children}
+          {child}
         </FlexGrow>
       </Card>
     );
