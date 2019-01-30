@@ -41,40 +41,60 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-    db.playlists
-      .createPlaylist(req.user, req.body)
-      .then(function(result) {
-        if (result && result.id) {
-          return res.status(200).json({
-            playlistId: result.id,
-          });
-        }
-        return res.sendStatus(404);
-      })
-      .catch(function(err) {
-        console.error(err);
-        return res.status(500).json({
-          error: 'Failed to create playlist',
+  db.playlists
+    .createPlaylist(req.user, req.body)
+    .then(function(result) {
+      if (result && result.id) {
+        return res.status(201).json({
+          playlistId: result.id,
         });
-      });
-  });
+      }
+      return res.sendStatus(404);
+    })
+    .catch(function(err) {
+      return res.status(err.code).json(err.code);
+    });
+});
 
-  router.put('/:id/:videoId', function(req, res) {
-    db.playlists
-      .addVideoToPlaylist(req.user, req.params.id, req.params.videoId)
-      .then(function(result) {
-        if (result) {
-          return res.sendStatus(200);
-        }
-        return res.sendStatus(404);
-      })
-      .catch(function(err) {
-        console.error(err);
-        return res.status(500).json({
-            error: 'Failed to add video to playlist',
-        });
+router.put('/:id/add/:videoId', function(req, res) {
+  db.playlists
+    .addVideoToPlaylist(req.user, req.params.id, req.params.videoId)
+    .then(function(result) {
+      if (result) {
+        return res.sendStatus(200);
+      }
+      return res.sendStatus(404);
+    })
+    .catch(function(err) {
+      console.error(err);
+      if (err.code === 200) {
+        return res.status(err.code).json(err.code);
+      }
+      return res.status(500).json({
+          error: 'Failed to add video to playlist',
       });
-  });
+    });
+});
+
+router.put('/:id/remove/:videoId', function(req, res) {
+  db.playlists
+    .removeVideoFromPlaylist(req.user, req.params.id, req.params.videoId)
+    .then(function(result) {
+      if (result) {
+        return res.sendStatus(200);
+      }
+      return res.sendStatus(404);
+    })
+    .catch(function(err) {
+      console.error(err);
+      if (err.code === 200) {
+        return res.status(err.code).json(err.code);
+      }
+      return res.status(500).json({
+          error: 'Failed to remove video from playlist',
+      });
+    });
+});
   
 router.put('/:id', function(req, res) {
   db.playlists
