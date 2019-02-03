@@ -319,7 +319,7 @@ class ChannelSettings extends Component {
           onChange={this.onChangeDescription}
         />
 
-        <Label>בחר תמונת תצוגה:</Label>
+        {/* <Label>בחר תמונת תצוגה:</Label>
         <Flex justifyContent="space-between" alignItems="center">
           <Box>
             <InputButton iconProps={{ iconName: 'Upload' }} text="תמונת פרופיל">
@@ -330,9 +330,9 @@ class ChannelSettings extends Component {
             size={PersonaSize.size100}
             imageUrl={(profile && profile.preview) || '/images/user.svg'}
           />
-        </Flex>
+        </Flex> */}
 
-        <Label>בחר תמונת נושא:</Label>
+        {/* <Label>בחר תמונת נושא:</Label>
         <Flex justifyContent="space-between" alignItems="center">
           <Box>
             <InputButton iconProps={{ iconName: 'Upload' }} text="תמונת נושא">
@@ -342,7 +342,7 @@ class ChannelSettings extends Component {
         </Flex>
         <Box mt={2}>
           <Image src={cover && cover.preview} coverStyle={ImageCoverStyle.landscape} width={420} />
-        </Box>
+        </Box> */}
         <Buttons py={2} px={32}>
           <Flex>
             <PrimaryButton text="שמור" onClick={this.onSubmit} />

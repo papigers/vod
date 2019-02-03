@@ -286,6 +286,7 @@ class ThemedPlayer extends Component {
   }
 
   componentWillUnmount() {
+    clearTimeout(this.playTimeout);
     if (this.player) {
       this.player.dispose();
     }
@@ -306,10 +307,10 @@ class ThemedPlayer extends Component {
       this.player.load();
       this.player.play();
       this.player.on('waiting', () => {
-        console.log('waiting');
         this.player.addClass('vjs-custom-waiting');
         this.player.pause();
-        setTimeout(() => {
+        clearTimeout(this.playTimeout);
+        this.playTimeout = setTimeout(() => {
           if (this.player) {
             this.player.play();
           }

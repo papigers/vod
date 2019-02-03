@@ -3,14 +3,13 @@ import styled from 'styled-components';
 import { transitions } from 'polished';
 import { Box } from 'grid-styled';
 
-import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
 import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivot';
-import { Shimmer, ShimmerElementType as ElemType } from 'office-ui-fabric-react/lib/Shimmer';
 
 import VideoList from 'components/VideoList';
 import ChannelRow from 'containers/ChannelRow';
 import axios from 'utils/axios';
 import ChannelSettings from 'components/ChannelSettings';
+import ChannelCoverImage from '../ChannelCoverImage';
 
 const ContentBox = styled(Box).attrs(() => ({
   pr: 100,
@@ -134,37 +133,23 @@ export default class Channel extends Component {
 
   render() {
     const { channel, user } = this.props;
-
+    const canEditChannel = channel && (channel.canManage || user.id === channel.id);
     return (
       <Fragment>
-        <Shimmer
-          width="100%"
-          shimmerElements={[{ type: ElemType.line, width: '100%', height: 280 }]}
-          isDataLoaded={!!channel}
-        >
-          {channel && (
-            <Image
-              height={280}
-              src={`/profile/${channel.id}/cover.png`}
-              imageFit={ImageFit.cover}
-              maximizeFrame
-            />
-          )}
-        </Shimmer>
+        <ChannelCoverImage
+          editable={canEditChannel}
+          src={channel && channel.id && `/profile/${channel.id}/cover.png`}
+        />
         <TitleBox>
           <Box py={20}>
-            <ChannelRow channel={channel} user={user} />
+            <ChannelRow channel={channel} user={user} imageEditable={canEditChannel} />
           </Box>
           <ChannelPivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
             <PivotItem linkText="בית" itemKey="home" />
             <PivotItem linkText="סרטונים" itemKey="videos" />
             <PivotItem linkText="פלייליסטים" itemKey="playlists" />
             <PivotItem itemIcon="Search" itemKey="search" />
-            {channel && (channel.canManage || user.id === channel.id) ? (
-              <PivotItem itemIcon="Settings" itemKey="settings" />
-            ) : (
-              <div />
-            )}
+            {canEditChannel ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div />}
           </ChannelPivot>
         </TitleBox>
         <ContentBox>{this.renderTab()}</ContentBox>

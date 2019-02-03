@@ -52,7 +52,6 @@ class PeoplePicker extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log(this.props.value, prevProps.value, this.state.currentSelectedItems);
     if (
       (this.props.value &&
         this.props.value.length &&
@@ -117,7 +116,6 @@ class PeoplePicker extends Component {
   }
 
   onChange = currentSelectedItems => {
-    console.log(currentSelectedItems);
     if (this.props.onChange) {
       this.props.onChange(
         currentSelectedItems.map(item => ({

@@ -7,7 +7,7 @@ import { bindActionCreators } from 'redux';
 import Header from 'components/Header';
 import Results from 'components/Results';
 import Sidebar from 'components/Sidebar';
-import Modal from 'components/Modal';
+import Modal, { MODAL_SIZE } from 'components/Modal';
 import NewChannelForm from 'components/NewChannelForm';
 
 import HomePage from 'containers/HomePage';
@@ -93,7 +93,12 @@ class App extends Component {
             </Switch>
           </Content>
         </Container>
-        <Modal isOpen={channelModalOpen} title="יצירת ערוץ" onDismiss={toggleChannelModalOpen}>
+        <Modal
+          size={MODAL_SIZE.LARGE}
+          isOpen={channelModalOpen}
+          title="יצירת ערוץ"
+          onDismiss={toggleChannelModalOpen}
+        >
           <NewChannelForm user={user} onSubmit={this.props.getManagedChannels} />
         </Modal>
       </Fragment>

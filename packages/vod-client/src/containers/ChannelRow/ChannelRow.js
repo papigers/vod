@@ -15,6 +15,7 @@ import {
 
 import createReduxContainer from 'utils/createReduxContainer';
 
+import ChannelProfileImage from 'components/ChannelProfileImage';
 import { makeSelectUser } from 'containers/ChannelPage/selectors';
 import * as actions from './actions';
 
@@ -39,6 +40,14 @@ class ChannelRow extends Component {
     this.setState({ followDelta: this.state.followDelta - 1 });
     this.props.unfollowChannel(this.props.channel.id);
   };
+
+  onRenderCoin = props => (
+    <ChannelProfileImage
+      editable={this.props.imageEditable}
+      size={props.size}
+      src={props.imageUrl}
+    />
+  );
 
   render() {
     const { channel, user, size } = this.props;
@@ -98,6 +107,7 @@ class ChannelRow extends Component {
                   primaryText={channel.name}
                   secondaryText={channel.description}
                   size={PersonaSize[`size${size}`]}
+                  onRenderCoin={this.onRenderCoin}
                 />
               </Link>
             </FlexGrow>

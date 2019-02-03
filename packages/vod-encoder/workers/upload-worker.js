@@ -47,7 +47,7 @@ var channelWrapper = connection.createChannel({
   setup(ch) {
     return Promise.all([
       ch.assertQueue(UPLOAD_QUEUE, { durable: true }),
-      ch.prefetch(2),
+      ch.prefetch(4),
       ch.consume(
         UPLOAD_QUEUE,
         function(msg) {
