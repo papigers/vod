@@ -16,6 +16,7 @@ import {
   ShimmerElementType as ElemType,
   ShimmerElementsGroup,
 } from 'office-ui-fabric-react/lib/Shimmer';
+import { Overlay } from 'office-ui-fabric-react/lib/Overlay';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 import { withPreload } from 'containers/VideoPreloader';
@@ -93,6 +94,27 @@ const LikeBox = styled(Flex)`
   }
 `;
 
+const PlaylistOverlay = styled.div`
+  background-color: black;
+  display: flex;
+  position: relative;
+  align-content: center;
+  width: 50%;
+  height: 100%;
+  opacity: 0.5;
+  font-size: xx-large;
+  color: white;
+  flex-direction: column;
+`;
+
+const PlaylistCount = styled.p`
+  margin: 15px 30px 0;
+`;
+
+const PlaylistLogo = styled(Icon)`
+  margin: 0 30px;
+`;
+
 function LoadingCardContent(compact) {
   return (
     <Flex style={{ height: compact ? 118 : 86 }}>
@@ -156,25 +178,32 @@ class VideoCard extends Component {
   }
 
   onHover() {
-    const { preload, video } = this.props;
-    if (video && video.id) {
-      preload(video.id);
+    const { preload, item } = this.props;
+    if (item && item.id) {
+      preload(Object.keys(item).includes('videos') ? item.videos[0].id : item.id);
     }
   }
 
   render() {
-    const { compact, loading, video } = this.props;
+    const { compact, loading, item } = this.props;
 
-    const showShimmer = loading || !video;
-
-    const LinkOnLoad = video ? Link : 'div';
+    const showShimmer = loading || !item;
+    const LinkOnLoad = item ? Link : 'div';
 
     return (
       <CardContainer
         onMouseOver={this.onHover}
         type={compact ? DocumentCardType.compact : DocumentCardType.normal}
       >
-        <LinkOnLoad to={video && `/watch?v=${video.id}`}>
+        <LinkOnLoad
+          to={
+            item
+              ? Object.keys(item).includes('videos')
+                ? `/watch?l=${item.id}&v=${item.videos[0].id}`
+                : `/watch?v=${item.id}`
+              : null
+          }
+        >
           <StyledVideoCard
             onClick={() => null}
             type={compact ? DocumentCardType.compact : DocumentCardType.normal}
@@ -188,18 +217,22 @@ class VideoCard extends Component {
                 previewImages={[
                   {
                     previewImageSrc:
-                      video &&
-                      `${process.env.REACT_APP_STREAMER_HOSTNAME}/${video.id}/thumbnail.png`,
+                      item &&
+                      `${process.env.REACT_APP_STREAMER_HOSTNAME}/${
+                        Object.keys(item).includes('videos') ? item.videos[0].id : item.id
+                      }/thumbnail.png`,
                     width: compact ? null : 208,
                     height: compact ? 118 : null,
                   },
                 ]}
               />
-              {video && (
-                <LikeBox alignItems="center">
-                  <Icon iconName="LikeSolid" />
-                  {video.likeCount}
-                </LikeBox>
+              {item && Object.keys(item).includes('videos') && (
+                <Overlay>
+                  <PlaylistOverlay>
+                    <PlaylistCount>{item.videos.length}</PlaylistCount>
+                    <PlaylistLogo iconName={'Stack'} />
+                  </PlaylistOverlay>
+                </Overlay>
               )}
             </Shimmer>
             <div className="ms-DocumentCard-details">
@@ -208,16 +241,24 @@ class VideoCard extends Component {
                 width="100%"
                 isDataLoaded={!showShimmer}
               >
-                {video && <DocumentCardTitle title={video.name} shouldTruncate />}
-                <LinkOnLoad to={video && `/channel/${video.channel.id}`}>
+                {item && (
+                  <Flex justifyContent="space-between" alignItems="baseline">
+                    <DocumentCardTitle title={item.name} shouldTruncate />
+                    <LikeBox alignItems="center">
+                      <Icon iconName="LikeSolid" />
+                      {item.likeCount}
+                    </LikeBox>
+                  </Flex>
+                )}
+                <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
                   <DocumentCardActivity
-                    // activity={video && `הועלה ב: ${(new Date(video.createdAt)).toLocaleString()}`}
-                    activity={video && `${video.viewCount} צפיות`}
+                    // activity={item && `הועלה ב: ${(new Date(item.createdAt)).toLocaleString()}`}
+                    activity={item && `${item.viewCount} צפיות`}
                     people={
-                      video && [
+                      item && [
                         {
-                          name: video.channel.name,
-                          profileImageSrc: `/profile/${video.channel.id}/profile.png`,
+                          name: item.channel.name,
+                          profileImageSrc: `/profile/${item.channel.id}/profile.png`,
                         },
                       ]
                     }
