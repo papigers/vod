@@ -26,11 +26,11 @@ class StudioPlaylists extends Component {
   constructor() {
     super();
     this.state = {
-          playlistList: [],
-          selection: new Selection({ onSelectionChanged: this.onSelectionChanged }),
-          modalIsOpen: false,
-          selectionDetails: [],
-      };
+      playlistList: [],
+      selection: new Selection({ onSelectionChanged: this.onSelectionChanged }),
+      modalIsOpen: false,
+      selectionDetails: [],
+    };
   }
 
   componentDidMount() {
@@ -55,17 +55,15 @@ class StudioPlaylists extends Component {
         console.error(err);
       });
   };
-  
-  updatePlaylist = (playlist) => {
-    return axios.put(`/playlists/${playlist.id}`, playlist)
-    .finally(this.fetchPlaylists);
+
+  updatePlaylist = playlist => {
+    return axios.put(`/playlists/${playlist.id}`, playlist).finally(this.fetchPlaylists);
   };
 
-  deletePlaylist = (id) => {
-    return axios.delete(`/playlists/${id}`)
-    .finally(this.fetchPlaylists);
+  deletePlaylist = id => {
+    return axios.delete(`/playlists/${id}`).finally(this.fetchPlaylists);
   };
-  
+
   changeModalState = () => {
     if (this.state.modalIsOpen) {
       this.state.selection.setAllSelected(false);
@@ -77,7 +75,7 @@ class StudioPlaylists extends Component {
 
   onSelectionChanged = () => {
     if (this.state.selection.getSelection().length > 1) {
-      this.state.selection.setAllSelected(false);      
+      this.state.selection.setAllSelected(false);
     } else {
       this.setState({
         selectionDetails: this.state.selection.getSelection(),
@@ -115,7 +113,7 @@ class StudioPlaylists extends Component {
     }
   }
 
-  getItemList = (itemsList) => {
+  getItemList = itemsList => {
     const options = {
       year: 'numeric',
       month: 'numeric',
@@ -133,7 +131,9 @@ class StudioPlaylists extends Component {
       return {
         thumbnail: (
           <VideoThumbnail
-            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.videos && item.videos[0] && item.videos[0].id}/thumbnail.png`}
+            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.videos &&
+              item.videos[0] &&
+              item.videos[0].id}/thumbnail.png`}
             width={200}
             height={120}
           />
@@ -153,7 +153,7 @@ class StudioPlaylists extends Component {
     });
   };
 
-  getGroupsList = (itemsList) => {
+  getGroupsList = itemsList => {
     let startIndex = 0;
     const channels = [];
 
@@ -183,29 +183,24 @@ class StudioPlaylists extends Component {
   renderModal() {
     const { editType, selectionDetails } = this.state;
 
-    const {
-      onPlaylistUpdate,
-      onDelete,
-    } = this.props;
+    const { onPlaylistUpdate } = this.props;
 
     switch (editType) {
       case 'delete':
-        return (
-          true
-          // <DeleteForm
-          //   videos={selectionDetails}
-          //   onClose={this.changeModalState}
-          //   onSubmit={onDelete}
-          // />
-        );
+        return true;
+      // <DeleteForm
+      //   videos={selectionDetails}
+      //   onClose={this.changeModalState}
+      //   onSubmit={onDelete}
+      // />
       case 'editPlaylist':
-          return (
+        return (
           <PlaylistEditForm
             playlist={selectionDetails[0]}
             onClose={this.changeModalState}
             onSubmit={onPlaylistUpdate}
           />
-          );
+        );
       default:
         return <p>500</p>;
     }
@@ -218,54 +213,48 @@ class StudioPlaylists extends Component {
       <Fragment>
         <ActionsBox hasItems={selectionDetails.length}>
           <CommandBar
-            items={
-              [
-                {
-                  key: 'editPlaylist',
-                  name: 'ערוך פלייליסט',
-                  iconProps: {
-                    iconName: 'Edit',
-                  },
-                  onClick: () => {
-                    this.onMenuClick('editPlaylist');
-                  },
+            items={[
+              {
+                key: 'editPlaylist',
+                name: 'ערוך פלייליסט',
+                iconProps: {
+                  iconName: 'Edit',
                 },
-                {
-                  key: 'delete',
-                  name: 'מחק',
-                  iconProps: {
-                    iconName: 'Delete',
-                  },
-                  onClick: () => {
-                    this.onMenuClick('delete');
-                  },
+                onClick: () => {
+                  this.onMenuClick('editPlaylist');
                 },
-              ]
-            }
+              },
+              {
+                key: 'delete',
+                name: 'מחק',
+                iconProps: {
+                  iconName: 'Delete',
+                },
+                onClick: () => {
+                  this.onMenuClick('delete');
+                },
+              },
+            ]}
           />
         </ActionsBox>
         <div style={{ position: 'relative', flexGrow: 1, flexShrink: 0 }}>
           <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
             <Box>
-                <DetailsList
-                  setKey="playlists"
-                  items={this.getItemList(playlistList)}
-                  groups={this.getGroupsList(playlistList)}
-                  columns={playlistsColumns}
-                  selection={selection}
-                  ariaLabelForSelectionColumn="לחץ לבחירה"
-                  selectionMode={SelectionMode.none}
-                  onRenderDetailsHeader={this.onRenderDetailsHeader}
-                  listProps={{ renderedWindowsAhead: 1, renderedWindowsBehind: 1 }}
-                />
+              <DetailsList
+                setKey="playlists"
+                items={this.getItemList(playlistList)}
+                groups={this.getGroupsList(playlistList)}
+                columns={playlistsColumns}
+                selection={selection}
+                ariaLabelForSelectionColumn="לחץ לבחירה"
+                selectionMode={SelectionMode.none}
+                onRenderDetailsHeader={this.onRenderDetailsHeader}
+                listProps={{ renderedWindowsAhead: 1, renderedWindowsBehind: 1 }}
+              />
             </Box>
           </ScrollablePane>
         </div>
-        <Modal
-        isOpen={modalIsOpen}
-        title={'עריכת פלייליסט'}
-        onDismiss={this.changeModalState}
-        >
+        <Modal isOpen={modalIsOpen} title={'עריכת פלייליסט'} onDismiss={this.changeModalState}>
           {this.renderModal()}
         </Modal>
       </Fragment>

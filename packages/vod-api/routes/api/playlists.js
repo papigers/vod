@@ -3,23 +3,23 @@ var router = express.Router();
 var db = require('../../models');
 
 router.get('/managed', function(req, res) {
-    db.playlists
-      .getManagedPlaylists(req.user)
-      .then(function(playlists) {
-        if (playlists && playlists.length) {
-          return res.json(playlists);
-        }
-        return res.status(404).json({
-          error: 'There are no playlists',
-        });
-      })
-      .catch(function(err) {
-        console.error(err);
-        return res.status(500).json({
-          error: "Couldn't get playlists",
-        });
+  db.playlists
+    .getManagedPlaylists(req.user)
+    .then(function(playlists) {
+      if (playlists && playlists.length) {
+        return res.json(playlists);
+      }
+      return res.status(404).json({
+        error: 'There are no playlists',
       });
-  });
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
+        error: "Couldn't get playlists",
+      });
+    });
+});
 
 router.get('/:id', function(req, res) {
   db.playlists
@@ -71,7 +71,7 @@ router.put('/:id/add/:videoId', function(req, res) {
         return res.status(err.code).json(err.code);
       }
       return res.status(500).json({
-          error: 'Failed to add video to playlist',
+        error: 'Failed to add video to playlist',
       });
     });
 });
@@ -91,11 +91,11 @@ router.put('/:id/remove/:videoId', function(req, res) {
         return res.status(err.code).json(err.code);
       }
       return res.status(500).json({
-          error: 'Failed to remove video from playlist',
+        error: 'Failed to remove video from playlist',
       });
     });
 });
-  
+
 router.put('/:id', function(req, res) {
   db.playlists
     .updatePlaylist(req.user, req.params.id, req.body)
@@ -108,7 +108,7 @@ router.put('/:id', function(req, res) {
     .catch(function(err) {
       console.error(err);
       return res.status(500).json({
-          error: 'Failed to update playlist',
+        error: 'Failed to update playlist',
       });
     });
 });

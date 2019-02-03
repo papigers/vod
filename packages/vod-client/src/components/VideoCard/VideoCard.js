@@ -95,24 +95,24 @@ const LikeBox = styled(Flex)`
 `;
 
 const PlaylistOverlay = styled.div`
-    background-color: black;
-    display: flex;
-    position: relative;
-    align-content: center;
-    width: 50%;
-    height: 100%;
-    opacity: 0.5;
-    font-size: xx-large;
-    color: white;
-    flex-direction: column;
+  background-color: black;
+  display: flex;
+  position: relative;
+  align-content: center;
+  width: 50%;
+  height: 100%;
+  opacity: 0.5;
+  font-size: xx-large;
+  color: white;
+  flex-direction: column;
 `;
 
 const PlaylistCount = styled.p`
-    margin: 15px 30px 0;
+  margin: 15px 30px 0;
 `;
 
 const PlaylistLogo = styled(Icon)`
-    margin: 0 30px;
+  margin: 0 30px;
 `;
 
 function LoadingCardContent(compact) {
@@ -189,18 +189,21 @@ class VideoCard extends Component {
 
     const showShimmer = loading || !item;
     const LinkOnLoad = item ? Link : 'div';
-    
+
     return (
       <CardContainer
         onMouseOver={this.onHover}
         type={compact ? DocumentCardType.compact : DocumentCardType.normal}
       >
         <LinkOnLoad
-        to={item ?
-          Object.keys(item).includes('videos') ?
-            `/watch?l=${item.id}&v=${item.videos[0].id}` :
-            `/watch?v=${item.id}`
-        : null}>
+          to={
+            item
+              ? Object.keys(item).includes('videos')
+                ? `/watch?l=${item.id}&v=${item.videos[0].id}`
+                : `/watch?v=${item.id}`
+              : null
+          }
+        >
           <StyledVideoCard
             onClick={() => null}
             type={compact ? DocumentCardType.compact : DocumentCardType.normal}
@@ -215,20 +218,22 @@ class VideoCard extends Component {
                   {
                     previewImageSrc:
                       item &&
-                      `${process.env.REACT_APP_STREAMER_HOSTNAME}/${Object.keys(item).includes('videos') ? item.videos[0].id : item.id}/thumbnail.png`,
+                      `${process.env.REACT_APP_STREAMER_HOSTNAME}/${
+                        Object.keys(item).includes('videos') ? item.videos[0].id : item.id
+                      }/thumbnail.png`,
                     width: compact ? null : 208,
                     height: compact ? 118 : null,
                   },
                 ]}
               />
-              {item && Object.keys(item).includes('videos') &&
-                  <Overlay>
-                    <PlaylistOverlay>
-                        <PlaylistCount>{item.videos.length}</PlaylistCount>
-                        <PlaylistLogo iconName={'Stack'}/>
-                    </PlaylistOverlay>
-                  </Overlay>
-                }
+              {item && Object.keys(item).includes('videos') && (
+                <Overlay>
+                  <PlaylistOverlay>
+                    <PlaylistCount>{item.videos.length}</PlaylistCount>
+                    <PlaylistLogo iconName={'Stack'} />
+                  </PlaylistOverlay>
+                </Overlay>
+              )}
             </Shimmer>
             <div className="ms-DocumentCard-details">
               <Shimmer
