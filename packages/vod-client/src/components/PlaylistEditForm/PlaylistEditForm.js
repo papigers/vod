@@ -90,7 +90,7 @@ class PlaylistEditForm extends Component {
           name: '',
           description: '',
           videos: [],
-          state: 'UNLISTED',
+          state: 'PUBLISHED',
           error: null,
           loading: false,
           selection: new Selection(),
@@ -137,8 +137,8 @@ class PlaylistEditForm extends Component {
             return 'מפורסם';
           case 'UNLISTED':
             return 'קישור בלבד';
-          case 'PRIVATE':
-            return 'פרטי';
+          case 'DRAFT':
+            return 'טיוטה';
           default:
             return 404;
         }
@@ -167,7 +167,7 @@ class PlaylistEditForm extends Component {
                 name: video.name,
                 stateDisplay: this.getPlaylistState(video.state),
                 privacyDisplay: video.privacy === 'PUBLIC' ? 'ציבורי' : 'פרטי',
-                channelName: video.channel.name
+                channelName: video.channelName
             }
         });
     }
@@ -221,12 +221,32 @@ class PlaylistEditForm extends Component {
         this.setState({ videos: videos });
     }
 
-    onSubmit = () => {
-        console.log('submit');
+    onSubmit() {
+        const { onSubmit, onClose } = this.props;
+        const {
+            id,
+            name,
+            description,
+            videos,
+            state,
+        } = this.state;
+        const playlist = {id, name, description, videos, state}
+        
         this.setState({
-            loading: true
+          loading: true,
+          error: null,
         });
-    }
+        onSubmit(playlist)
+          .then(results => {
+            onClose();
+          })
+          .catch(e => {
+            this.setState({
+              error: e.message,
+              loading: false,
+            });
+          });
+      }
 
     render() {
         const {
@@ -279,7 +299,7 @@ class PlaylistEditForm extends Component {
                     </PlaylistPropsContainer>
                     <Box mx={3} />
                     <PlaylistContainer>
-                        <ScrollablePane scrollbarVisibility={ScrollbarVisibility.always}>
+                        <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
                             <DetailsList
                                 setKey="playlists"
                                 items={this.getItems()}
