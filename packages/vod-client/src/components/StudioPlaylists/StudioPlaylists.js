@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Box, Flex } from 'grid-styled';
+import { Box } from 'grid-styled';
 import styled from 'styled-components';
 
 import { Selection } from 'office-ui-fabric-react/lib/Selection';

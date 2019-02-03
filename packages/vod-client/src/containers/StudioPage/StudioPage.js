@@ -11,6 +11,7 @@ import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivo
 
 import StudioVideos from 'components/StudioVideos';
 import StudioAnalytics from 'components/StudioAnalytics';
+import StudioPlaylists from 'components/StudioPlaylists';
 
 const StudioContainer = styled(Flex)`
   height: calc(100vh - 64px);
@@ -50,7 +51,7 @@ class StudioPage extends Component {
         Component = StudioVideos;
         break;
       case 'playlists':
-        props.children = 'playlists';
+        Component = StudioPlaylists;
         break;
       case 'analytics':
         Component = StudioAnalytics;
