@@ -1,0 +1,62 @@
+export default [
+    {
+      key: 'thumbnail',
+      name: 'תמונה',
+      fieldName: 'thumbnail',
+      minWidth: 200,
+      maxWidth: 200,
+      isResizable: true,
+    },
+    {
+      key: 'name',
+      name: 'שם',
+      fieldName: 'name',
+      minWidth: 50,
+      maxWidth: 100,
+      isResizable: true,
+    },
+    {
+      key: 'description',
+      name: 'תיאור',
+      fieldName: 'description',
+      minWidth: 100,
+      maxWidth: 150,
+      isResizable: true,
+    },
+    {
+      key: 'stateDisplay',
+      name: 'מצב פרסום',
+      fieldName: 'stateDisplay',
+      minWidth: 80,
+      maxWidth: 80,
+    },
+    {
+      key: 'channelName',
+      name: 'ערוץ',
+      fieldName: 'channelName',
+      minWidth: 100,
+      maxWidth: 100,
+      isResizable: true,
+    },
+    {
+      key: 'videosCount',
+      name: 'סרטונים',
+      fieldName: 'videosCount',
+      minWidth: 50,
+      maxWidth: 50,
+    },
+    {
+      key: 'createdAt',
+      name: 'תאריך יצירה',
+      fieldName: 'createdAt',
+      minWidth: 130,
+      maxWidth: 130,
+    },
+    {
+      key: 'updatedAt',
+      name: 'תאריך עדכון',
+      fieldName: 'updatedAt',
+      minWidth: 130,
+      maxWidth: 130,
+    }
+  ];
