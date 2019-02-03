@@ -88,12 +88,21 @@ const GlobalThemeStyle = createGlobalStyle`
     outline: inherit;
   }
 
+  .recharts-wrapper {
+    direction: ltr;
+  }
+
   .ms-Button--primary {
     &,
     &:hover,
     &:active {
       color: #fff;
     }
+  }
+
+  .ms-Pivot--tabs .ms-Pivot-link.is-selected {
+    color: #fff;
+    font-weight: normal;
   }
 
   .ms-fontWeight-light {
@@ -200,6 +209,20 @@ const GlobalThemeStyle = createGlobalStyle`
   .ms-font-su {
     font-size: 42px;
     font-weight: 100;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: ${({ theme }) => theme.palette.neutralLight};
+  }
+
+  ::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+    background-color: ${({ theme }) => theme.palette.themeDarkAlt};
   }
 `;
 

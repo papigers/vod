@@ -123,20 +123,22 @@ module.exports = function(db) {
       .modify(channels.authorizedManageSubquery, user);
   };
 
-  channels.getChannelVideos = function(user, channelId, limit, offset, sort) {
-    return db.knexnest(
-      db.knex
-        .queryBuilder()
-        .modify(db.videos.videoListSelect)
-        .where(`${channels.table}.id`, channelId)
-        .limit(limit)
-        .offset(offset)
-        .groupBy(`${db.videos.table}.id`, `${channels.table}.id`)
-        .modify(db.videos.order, sort)
-        .modify(channels.authorizedViewSubquery, user)
-        .modify(db.videos.authorizedViewSubquery, user),
-      true,
-    );
+  channels.getChannelVideos = function(user, channelId, limit, offset, sort, fields) {
+    var query = db.knex
+      .queryBuilder()
+      .modify(db.videos.videoListSelect)
+      .where(`${channels.table}.id`, channelId)
+      .limit(limit)
+      .offset(offset)
+      .groupBy(`${db.videos.table}.id`, `${channels.table}.id`)
+      .modify(db.videos.order, sort)
+      .modify(channels.authorizedViewSubquery, user)
+      .modify(db.videos.authorizedViewSubquery, user);
+    if (fields && fields.length) {
+      query.clearSelect().select(...fields);
+    }
+
+    return db.knexnest(query, true);
   };
 
   channels.getChannel = function(user, id) {
@@ -427,6 +429,49 @@ module.exports = function(db) {
     });
     return channelACL;
   }
+
+  channels.getQuotaStatus = function(user, channel) {
+    return db.knexnest(
+      db.knex
+        .select('id', 'total', 'used', db.knex.raw('(?? - ??) as free', ['total', 'used']))
+        .from(function() {
+          this.select(`${channels.table}.id`)
+            .select(db.knex.raw('cast(? as bigint) as total', [2147483648]))
+            .sum(`${db.videos.table}.metadata_size as used`)
+            .from(channels.table)
+            .leftJoin(db.videos.table, `${channels.table}.id`, `${db.videos.table}.channelId`)
+            .groupBy(`${channels.table}.id`)
+            .where(`${channels.table}.id`, channel)
+            .modify(channels.authorizedManageSubquery, user)
+            .as('quota');
+        }),
+    );
+  };
+
+  channels.getChannelStats = function(user, chs) {
+    console.log(chs);
+    return db.knexnest(
+      db.knex
+        .countDistinct(`${db.channelFollowers.table}.followerId as followerCount`)
+        .countDistinct(`${db.videos.table}.id as videoCount`)
+        .countDistinct(`${db.comments.table}.id as commentCount`)
+        .countDistinct(`${db.videoLikes.table}.createdAt as likeCount`)
+        .countDistinct(`${db.videoViews.table}.createdAt as viewCount`)
+        .select(db.knex.raw('? as ??', [5, 'playlistCount']))
+        .from(channels.table)
+        .leftJoin(db.videos.table, `${db.videos.table}.channelId`, `${channels.table}.id`)
+        .leftJoin(
+          db.channelFollowers.table,
+          `${channels.table}.id`,
+          `${db.channelFollowers.table}.followeeId`,
+        )
+        .leftJoin(db.videoLikes.table, `${db.videos.table}.id`, `${db.videoLikes.table}.videoId`)
+        .leftJoin(db.videoViews.table, `${db.videos.table}.id`, `${db.videoViews.table}.videoId`)
+        .leftJoin(db.comments.table, `${db.videos.table}.id`, `${db.comments.table}.videoId`)
+        .whereIn(`${channels.table}.id`, chs)
+        .modify(channels.authorizedManageSubquery, user),
+    );
+  };
 
   return channels;
 };

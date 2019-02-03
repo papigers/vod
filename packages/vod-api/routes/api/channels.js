@@ -240,11 +240,13 @@ router.get('/:id/videos', function(req, res) {
 router.get('/:id/videos/:sort', function(req, res) {
   var limit = req.query.limit || 12;
   var offset = req.query.offset || 0;
+  var fields = req.query.field;
+  fields = fields && !Array.isArray(fields) ? [fields] : fields;
   var sort = req.params && req.params.sort;
   limit = Math.min(limit, 60); // minimum 60 videos = 5 pages per fetch.
 
   db.channels
-    .getChannelVideos(req.user, req.params.id, limit, offset, sort)
+    .getChannelVideos(req.user, req.params.id, limit, offset, sort, fields)
     .then(function(result) {
       return res.json(result);
     })

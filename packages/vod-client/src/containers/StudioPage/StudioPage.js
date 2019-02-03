@@ -1,117 +1,87 @@
 import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
-
-import Studio from 'components/Studio';
-import axios from 'utils/axios';
+import { Box, Flex } from 'grid-styled';
+import styled from 'styled-components';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectUser } from 'containers/ChannelPage/selectors';
 
+import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivot';
+
+import StudioVideos from 'components/StudioVideos';
+import StudioAnalytics from 'components/StudioAnalytics';
+
+const StudioContainer = styled(Flex)`
+  height: calc(100vh - 64px);
+  transition: width 300ms ease-in-out;
+  box-sizing: border-box;
+  overflow: auto;
+`;
+
+const TitleBox = styled(Box).attrs(() => ({
+  pr: 30,
+  pl: 30,
+}))`
+  background-color: ${({ theme }) => theme.palette.neutralLighter};
+`;
+
+const CategoryHeader = styled.h2`
+  display: inline-block;
+`;
+
 class StudioPage extends Component {
   constructor() {
     super();
     this.state = {
-      videoList: [],
-      playlistList: []
+      activeTab: 'videos',
     };
   }
 
-  componentDidMount() {
-    this.fetchVideos();
-    this.fetchPlaylists();
-  }
+  renderTab() {
+    const { activeTab } = this.state;
+    const { user } = this.props;
 
-  componentDidUpdate(prevProps) {
-    if (this.props.user.id !== prevProps.user.id) {
-      this.fetchVideos();
-      this.fetchPlaylists();
+    let Component = 'span';
+    let props = { user };
+
+    switch (activeTab) {
+      case 'videos':
+        Component = StudioVideos;
+        break;
+      case 'playlists':
+        props.children = 'playlists';
+        break;
+      case 'analytics':
+        Component = StudioAnalytics;
+        break;
+      default:
+        props.children = 404;
     }
+    return React.createElement(Component, props);
   }
 
-  fetchVideos = () => {
-    axios
-      .get(`/videos/managed`)
-      .then(({ data }) => {
-        this.setState({
-          videoList: data,
-        });
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  };
-
-  fetchPlaylists = () => {
-    axios
-      .get(`/playlists/managed`)
-      .then(({ data }) => {
-        this.setState({
-          playlistList: data,
-        });
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  };
-  
-  updatePlaylist = (playlist) => {
-    return axios.put(`/playlists/${playlist.id}`, playlist)
-    .finally(this.fetchPlaylists);
-  };
-
-  deletePlaylist = (id) => {
-    return axios.delete(`/playlists/${id}`)
-    .finally(this.fetchPlaylists);
-  };
-
-  deleteVideos = videos => {
-    return Promise.all(
-      videos.map(video => {
-        return axios
-          .delete(`/videos/${video.id}`)
-          .then(result => Promise.resolve({ id: video.id, status: 'success', result }))
-          .catch(error => Promise.resolve({ id: video.id, status: 'error', error }));
-      }),
-    ).finally(this.fetchVideos);
-  };
-
-  editVideosPrivacy = videos => {
-    return axios.put(`/videos/permissions`, videos).finally(this.fetchVideos);
-  };
-
-  editVideo = video => {
-    return axios.put(`/videos/video/${video.id}`, video).finally(this.fetchVideos);
-  };
-
-  editVideosProperty = (videos, property) => {
-    return axios.put(`/videos/property/${property}`, videos).finally(this.fetchVideos);
-  };
-
-  editVideosTags = (videosId, action, tags) => {
-    return axios
-      .put(`/videos/tags/${action}`, {
-        videosId,
-        tags,
-      })
-      .finally(this.fetchVideos);
+  onLinkClick = item => {
+    this.setState({
+      activeTab: item.props.itemKey,
+    });
   };
 
   render() {
-    const { videoList, playlistList } = this.state;
     return (
-      <Studio
-        videoList={videoList}
-        playlistList={playlistList}
-        onDelete={this.deleteVideos}
-        onPropertyEdit={this.editVideosProperty}
-        onTagsEdit={this.editVideosTags}
-        onVideoShare={this.editVideosPrivacy}
-        onVideoEdit={this.editVideo}
-        onPlaylistUpdate={this.updatePlaylist}
-        onPlaylistCreate={this.createPlaylist}
-        onPlaylistDelete={this.deletePlaylist}
-      />
+      <StudioContainer flexDirection="column">
+        <Flex flexDirection="column" style={{ position: 'relative', height: '100%' }}>
+          <TitleBox>
+            <CategoryHeader>{'סטודיו'}</CategoryHeader>
+            <Pivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
+              <PivotItem itemIcon="MSNVideos" linkText="סרטונים" itemKey="videos" />
+              <PivotItem itemIcon="Stack" linkText="פלייליסטים" itemKey="playlists" />
+              <PivotItem itemIcon="AnalyticsView" linkText="אנליטיקות" itemKey="analytics" />
+            </Pivot>
+          </TitleBox>
+          {this.renderTab()}
+        </Flex>
+      </StudioContainer>
     );
   }
 }
