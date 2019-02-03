@@ -54,11 +54,16 @@ class StudioPage extends Component {
         console.error(err);
       });
   };
-
+  
   updatePlaylist = (playlist) => {
-    return axios.put(`/playlists/${playlist.id}`, playlist).finally(this.fetchPlaylists);
+    return axios.put(`/playlists/${playlist.id}`, playlist)
+    .finally(this.fetchPlaylists);
   };
 
+  deletePlaylist = (id) => {
+    return axios.delete(`/playlists/${id}`)
+    .finally(this.fetchPlaylists);
+  };
 
   deleteVideos = videos => {
     return Promise.all(
@@ -104,6 +109,8 @@ class StudioPage extends Component {
         onVideoShare={this.editVideosPrivacy}
         onVideoEdit={this.editVideo}
         onPlaylistUpdate={this.updatePlaylist}
+        onPlaylistCreate={this.createPlaylist}
+        onPlaylistDelete={this.deletePlaylist}
       />
     );
   }
