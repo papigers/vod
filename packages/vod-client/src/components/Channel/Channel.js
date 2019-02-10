@@ -111,6 +111,36 @@ export default class Channel extends Component {
     this.setState({ activeTab: item.props.itemKey });
   };
 
+  onUploadCover = cover => {
+    const data = new FormData();
+    if (cover) {
+      fetch(cover)
+        .then(res => res.blob())
+        .then(blob => data.append('cover', blob))
+        .then(() => {
+          data.set('formType', 'edit');
+          return axios.post(`channels/images/${this.props.channel.id}`, data, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        });
+    }
+  };
+
+  onUploadProfile = profile => {
+    const data = new FormData();
+    if (profile) {
+      fetch(profile)
+        .then(res => res.blob())
+        .then(blob => data.append('profile', blob))
+        .then(() => {
+          data.set('formType', 'edit');
+          return axios.post(`channels/images/${this.props.channel.id}`, data, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        });
+    }
+  };
+
   renderTab() {
     const { loading, channel, user } = this.props;
     const { loading: loadingVideos, activeTab, uploads } = this.state;
@@ -139,10 +169,17 @@ export default class Channel extends Component {
         <ChannelCoverImage
           editable={canEditChannel}
           src={channel && channel.id && `/profile/${channel.id}/cover.png`}
+          position={channel && channel.photoData && channel.photoData.cover}
+          onFileChange={this.onUploadCover}
         />
         <TitleBox>
           <Box py={20}>
-            <ChannelRow channel={channel} user={user} imageEditable={canEditChannel} />
+            <ChannelRow
+              channel={channel}
+              user={user}
+              imageEditable={canEditChannel}
+              onUploadProfile={this.onUploadProfile}
+            />
           </Box>
           <ChannelPivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>
             <PivotItem linkText="בית" itemKey="home" />

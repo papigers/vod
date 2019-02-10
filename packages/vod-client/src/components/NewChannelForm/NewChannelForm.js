@@ -5,13 +5,10 @@ import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { Persona, PersonaSize, personaSize } from 'office-ui-fabric-react/lib/Persona';
-import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
-import { Shimmer, ShimmerElementType } from 'office-ui-fabric-react/lib/Shimmer';
+import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import axios from 'utils/axios';
@@ -22,21 +19,6 @@ import ChannelProfileImage from 'components/ChannelProfileImage';
 
 const DropdownContainer = styled.div`
   max-width: 250px;
-`;
-
-const InputButton = styled(DefaultButton)`
-  position: relative;
-
-  input[type='file'] {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    position: absolute;
-    width: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
 `;
 
 const Form = styled.form`
@@ -153,9 +135,9 @@ class NewChannelForm extends Component {
   onChangeId = ({ target }) => this.setState({ id: target.value });
   onChangeDescription = ({ target }) => this.setState({ description: target.value });
   onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
-  onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
+  onChangeProfile = profile => this.setState({ profile });
   onMoveProfile = position => this.setState({ profilePosition: position });
-  onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
+  onChangeCover = cover => this.setState({ cover });
   onMoveCover = position => this.setState({ coverPosition: position });
   onChangeViewACL = acls => this.setState({ viewACL: this.formatACL(acls, 'view') });
   onChangeManageACL = acls => this.setState({ manageACL: this.formatACL(acls, 'manage') });
@@ -203,11 +185,18 @@ class NewChannelForm extends Component {
       const { name, id, profile, cover, privacy, description, viewACL, manageACL } = this.state;
 
       const data = new FormData();
-      if (profile && profile.file) {
-        data.append('profile', profile.file);
+      let filePromise = Promise.resolve();
+      if (profile) {
+        filePromise = filePromise
+          .then(() => fetch(profile))
+          .then(img => img.blob())
+          .then(blob => data.append('profile', blob));
       }
-      if (cover && cover.file) {
-        data.append('cover', cover.file);
+      if (cover) {
+        filePromise = filePromise
+          .then(() => fetch(cover))
+          .then(img => img.blob())
+          .then(blob => data.append('cover', blob));
       }
       // Form type
       data.set('formType', 'create');
@@ -220,6 +209,7 @@ class NewChannelForm extends Component {
           manageACL: this.formatACL(manageACL, 'manage'),
           privacy,
         })
+        .then(() => filePromise)
         .then(() => {
           return axios.post(`channels/images/${id}`, data, {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -280,7 +270,7 @@ class NewChannelForm extends Component {
           <Box flex="1 1 0">
             {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
             <Persona
-              imageUrl={(profile && profile.preview) || '/images/user.svg'}
+              imageUrl={profile || '/images/user.svg'}
               primaryText={name}
               secondaryText={description}
               size={PersonaSize.size72}
@@ -336,7 +326,7 @@ class NewChannelForm extends Component {
           <Box flex="2 1 0">
             <Box pb={2} width="100%">
               <ChannelCoverImage
-                src={cover && cover.preview}
+                src={cover}
                 editable
                 onFileChange={this.onChangeCover}
                 onEditImage={this.onMoveCover}

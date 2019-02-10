@@ -234,6 +234,12 @@ class VideoCard extends Component {
                   </PlaylistOverlay>
                 </Overlay>
               )}
+              {item && (
+                <LikeBox alignItems="center">
+                  <Icon iconName="LikeSolid" />
+                  {item.likeCount}
+                </LikeBox>
+              )}
             </Shimmer>
             <div className="ms-DocumentCard-details">
               <Shimmer
@@ -241,15 +247,7 @@ class VideoCard extends Component {
                 width="100%"
                 isDataLoaded={!showShimmer}
               >
-                {item && (
-                  <Flex justifyContent="space-between" alignItems="baseline">
-                    <DocumentCardTitle title={item.name} shouldTruncate />
-                    <LikeBox alignItems="center">
-                      <Icon iconName="LikeSolid" />
-                      {item.likeCount}
-                    </LikeBox>
-                  </Flex>
-                )}
+                {item && <DocumentCardTitle title={item.name} shouldTruncate />}
                 <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
                   <DocumentCardActivity
                     // activity={item && `הועלה ב: ${(new Date(item.createdAt)).toLocaleString()}`}

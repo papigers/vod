@@ -32,7 +32,12 @@ var channelStorage = multer.diskStorage({
     cb(null, `${file.fieldname}.png`);
   },
 });
-var upload = multer({ storage: channelStorage });
+var upload = multer({
+  storage: channelStorage,
+  limits: {
+    fieldSize: 10 * 1024 * 1024,
+  },
+});
 
 router.get('/managed', function(req, res) {
   db.channels

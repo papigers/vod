@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Shimmer, ShimmerElementType as ElemType } from 'office-ui-fabric-react/lib/Shimmer';
+import { Image as FabricImage } from 'office-ui-fabric-react/lib/Image';
+import Editor from 'react-avatar-editor';
 
 const PositionButton = styled(DefaultButton)`
   position: absolute;
@@ -11,6 +13,10 @@ const PositionButton = styled(DefaultButton)`
   z-index: 1;
   opacity: 0;
   transition: opacity 300ms ease-in-out;
+
+  & + & {
+    top: 60px;
+  }
 `;
 
 const AspectRatioContainer = styled.div`
@@ -18,14 +24,18 @@ const AspectRatioContainer = styled.div`
   padding-top: 20%;
   position: relative;
 
+  & ${PositionButton} {
+    opacity: ${({ editing }) => (editing ? 1 : 0)};
+  }
+
   &:hover ${PositionButton} {
     opacity: 1;
   }
 `;
 
 const InputButton = styled(PositionButton)`
-  bottom: 20px;
-  top: unset;
+  top: unset !important;
+  bottom: 20px !important;
 
   input[type='file'] {
     top: 0;
@@ -37,31 +47,6 @@ const InputButton = styled(PositionButton)`
     opacity: 0;
     cursor: pointer;
   }
-`;
-
-const CoverImage = styled.div`
-  width: 100%;
-  height: 100%;
-  background-image: url(${({ src }) => `'${src}'`});
-  zoom: ${({ scale }) => scale};
-  background-position: ${({ position }) => `${position.x}px ${position.y}px`};
-  ${({ editing }) =>
-    editing
-      ? css`
-          cursor: move;
-          cursor: grab;
-          cursor: -moz-grab;
-          cursor: -webkit-grab;
-
-          &:active {
-            cursor: grabbing;
-            cursor: -moz-grabbing;
-            cursor: -webkit-grabbing;
-          }
-        `
-      : css`
-          cursor: default;
-        `};
 `;
 
 const AspectRatioItem = styled.div`
@@ -77,18 +62,19 @@ const AspectRatioItem = styled.div`
 `;
 
 class ChannelCoverImage extends Component {
-  constructor() {
+  constructor(props) {
     super();
     this.state = {
       imageWidth: 0,
       imageHeight: 0,
       scale: 1,
-      position: {
-        x: 0,
-        y: 0,
-      },
       editing: false,
+      position: {
+        x: 0.5,
+        y: 0.5,
+      },
     };
+    this.canvasRef = React.createRef();
   }
 
   componentDidMount() {
@@ -100,31 +86,14 @@ class ChannelCoverImage extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.src !== prevProps.src) {
-      this.setState({
-        scale: 1,
-        editing: false,
-        position: {
-          x: 0,
-          y: 0,
+      const imageChanged = this.state.croppedImage !== this.props.src;
+      this.setState(
+        {
+          editing: false,
+          uploaded: !imageChanged ? this.state.uploaded : null,
         },
-      });
-      this.getImageSize();
-    } else if (
-      this.state.scale !== prevState.scale ||
-      this.state.containerWidth !== prevState.containerWidth ||
-      this.state.containerHeight !== prevState.containerHeight
-    ) {
-      const maxX =
-        (this.state.imageWidth * this.state.scale - this.state.containerWidth) / -this.state.scale;
-      const maxY =
-        (this.state.imageHeight * this.state.scale - this.state.containerHeight) /
-        -this.state.scale;
-      this.setState({
-        position: {
-          x: Math.max(maxX, this.state.position.x),
-          y: Math.max(maxY, this.state.position.y),
-        },
-      });
+        imageChanged ? this.getImageSize : null,
+      );
     }
   }
 
@@ -146,12 +115,8 @@ class ChannelCoverImage extends Component {
   onZoomHandler = e => {
     if (this.state.editing) {
       e.preventDefault();
-      const minScale = Math.max(
-        this.state.containerWidth / this.state.imageWidth,
-        this.state.containerHeight / this.state.imageHeight,
-      );
       this.setState({
-        scale: Math.min(3, Math.max(minScale, (e.deltaY <= 0 ? 1 : -1) * 0.1 + this.state.scale)),
+        scale: Math.min(3, Math.max(1, (e.deltaY <= 0 ? 1 : -1) * 0.1 + this.state.scale)),
       });
     }
   };
@@ -160,14 +125,14 @@ class ChannelCoverImage extends Component {
     if (this.props.src) {
       const img = new Image();
       img.onload = () => {
-        const minScale = Math.max(
-          this.state.containerWidth / img.width,
-          this.state.containerHeight / img.height,
-        );
         this.setState({
           imageWidth: img.width,
           imageHeight: img.height,
-          scale: minScale,
+          scale: Math.max(1, this.state.scale),
+          position: {
+            x: 0.5,
+            y: 0.5,
+          },
         });
       };
       img.src = this.props.src;
@@ -190,87 +155,85 @@ class ChannelCoverImage extends Component {
     this.onResizeHandler();
   };
 
-  onMouseDown = e => {
-    if (this.state.editing) {
-      e.preventDefault();
-      this.setState({
-        dragging: true,
-        mx: null,
-        my: null,
-      });
+  onPositionChange = position => this.setState({ position });
+
+  onFileChange = ({ target: input }) => {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e =>
+        this.setState({
+          uploaded: e.target.result,
+          editing: true,
+        });
+      reader.readAsDataURL(input.files[0]);
     }
   };
 
-  onMouseMove = e => {
-    if (!this.state.dragging) {
-      return;
+  onSaveFile = () => {
+    const croppedImage = this.canvasRef.current.getImage().toDataURL();
+    this.setState({ editing: false, croppedImage });
+    if (this.props.onFileChange) {
+      this.props.onFileChange(croppedImage);
     }
-
-    e.preventDefault();
-
-    const position = {
-      mx: e.clientX,
-      my: e.clientY,
-    };
-
-    const maxX =
-      (this.state.imageWidth * this.state.scale - this.state.containerWidth) / -this.state.scale;
-    const maxY =
-      (this.state.imageHeight * this.state.scale - this.state.containerHeight) / -this.state.scale;
-
-    if (this.state.mx && this.state.my) {
-      position.position = {
-        x: Math.max(maxX, Math.min(0, this.state.position.x + position.mx - this.state.mx)),
-        y: Math.max(maxY, Math.min(0, this.state.position.y + position.my - this.state.my)),
-      };
-    }
-
-    this.setState({ ...position });
   };
 
-  onMouseUp = e => {
-    if (this.state.dragging) {
-      e.preventDefault();
-      this.setState({
-        dragging: false,
-      });
-    }
+  onCancelEdit = () => {
+    this.setState({ editing: false, uploaded: null });
   };
 
   render() {
     const { src, editable } = this.props;
-    const { editing, dragging, scale, position } = this.state;
+    const { editing, uploaded, containerWidth, containerHeight, scale, position } = this.state;
     return (
-      <AspectRatioContainer ref={this.containerRef}>
-        {editable && src ? (
+      <AspectRatioContainer editing={editing} ref={this.containerRef} onWheel={this.onZoomHandler}>
+        {uploaded ? (
           <PositionButton
-            text={editing ? 'שמור שינויים' : 'מקם תמונה'}
-            iconProps={{ iconName: editing ? 'Accept' : 'PicturePosition' }}
+            text={editing ? 'שמור שינויים' : 'ערוך תמונה'}
+            iconProps={{ iconName: editing ? 'Accept' : 'Move' }}
             primary={editing}
-            onClick={this.toggleEditing}
+            onClick={editing ? this.onSaveFile : this.toggleEditing}
+          />
+        ) : null}
+        {uploaded && editing ? (
+          <PositionButton
+            text="ביטול"
+            iconProps={{ iconName: 'Cancel' }}
+            onClick={this.onCancelEdit}
           />
         ) : null}
         {editable && !editing ? (
           <InputButton iconProps={{ iconName: 'Upload' }} text="העלה תמונה">
-            <input type="file" accept="image/*" onChange={this.props.onFileChange} />
+            <input type="file" accept="image/*" onChange={this.onFileChange} />
           </InputButton>
         ) : null}
         <AspectRatioItem
           as={Shimmer}
           width="100%"
           shimmerElements={[{ type: ElemType.line, width: '100%', height: '100%' }]}
-          isDataLoaded={!!src}
+          isDataLoaded={!!src || (editing && uploaded)}
         >
-          <CoverImage
-            src={src}
-            scale={scale}
-            position={position}
-            editing={editing}
-            draggable={editing}
-            dragging={dragging}
-            onWheel={this.onZoomHandler}
-            onMouseDown={this.onMouseDown}
-          />
+          {!editing ? (
+            <FabricImage
+              width="100%"
+              src={
+                uploaded && this.canvasRef.current
+                  ? this.canvasRef.current.getImage().toDataURL()
+                  : src
+              }
+              maximizeFrame
+            />
+          ) : (
+            <Editor
+              ref={this.canvasRef}
+              image={uploaded}
+              border={0}
+              width={containerWidth}
+              height={containerHeight}
+              scale={scale}
+              position={position}
+              onPositionChange={this.onPositionChange}
+            />
+          )}
         </AspectRatioItem>
       </AspectRatioContainer>
     );

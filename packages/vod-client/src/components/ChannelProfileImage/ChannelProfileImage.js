@@ -1,10 +1,45 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
+import { transparentize } from 'polished';
 import { Box, Flex } from 'grid-styled';
 
 import { PersonaSize, sizeToPixels } from 'office-ui-fabric-react/lib/Persona';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { DefaultButton, IconButton } from 'office-ui-fabric-react/lib/Button';
+import { Image as FabricImage, ImageFit } from 'office-ui-fabric-react/lib/Image';
 import { TooltipHost, TooltipDelay } from 'office-ui-fabric-react/lib/Tooltip';
+import Editor from 'react-avatar-editor';
+
+const UploadButton = styled(IconButton)`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  background-color: ${({ theme }) => transparentize(0.7, theme.palette.bodyBackground)};
+  border-radius: 50%;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 300ms ease-in-out, background-color 300ms;
+
+  i {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background-color: ${({ theme }) => transparentize(0.55, theme.palette.bodyBackground)};
+  }
+
+  input[type='file'] {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+`;
 
 const Container = styled.div`
   width: ${({ size }) => `${sizeToPixels[size]}px`};
@@ -13,34 +48,17 @@ const Container = styled.div`
   overflow: hidden;
   position: relative;
 
-  input[type='file'] {
-    display: none;
+  &:hover ${UploadButton} {
+    opacity: 1;
   }
-`;
 
-const ProfileImage = styled.div`
-  width: 100%;
-  height: 100%;
-  background-image: url(${({ src }) => `'${src}'`});
-  zoom: ${({ scale }) => scale};
-  background-position: ${({ position }) => `${position.x}px ${position.y}px`};
-  ${({ editing }) =>
+  ${({ editing, theme }) =>
     editing
       ? css`
-          cursor: move;
-          cursor: grab;
-          cursor: -moz-grab;
-          cursor: -webkit-grab;
-
-          &:active {
-            cursor: grabbing;
-            cursor: -moz-grabbing;
-            cursor: -webkit-grabbing;
-          }
+          box-shadow: 0 0 0 100vmax ${transparentize(0.55, theme.palette.bodyBackground)};
+          z-index: 100;
         `
-      : css`
-          cursor: default;
-        `};
+      : css([])}
 `;
 
 class ChannelProfileImage extends Component {
@@ -48,19 +66,20 @@ class ChannelProfileImage extends Component {
     size: PersonaSize.size48,
   };
 
-  constructor() {
+  constructor(props) {
     super();
     this.state = {
       imageWidth: 0,
       imageHeight: 0,
-      scale: 1,
+      scale: (props.position && props.position.scale) || 1,
       position: {
-        x: 0,
-        y: 0,
+        x: (props.position && props.position.x) || 0,
+        y: (props.position && props.position.y) || 0,
       },
       editing: false,
     };
     this.inputRef = React.createRef();
+    this.canvasRef = React.createRef();
   }
 
   componentDidMount() {
@@ -71,28 +90,14 @@ class ChannelProfileImage extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.src !== prevProps.src) {
-      this.setState({
-        scale: 1,
-        editing: false,
-        position: {
-          x: 0,
-          y: 0,
+      const imageChanged = this.state.croppedImage !== this.props.src;
+      this.setState(
+        {
+          editing: false,
+          uploaded: !imageChanged ? this.state.uploaded : null,
         },
-      });
-      this.getImageSize();
-    } else if (this.state.scale !== prevState.scale || this.props.size !== prevProps.size) {
-      const maxX =
-        (this.state.imageWidth * this.state.scale - sizeToPixels[this.props.size]) /
-        -this.state.scale;
-      const maxY =
-        (this.state.imageHeight * this.state.scale - sizeToPixels[this.props.size]) /
-        -this.state.scale;
-      this.setState({
-        position: {
-          x: Math.max(maxX, this.state.position.x),
-          y: Math.max(maxY, this.state.position.y),
-        },
-      });
+        imageChanged ? this.getImageSize : null,
+      );
     }
   }
 
@@ -105,10 +110,8 @@ class ChannelProfileImage extends Component {
   onZoomHandler = e => {
     if (this.state.editing) {
       e.preventDefault();
-      const size = sizeToPixels[this.props.size];
-      const minScale = Math.max(size / this.state.imageWidth, size / this.state.imageHeight);
       this.setState({
-        scale: Math.min(1.5, Math.max(minScale, (e.deltaY <= 0 ? 1 : -1) * 0.1 + this.state.scale)),
+        scale: Math.max(1, (e.deltaY <= 0 ? 1 : -1) * 0.1 + this.state.scale),
       });
     }
   };
@@ -117,77 +120,17 @@ class ChannelProfileImage extends Component {
     if (this.props.src) {
       const img = new Image();
       img.onload = () => {
-        const size = sizeToPixels[this.props.size];
-        const minScale = Math.max(size / img.width, size / img.height);
         this.setState({
           imageWidth: img.width,
           imageHeight: img.height,
-          scale: minScale,
+          scale: Math.max(this.state.scale, 1),
         });
       };
       img.src = this.props.src;
     }
   }
 
-  toggleEditing = () => {
-    if (this.state.editing && this.props.onEditImage) {
-      this.props.onEditImage({
-        x: this.state.position.x,
-        y: this.state.position.y,
-        scale: this.state.scale,
-      });
-    }
-    this.setState({ editing: !this.state.editing });
-  };
-
-  onMouseDown = e => {
-    if (this.state.editing) {
-      e.preventDefault();
-      this.setState({
-        dragging: true,
-        mx: null,
-        my: null,
-      });
-    }
-  };
-
-  onMouseMove = e => {
-    if (!this.state.dragging) {
-      return;
-    }
-
-    e.preventDefault();
-
-    const position = {
-      mx: e.clientX,
-      my: e.clientY,
-    };
-
-    const maxX =
-      (this.state.imageWidth * this.state.scale - sizeToPixels[this.props.size]) /
-      -this.state.scale;
-    const maxY =
-      (this.state.imageHeight * this.state.scale - sizeToPixels[this.props.size]) /
-      -this.state.scale;
-
-    if (this.state.mx && this.state.my) {
-      position.position = {
-        x: Math.max(maxX, Math.min(0, this.state.position.x + position.mx - this.state.mx)),
-        y: Math.max(maxY, Math.min(0, this.state.position.y + position.my - this.state.my)),
-      };
-    }
-
-    this.setState({ ...position });
-  };
-
-  onMouseUp = e => {
-    if (this.state.dragging) {
-      e.preventDefault();
-      this.setState({
-        dragging: false,
-      });
-    }
-  };
+  toggleEditing = () => this.setState({ editing: !this.state.editing });
 
   onFileChange = (...args) => {
     if (this.props.onFileChange) {
@@ -195,34 +138,60 @@ class ChannelProfileImage extends Component {
     }
   };
 
-  onUploadClick = () => {
+  onUploadClick = e => {
     if (this.inputRef && this.inputRef.current) {
       this.inputRef.current.click();
     }
   };
 
+  onPositionChange = position => this.setState({ position });
+
+  onFileChange = ({ target: input }) => {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e =>
+        this.setState({
+          uploaded: e.target.result,
+          editing: true,
+        });
+      reader.readAsDataURL(input.files[0]);
+    }
+  };
+
+  onSaveFile = () => {
+    const croppedImage = this.canvasRef.current.getImage().toDataURL();
+    this.setState({ editing: false, croppedImage });
+    if (this.props.onFileChange) {
+      this.props.onFileChange(croppedImage);
+    }
+  };
+
+  onCancelEdit = () => {
+    this.setState({ editing: false, uploaded: null });
+  };
+
   renderEditTooltip = () => {
     const { editable, src } = this.props;
-    const { editing } = this.state;
+    const { editing, uploaded } = this.state;
 
     return (
       <Flex flexDirection="column" alignItems="center" justifyContent="center">
-        {editable && src ? (
+        {uploaded ? (
           <Box my={1}>
             <DefaultButton
-              text={editing ? 'שמור שינויים' : 'מקם תמונה'}
-              iconProps={{ iconName: editing ? 'Accept' : 'PicturePosition' }}
+              text={editing ? 'שמור שינויים' : 'ערוך תמונה'}
+              iconProps={{ iconName: editing ? 'Accept' : 'Move' }}
               primary={editing}
-              onClick={this.toggleEditing}
+              onClick={editing ? this.onSaveFile : this.toggleEditing}
             />
           </Box>
         ) : null}
-        {editable && !editing ? (
+        {uploaded && editing ? (
           <Box my={1}>
             <DefaultButton
-              iconProps={{ iconName: 'Upload' }}
-              text="העלה תמונה"
-              onClick={this.onUploadClick}
+              text="ביטול"
+              iconProps={{ iconName: 'Cancel' }}
+              onClick={this.onCancelEdit}
             />
           </Box>
         ) : null}
@@ -232,24 +201,49 @@ class ChannelProfileImage extends Component {
 
   render() {
     const { src, size, editable } = this.props;
-    const { editing, dragging, scale, position } = this.state;
-    const img = (
-      <ProfileImage
-        src={src}
-        size={size}
-        position={position}
-        scale={scale}
-        editing={editing}
-        draggable={editing}
-        dragging={dragging}
-        onWheel={this.onZoomHandler}
-        onMouseDown={this.onMouseDown}
-      />
-    );
+    const { editing, uploaded, scale, position } = this.state;
     return (
-      <Container size={size}>
-        <input ref={this.inputRef} type="file" accept="image/*" onChange={this.onFileChange} />
-        {editable ? (
+      <Container editing={editing} onWheel={this.onZoomHandler} size={size}>
+        {!editing && editable ? (
+          <UploadButton primary iconProps={{ iconName: 'Upload' }}>
+            <input ref={this.inputRef} type="file" accept="image/*" onChange={this.onFileChange} />
+          </UploadButton>
+        ) : null}
+        {!editing ? (
+          <FabricImage
+            imageFit={ImageFit.centerCover}
+            src={
+              uploaded && this.canvasRef.current
+                ? this.canvasRef.current.getImage().toDataURL()
+                : src
+            }
+            maximizeFrame
+          />
+        ) : (
+          <TooltipHost
+            tooltipProps={{
+              onRenderContent: this.renderEditTooltip,
+            }}
+            calloutProps={{
+              isBeakVisible: true,
+              gapSpace: 34,
+            }}
+            delay={TooltipDelay.zero}
+            closeDelay={500}
+          >
+            <Editor
+              ref={this.canvasRef}
+              image={uploaded}
+              border={0}
+              width={sizeToPixels[size]}
+              height={sizeToPixels[size]}
+              scale={scale}
+              position={position}
+              onPositionChange={this.onPositionChange}
+            />
+          </TooltipHost>
+        )}
+        {/* {editable ? (
           <TooltipHost
             tooltipProps={{
               onRenderContent: this.renderEditTooltip,
@@ -265,7 +259,7 @@ class ChannelProfileImage extends Component {
           </TooltipHost>
         ) : (
           img
-        )}
+        )} */}
       </Container>
     );
   }
