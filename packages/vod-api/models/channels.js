@@ -286,17 +286,50 @@ module.exports = function(db) {
     });
   };
 
-  channels.createChannel = function(channel) {
+  channels.createChannel = function(channel, user) {
+    let sub = null;
+    let initialSub = null;
     return db.knex.transaction(function(trx) {
-      return trx(channels.table)
-        .insert({
-          id: channel.id,
-          name: channel.name,
-          description: channel.description,
-          privacy: channel.privacy,
-          personal: channel.personal,
+      return db.subscriptions
+        .getInitialSubscription(channel.subscription)
+        .then(function(activeSubscription) {
+          if (!activeSubscription || !activeSubscription.id) {
+            throw new Error("Couldn't find a valid subscription");
+          }
+          initialSub = activeSubscription.id;
+          return trx(channels.table).insert({
+            id: channel.id,
+            name: channel.name,
+            description: channel.description,
+            privacy: channel.privacy,
+            personal: channel.personal,
+            active: !!channel.personal,
+            activeSubscriptionId: initialSub,
+          });
         })
-        .then(function(created) {
+        .then(function() {
+          sub = initialSub !== channel.subscription ? db.subscriptions.generateId() : initialSub;
+          if (initialSub !== sub) {
+            return trx(db.subscriptions.table).insert({
+              id: sub,
+              planId: channel.plan,
+              verified: false,
+              emf: channel.emf,
+              channelId: channel.id,
+            });
+          }
+          return Promise.resolve();
+        })
+        .then(function() {
+          return trx(db.workflows.table).insert({
+            id: db.workflows.generateId(),
+            type: 'CREATE_CHANNEL',
+            requester: user && user.id,
+            subject: channel.id,
+            secondarySubject: sub,
+          });
+        })
+        .then(function() {
           var acls = formatChannelACL(channel);
           return Promise.all(
             acls.map(function(acl) {
@@ -307,9 +340,7 @@ module.exports = function(db) {
                 type: acl.type,
               });
             }),
-          ).then(function() {
-            return created;
-          });
+          );
         });
     });
   };

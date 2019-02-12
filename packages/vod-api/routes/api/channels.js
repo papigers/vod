@@ -4,6 +4,7 @@ var qs = require('querystring');
 var path = require('path');
 var express = require('express');
 var multer = require('multer');
+var sharp = require('sharp');
 var db = require('../../models');
 var adFilter = require('../ldap').adFilter;
 var router = express.Router();
@@ -76,6 +77,18 @@ router.get('/search', function(req, res) {
       res.status(500).json({
         error: "Couldn't fetch videos",
       });
+    });
+});
+
+router.get('/plans', function(req, res, next) {
+  db.plans
+    .getAvailablePlans()
+    .then(function(result) {
+      return res.json(result);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
     });
 });
 
@@ -200,11 +213,47 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
       var promises = [];
       if (req.files.profile) {
         promises.push(
-          OSClient.uploadChannelImage(req.params.id, 'profile', req.files.profile[0].path),
+          sharp(req.files.profile[0].path)
+            .resize(100)
+            .toBuffer()
+            .then(function(buffer) {
+              return new Promise(function(resolve, reject) {
+                fs.writeFile(req.files.profile[0].path, buffer, function(e) {
+                  if (e) {
+                    return reject(e);
+                  }
+                  resolve();
+                });
+              });
+            })
+            .then(function() {
+              return OSClient.uploadChannelImage(
+                req.params.id,
+                'profile',
+                req.files.profile[0].path,
+              );
+            }),
         );
       }
       if (req.files.cover) {
-        promises.push(OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path));
+        promises.push(
+          sharp(req.files.cover[0].path)
+            .resize(1280)
+            .toBuffer()
+            .then(function(buffer) {
+              return new Promise(function(resolve, reject) {
+                fs.writeFile(req.files.cover[0].path, buffer, function(e) {
+                  if (e) {
+                    return reject(e);
+                  }
+                  resolve();
+                });
+              });
+            })
+            .then(function() {
+              return OSClient.uploadChannelImage(req.params.id, 'cover', req.files.cover[0].path);
+            }),
+        );
       }
       return Promise.all(promises);
     })
@@ -225,7 +274,7 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
 
 router.post('/', channelImagesUpload, function(req, res) {
   db.channels
-    .createChannel(req.body)
+    .createChannel(req.body, req.user)
     .then(function(result) {
       return res.json(result);
     })

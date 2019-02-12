@@ -4,6 +4,32 @@ import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { ChoiceGroup } from 'office-ui-fabric-react/lib/ChoiceGroup';
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
+
+import axios from 'utils/axios';
+
+const LargeSpinner = styled(Spinner)`
+  .ms-Spinner-circle {
+    width: 60px;
+    height: 60px;
+    border-width: 6px;
+  }
+
+  .ms-Spinner-label {
+    font-size: 1.2em;
+    direction: ltr;
+  }
+`;
+
+const SlidingBox = styled(Box)`
+  max-height: ${({ show }) => (show ? '60px' : 0)};
+  transition: max-height 300ms ease-in-out;
+  overflow: hidden;
+
+  label {
+    text-align: center;
+  }
+`;
 
 const QuotaSize = styled(Box)`
   direction: ltr;
@@ -101,43 +127,87 @@ const QuotaPicker = styled(ChoiceGroup)`
 
 const BASE_PRICE = 499;
 
+const PLAN_ICONS = {
+  free: 'Unknown',
+  test: 'TestBeakerSolid',
+  1: 'EmojiDisappointed',
+  2: 'EmojiNeutral',
+  5: 'Emoji2',
+  10: 'Emoji',
+};
+
+const stringifySize = size => {
+  if (size >= 1024) {
+    return `${size / 1024} GB`;
+  }
+  return `${size} MB`;
+};
+
 class QuotaPlanSelector extends Component {
+  constructor() {
+    super();
+    this.state = {
+      plans: {},
+      loading: true,
+    };
+  }
+
+  componentDidMount() {
+    axios.get('/channels/plans').then(({ data }) => {
+      const plans = {};
+      data.forEach(plan => {
+        plans[plan.id] = plan;
+      });
+      this.setState({ plans, loading: false });
+    });
+  }
+
   onRenderQuotaField = (props, render) => <QuotaField {...props}>{render(props)}</QuotaField>;
 
   onRenderQuotaLabel = props => {
-    const size = +props.size.match(/^([0-9]+)\s*[MGT]B$/)[1];
-    const saving = size * BASE_PRICE - props.price;
+    const saving = Math.floor(BASE_PRICE - props.price / (props.size / 1024));
     return (
       <div>
-        <QuotaSize p={2}>{props.size}</QuotaSize>
+        <QuotaSize p={2}>{stringifySize(props.size)}</QuotaSize>
         <div>{props.price ? `${props.price}$ / לשנה` : 'חינם'}</div>
         {props.price && saving ? <QuotaSaving>{saving}$ חיסכון!</QuotaSaving> : null}
-        {!props.price ? <QuotaSaving>עד סרטון אחד</QuotaSaving> : null}
+        {props.videos ? (
+          <QuotaSaving>
+            {props.videos === 1 ? 'עד סרטון אחד' : `עד ${props.videos} סרטונים`}
+          </QuotaSaving>
+        ) : null}
       </div>
     );
   };
 
+  reformatPlans() {
+    const { plans } = this.state;
+    return Object.keys(plans)
+      .map(planId => ({
+        key: planId,
+        description: plans[planId].name,
+        iconProps: { iconName: PLAN_ICONS[planId] },
+        size: plans[planId].sizeQuota,
+        videos: plans[planId].videoQuota,
+        price: plans[planId].price,
+        onRenderField: this.onRenderQuotaField,
+        onRenderLabel: this.onRenderQuotaLabel,
+      }))
+      .sort((plan1, plan2) => plan1.price - plan2.price);
+  }
+
+  onChangePlan = (e, { key: id }) => {
+    if (this.props.onChangePlan) {
+      this.props.onChangePlan(this.state.plans[id]);
+    }
+  };
+
   render() {
-    const { onChangePlan, onChangeEMF, emf, selectedPlan } = this.props;
+    const { plans, loading } = this.state;
+    const { onChangeEMF, emf, selectedPlan } = this.props;
     return (
-      <Flex>
-        <QuotaPicker
-          selectedKey={selectedPlan}
-          onChange={onChangePlan}
-          options={[
-            { key: 'free', description: 'ניסיון', iconProps: { iconName: 'Unknown' }, size: '100 MB', price: 0 },
-            { key: '1', description: 'ערוץ הילדים', iconProps: { iconName: 'EmojiDisappointed' }, size: '1 GB', price: 499 },
-            { key: '2', description: 'קולנוע ישראלי', iconProps: { iconName: 'EmojiNeutral' }, size: '2 GB', price: 899 },
-            { key: '5', description: 'HBO', iconProps: { iconName: 'Emoji2' }, size: '5 GB', price: 2249 },
-            { key: '10', description: 'אוסקר', iconProps: { iconName: 'Emoji' }, size: '10 GB', price: 3999 },
-          ].map(opt => ({
-            ...opt,
-            onRenderField: this.onRenderQuotaField,
-            onRenderLabel: this.onRenderQuotaLabel,
-          }))}
-        />
-        <Box mx={2} />
-        {selectedPlan !== 'free' ? (
+      <Flex flexDirection="column" alignItems="center" justifyContent="center">
+        <SlidingBox mb={10} show={selectedPlan && plans[selectedPlan].price !== 0}>
           <TextField
             label="מזהה אישור העברה"
             required
@@ -145,7 +215,16 @@ class QuotaPlanSelector extends Component {
             value={emf}
             onChange={onChangeEMF}
           />
-        ) : null}
+        </SlidingBox>
+        {loading ? (
+          <LargeSpinner size={SpinnerSize.large} label="...טוען מנויים" />
+        ) : (
+          <QuotaPicker
+            selectedKey={selectedPlan}
+            onChange={this.onChangePlan}
+            options={this.reformatPlans()}
+          />
+        )}
       </Flex>
     );
   }

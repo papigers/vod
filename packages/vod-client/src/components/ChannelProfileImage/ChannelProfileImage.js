@@ -23,6 +23,7 @@ const UploadButton = styled(IconButton)`
 
   i {
     font-size: 20px;
+    font-weight: bold;
   }
 
   &:hover {
@@ -46,7 +47,26 @@ const Container = styled.div`
   height: ${({ size }) => `${sizeToPixels[size]}px`};
   border-radius: 50%;
   overflow: hidden;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  ${({ src, size, theme }) =>
+    !src
+      ? css`
+          background-color: ${theme.palette.themePrimary};
+
+          & ${UploadButton} {
+            opacity: 1;
+            width: ${(sizeToPixels[size] / 3) * 2}px;
+            height: ${(sizeToPixels[size] / 3) * 2}px;
+
+            i {
+              font-size: 22px;
+            }
+          }
+        `
+      : css([])};
 
   &:hover ${UploadButton} {
     opacity: 1;
@@ -171,7 +191,6 @@ class ChannelProfileImage extends Component {
   };
 
   renderEditTooltip = () => {
-    const { editable, src } = this.props;
     const { editing, uploaded } = this.state;
 
     return (
@@ -203,7 +222,12 @@ class ChannelProfileImage extends Component {
     const { src, size, editable } = this.props;
     const { editing, uploaded, scale, position } = this.state;
     return (
-      <Container editing={editing} onWheel={this.onZoomHandler} size={size}>
+      <Container
+        src={src !== '/images/user.svg'}
+        editing={editing}
+        onWheel={this.onZoomHandler}
+        size={size}
+      >
         {!editing && editable ? (
           <UploadButton primary iconProps={{ iconName: 'Upload' }}>
             <input ref={this.inputRef} type="file" accept="image/*" onChange={this.onFileChange} />
@@ -229,7 +253,7 @@ class ChannelProfileImage extends Component {
               gapSpace: 34,
             }}
             delay={TooltipDelay.zero}
-            closeDelay={500}
+            closeDelay={800}
           >
             <Editor
               ref={this.canvasRef}

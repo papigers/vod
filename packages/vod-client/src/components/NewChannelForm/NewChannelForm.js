@@ -141,7 +141,7 @@ class NewChannelForm extends Component {
   onMoveCover = position => this.setState({ coverPosition: position });
   onChangeViewACL = acls => this.setState({ viewACL: this.formatACL(acls, 'view') });
   onChangeManageACL = acls => this.setState({ manageACL: this.formatACL(acls, 'manage') });
-  onChangePlan = (e, { key }) => this.setState({ plan: key });
+  onChangePlan = plan => this.setState({ plan });
   onChangeEMF = ({ target: { value } }) => this.setState({ emf: value });
 
   setError(error) {
@@ -171,7 +171,7 @@ class NewChannelForm extends Component {
       this.setError('חובה להזין גישה לערוץ');
       return false;
     }
-    if (!plan || (plan !== 'free' && !emf)) {
+    if (!plan || (plan.price !== 0 && !emf)) {
       this.setError('חובה לבחור מנוי ולהזין אישור העברה');
       return false;
     }
@@ -182,7 +182,7 @@ class NewChannelForm extends Component {
     this.setError(null);
     this.setState({ loading: true });
     if (this.validate()) {
-      const { name, id, profile, cover, privacy, description, viewACL, manageACL } = this.state;
+      const { name, id, profile, cover, privacy, description, viewACL, manageACL, plan, emf } = this.state;
 
       const data = new FormData();
       let filePromise = Promise.resolve();
@@ -208,6 +208,9 @@ class NewChannelForm extends Component {
           viewACL,
           manageACL: this.formatACL(manageACL, 'manage'),
           privacy,
+          plan: plan.id,
+          emf,
+          subscription: plan.subscription,
         })
         .then(() => filePromise)
         .then(() => {
@@ -332,14 +335,12 @@ class NewChannelForm extends Component {
                 onEditImage={this.onMoveCover}
               />
             </Box>
-            <Box mt={2}>
-              <QuotaPlanSelector
-                selectedPlan={plan}
-                emf={emf}
-                onChangePlan={this.onChangePlan}
-                onChangeEMF={this.onChangeEMF}
-              />
-            </Box>
+            <QuotaPlanSelector
+              selectedPlan={plan && plan.id}
+              emf={emf}
+              onChangePlan={this.onChangePlan}
+              onChangeEMF={this.onChangeEMF}
+            />
           </Box>
         </Flex>
         <Buttons py={2} px={32}>

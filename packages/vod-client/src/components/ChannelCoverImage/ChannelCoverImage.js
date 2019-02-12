@@ -25,7 +25,7 @@ const AspectRatioContainer = styled.div`
   position: relative;
 
   & ${PositionButton} {
-    opacity: ${({ editing }) => (editing ? 1 : 0)};
+    opacity: ${({ editing, src }) => (editing || !src ? 1 : 0)};
   }
 
   &:hover ${PositionButton} {
@@ -185,7 +185,12 @@ class ChannelCoverImage extends Component {
     const { src, editable } = this.props;
     const { editing, uploaded, containerWidth, containerHeight, scale, position } = this.state;
     return (
-      <AspectRatioContainer editing={editing} ref={this.containerRef} onWheel={this.onZoomHandler}>
+      <AspectRatioContainer
+        src={src}
+        editing={editing}
+        ref={this.containerRef}
+        onWheel={this.onZoomHandler}
+      >
         {uploaded ? (
           <PositionButton
             text={editing ? 'שמור שינויים' : 'ערוך תמונה'}
@@ -202,7 +207,7 @@ class ChannelCoverImage extends Component {
           />
         ) : null}
         {editable && !editing ? (
-          <InputButton iconProps={{ iconName: 'Upload' }} text="העלה תמונה">
+          <InputButton iconProps={{ iconName: 'Upload' }} text="העלה תמונה" primary={!src}>
             <input type="file" accept="image/*" onChange={this.onFileChange} />
           </InputButton>
         ) : null}
