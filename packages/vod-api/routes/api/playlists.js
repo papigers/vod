@@ -114,7 +114,7 @@ router.put('/:id', function(req, res) {
 });
 
 router.delete('/:id', function(req, res) {
-  db.videos
+  db.playlists
     .deletePlaylist(req.user, req.params.id)
     .then(function(deleted) {
       if (deleted) {
