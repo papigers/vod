@@ -199,7 +199,7 @@ class StudioPlaylists extends Component {
           <PlaylistEditForm
             playlist={selectionDetails[0]}
             onClose={this.changeModalState}
-            onSubmit={onPlaylistUpdate}
+            onSubmit={this.updatePlaylist}
           />
         );
       default:
