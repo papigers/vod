@@ -263,6 +263,13 @@ module.exports = function(db) {
           });
         }
       })
+      .then(function() {
+        return db.knex(playlists.table)
+        .where('id', id)
+        .update({
+          id: id,
+        });
+      })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);
       });
@@ -300,6 +307,13 @@ module.exports = function(db) {
             .andWhere('videoId', videoId)
             .del();
         }
+      })
+      .then(function() {
+        return db.knex(playlists.table)
+        .where('id', id)
+        .update({
+          id: id,
+        });
       })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);

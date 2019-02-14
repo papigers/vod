@@ -183,8 +183,6 @@ class StudioPlaylists extends Component {
   renderModal() {
     const { editType, selectionDetails } = this.state;
 
-    const { onPlaylistUpdate } = this.props;
-
     switch (editType) {
       case 'delete':
         return (
@@ -199,7 +197,7 @@ class StudioPlaylists extends Component {
           <PlaylistEditForm
             playlist={selectionDetails[0]}
             onClose={this.changeModalState}
-            onSubmit={onPlaylistUpdate}
+            onSubmit={this.updatePlaylist}
           />
         );
       default:

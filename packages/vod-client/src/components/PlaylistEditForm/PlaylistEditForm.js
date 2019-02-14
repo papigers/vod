@@ -223,7 +223,7 @@ class PlaylistEditForm extends Component {
     this.setState({ videos: videos });
   };
 
-  onSubmit() {
+  onSubmit = () => {
     const { onSubmit, onClose } = this.props;
     const { id, name, description, videos, state } = this.state;
     const playlist = { id, name, description, videos, state };
@@ -319,7 +319,7 @@ class PlaylistEditForm extends Component {
                 primary
                 disabled={loading}
                 iconProps={{ iconName: 'Save' }}
-                onClick={() => this.onSubmit()}
+                onClick={this.onSubmit}
               />
               <FormButton
                 text="בטל"
