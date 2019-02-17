@@ -251,7 +251,7 @@ class VideoCard extends Component {
                   </Flex>
                 )}
                 <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
-                  <DocumentCardActivity
+                  {item && (<DocumentCardActivity
                     // activity={item && `הועלה ב: ${(new Date(item.createdAt)).toLocaleString()}`}
                     activity={item && `${item.viewCount} צפיות`}
                     people={
@@ -262,7 +262,7 @@ class VideoCard extends Component {
                         },
                       ]
                     }
-                  />
+                  />)}
                 </LinkOnLoad>
               </Shimmer>
             </div>
