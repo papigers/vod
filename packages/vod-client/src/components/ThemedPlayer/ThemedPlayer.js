@@ -227,6 +227,24 @@ const StyledVideoContainer = styled.div`
     font-family: VideoJS; /* stylelint-disable-line font-family-no-missing-generic-family-keyword */
   }
 
+  /* CUSTOM BUTTONS */
+  [class^="icon-"]:before,
+  [class*=" icon-"]:before {
+    font-family: VideoJS;
+    font-size: 1.8em;
+    position: relative;
+    top: 1px;
+  }
+
+  .video-js .icon-angle-right, .video-js .icon-angle-left {
+      cursor: pointer;
+      -webkit-box-flex: none;
+      -moz-box-flex: none;
+      -webkit-flex: none;
+      -ms-flex: none;
+      flex: none;
+  }
+
   .vjs-error-display {
     &::before {
       display: none;
@@ -331,13 +349,58 @@ class ThemedPlayer extends Component {
     }
   }
 
+  previousVideoClick = () => {
+    if (this.props.prevVideoLink) {
+      window.location = this.props.prevVideoLink;
+    }
+  }
+
+  nextVideoClick = () => {
+    if (this.props.nextVideoLink) {
+      window.location = this.props.nextVideoLink;
+    }
+  }
+
+  addOrRemovePlayerButtons = () => {
+    var Button = videojs.getComponent('Button');
+    
+    if (!this.player.getChild('controlBar').getChild('Next')) {
+      var NextButton = videojs.extend(Button, {
+        constructor: function() {
+          Button.apply(this, arguments);
+          this.addClass('icon-angle-right');
+          this.addClass('vjs-icon-next-item');
+          this.controlText("Next");
+        },
+        handleClick: this.nextVideoClick
+      });
+      videojs.registerComponent('Next', NextButton);
+      this.player.getChild('controlBar').addChild('Next', {}, 1);
+    }
+    
+    if (!this.player.getChild('controlBar').getChild('Previous')) {
+      var PrevButton = videojs.extend(Button, {
+        constructor: function() {
+          Button.apply(this, arguments);
+          this.addClass('icon-angle-left');
+          this.addClass('vjs-icon-previous-item');
+          this.controlText("Previous");
+        },
+        handleClick: this.previousVideoClick
+      });
+      videojs.registerComponent('Previous', PrevButton);
+      this.player.getChild('controlBar').addChild('Previous', {}, 0);
+    }
+  }
+
   onPlayerReady = () => {
     this.setState({ playerReady: true });
+    debugger;
+    this.addOrRemovePlayerButtons();
   };
 
   render() {
     return (
-      // <h1>Shit</h1>
       <StyledVideoContainer>
         <video
           className="video-js vjs-16-9"
