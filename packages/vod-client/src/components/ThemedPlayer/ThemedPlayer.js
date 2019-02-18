@@ -227,6 +227,24 @@ const StyledVideoContainer = styled.div`
     font-family: VideoJS; /* stylelint-disable-line font-family-no-missing-generic-family-keyword */
   }
 
+  /* CUSTOM BUTTONS */
+  [class^="icon-"]:before,
+  [class*=" icon-"]:before {
+    font-family: VideoJS;
+    font-size: 1.8em;
+    position: relative;
+    top: 1px;
+  }
+
+  .video-js .icon-angle-right, .video-js .icon-angle-left {
+      cursor: pointer;
+      -webkit-box-flex: none;
+      -moz-box-flex: none;
+      -webkit-flex: none;
+      -ms-flex: none;
+      flex: none;
+  }
+
   .vjs-error-display {
     &::before {
       display: none;
@@ -331,8 +349,52 @@ class ThemedPlayer extends Component {
     }
   }
 
+  addPlayerButtons = () => {
+    const {prevVideoId, nextVideoId , playlistId} = this.props;
+    var Button = videojs.getComponent('Button');
+
+    var PrevButton = videojs.extend(Button, {
+      constructor: function() {
+        Button.apply(this, arguments);
+        this.addClass('icon-angle-left');
+        this.addClass('vjs-icon-previous-item');
+        this.controlText("Previous");
+      },
+      handleClick: () => {
+      debugger;
+      console.log('prevVideoId');
+        window.location = `/watch?v=${prevVideoId}&list=${playlistId}`;
+      }
+    });
+    
+    var NextButton = videojs.extend(Button, {
+      constructor: function() {
+        Button.apply(this, arguments);
+        this.addClass('icon-angle-right');
+        this.addClass('vjs-icon-next-item');
+        this.controlText("Next");
+      },
+      handleClick: function() {
+        console.log('nextVideoId');
+        window.location = `/watch?v=${nextVideoId}&list=${playlistId}`;
+      }
+    });
+
+    if (this.props.prevVideoId) {
+      this.player.registerComponent('PrevButton', PrevButton);
+      this.player.getChild('controlBar').addChild('PrevButton', {}, 0);
+    }
+    if (this.props.nextVideoId) {
+      this.player.registerComponent('NextButton', NextButton);
+      this.player.getChild('controlBar').addChild('NextButton', {}, 2);
+    }
+  }
+
   onPlayerReady = () => {
     this.setState({ playerReady: true });
+    if (this.props.isPlaylist) {
+      this.addPlayerButtons();
+    }
   };
 
   render() {
