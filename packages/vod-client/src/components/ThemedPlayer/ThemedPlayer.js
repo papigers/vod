@@ -395,7 +395,6 @@ class ThemedPlayer extends Component {
 
   onPlayerReady = () => {
     this.setState({ playerReady: true });
-    debugger;
     this.addOrRemovePlayerButtons();
   };
 
