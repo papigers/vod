@@ -201,7 +201,6 @@ class VideoPage extends Component {
 
   fetchPlaylist() {
     if (this.state.playlistId) {
-      debugger;
       axios
       .get(`/playlists/${this.state.playlistId}`)
       .then(({ data }) => {
