@@ -245,6 +245,10 @@ const StyledVideoContainer = styled.div`
       flex: none;
   }
 
+  .vjs-hide-button {
+    display: none;
+  }
+
   .vjs-error-display {
     &::before {
       display: none;
@@ -282,6 +286,22 @@ class ThemedPlayer extends Component {
     }
     if (this.props.error && this.props.error !== prevProps.error) {
       this.showPlayerError(this.props.error);
+    }
+
+    if (this.player.getChild('controlBar').getChild('Previous')) {
+      if (!this.props.prevVideoLink) {
+        this.player.getChild('controlBar').getChild('Previous').addClass('vjs-hide-button')
+      } else {
+        this.player.getChild('controlBar').getChild('Previous').removeClass('vjs-hide-button')
+      }
+    }
+
+    if (this.player.getChild('controlBar').getChild('Next')) {
+      if (!this.props.nextVideoLink) {
+        this.player.getChild('controlBar').getChild('Next').addClass('vjs-hide-button')
+      } else {
+        this.player.getChild('controlBar').getChild('Next').removeClass('vjs-hide-button')
+      }
     }
   }
 
@@ -394,8 +414,8 @@ class ThemedPlayer extends Component {
   }
 
   onPlayerReady = () => {
-    this.setState({ playerReady: true });
     this.addOrRemovePlayerButtons();
+    this.setState({ playerReady: true });
   };
 
   render() {
