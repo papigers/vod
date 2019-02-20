@@ -105,19 +105,22 @@ class VideoPage extends Component {
       likeDelta: 0,
       viewed: false,
       playlist: null,
-      prevVideoLink: null,
-      nextVideoLink: null,
+      prevVideoId: null,
+      nextVideoId: null,
     };
   }
 
   static getDerivedStateFromProps(props, state) {
     const videoId = qs.parse(props.location.search).v;
-    const playlistId = qs.parse(props.location.search).list || null;
+    const playlistId = qs.parse(props.location.search).list;
+
+    let newState = {};
     
     if (!state.videoId || state.videoId !== videoId) {
-      return {
+      newState = {
+        ...newState,
         videoId: videoId,
-        playlistId: playlistId,
+        playlistId,
         video: null,
         related: [],
         loading: true,
@@ -125,6 +128,19 @@ class VideoPage extends Component {
         loadingRelated: true,
         errorRelated: null,
       };
+    }
+    if (!state.playlistId || state.playlistId !== playlistId) {
+      newState = {
+        ...newState,
+        playlist: null,
+        nextVideoId: null,
+        prevVideoId: null,
+        loading: true,
+        error: null,
+      };
+    }
+    if (Object.keys(newState).length) {
+      return newState;
     }
     return null;
   }
@@ -145,19 +161,12 @@ class VideoPage extends Component {
 
   updateNextPrevVideos = () => {
     const { playlist, video } = this.state;
-    
-    if (playlist && playlist.videos.length &&
-        video && video.id) {
+
+    if (playlist && playlist.videos.length && video && video.id) {
       const currVideoIndex = playlist.videos.findIndex(currvideo => currvideo.id === video.id);
-      const nextVideoLink = currVideoIndex < playlist.videos.length - 1 ?
-        `/watch?v=${playlist.videos[currVideoIndex+1].id}&list=${playlist.id}` :
-        null;
-      const prevVideoLink = currVideoIndex > 0 ?
-        `/watch?v=${playlist.videos[currVideoIndex-1].id}&list=${playlist.id}` :
-        null;
       this.setState({
-        nextVideoLink: nextVideoLink,
-        prevVideoLink: prevVideoLink,
+        nextVideoId: currVideoIndex < playlist.videos.length - 1 ? playlist.videos[currVideoIndex+1].id : null,
+        prevVideoId: currVideoIndex > 0 ? playlist.videos[currVideoIndex-1].id : null,
       });
     }
   }
@@ -171,6 +180,8 @@ class VideoPage extends Component {
           loading: false,
           error: null,
         });
+      }).then(()=>{
+        this.updateNextPrevVideos();
       })
       .catch(err => {
         // TODO: do something
@@ -265,9 +276,28 @@ class VideoPage extends Component {
     }
   };
 
+  renderRedirect = (buttonClicked) => {
+    const { nextVideoId, prevVideoId, playlist } = this.state;
+
+    switch (buttonClicked) {
+      case 'Previous':
+        if (prevVideoId) {
+          this.props.history.push(`/watch?v=${prevVideoId}&list=${playlist.id}`);
+        }
+        break;
+      case 'Next':
+      default:
+        if (nextVideoId) {
+          this.props.history.push(`/watch?v=${nextVideoId}&list=${playlist.id}`);
+        }
+        break;
+    }
+  }
+
   render() {
-    const { nextVideoLink, prevVideoLink, playlist, video, error, likeDelta } = this.state;
+    const { nextVideoId, prevVideoId, playlist, video, error, likeDelta } = this.state;
     const { user } = this.props;
+    
     let likeCount = 0;
     let userLikes = false;
     if (video) {
@@ -286,9 +316,10 @@ class VideoPage extends Component {
                     videoId={video && video.id}
                     error={error}
                     onTimeUpdate={this.onTimeUpdate}
-                    nextVideoLink={nextVideoLink}
-                    prevVideoLink={prevVideoLink}
+                    nextVideoId={nextVideoId}
+                    prevVideoId={prevVideoId}
                     playlistId={playlist && playlist.id}
+                    renderRedirect={this.renderRedirect}
                   />
                   <Box mt={20}>
                     <Shimmer
@@ -384,7 +415,7 @@ class VideoPage extends Component {
               <Box width={[1, 1, 1, 0.35]}>
                 {playlist && playlist.videos.length ?
                   <PlaylistPanel
-                    playlist={playlist}
+                    videos={playlist.videos}
                     loading={this.state.loadingRelated}
                     currentVideo={video && video.id}
                   /> : null

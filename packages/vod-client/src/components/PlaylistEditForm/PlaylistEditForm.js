@@ -169,7 +169,7 @@ class PlaylistEditForm extends Component {
         name: video.name,
         stateDisplay: this.getPlaylistState(video.state),
         privacyDisplay: video.privacy === 'PUBLIC' ? 'ציבורי' : 'פרטי',
-        channelName: video.channelName,
+        channelName: video.channel.name,
       };
     });
   };
