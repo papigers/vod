@@ -71,14 +71,10 @@ class PlaylistPanel extends Component {
             <Icon iconName="Link" /> קישור בלבד
           </Label>);
       case 'PRIVATE':
-        return (
-          <Label>
-            <Icon iconName="Hide" /> פרטי
-          </Label>);
       default:
         return (
           <Label>
-            <Icon iconName="Error" /> 404
+            <Icon iconName="Hide" /> פרטי
           </Label>);
     }
   }
