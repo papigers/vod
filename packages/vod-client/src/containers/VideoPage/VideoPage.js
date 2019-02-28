@@ -100,6 +100,7 @@ class VideoPage extends Component {
       error: null,
       related: [],
       loadingRelated: true,
+      loadingPlaylist: true,
       errorRelated: null,
       video: null,
       likeDelta: 0,
@@ -121,11 +122,13 @@ class VideoPage extends Component {
         ...newState,
         videoId: videoId,
         playlistId,
+        currVideoIndex: -1,
         video: null,
         related: [],
         loading: true,
         error: null,
         loadingRelated: true,
+        loadingPlaylist: true,
         errorRelated: null,
       };
     }
@@ -164,10 +167,13 @@ class VideoPage extends Component {
 
     if (playlist && playlist.videos.length && video && video.id) {
       const currVideoIndex = playlist.videos.findIndex(currvideo => currvideo.id === video.id);
-      this.setState({
-        nextVideoId: currVideoIndex < playlist.videos.length - 1 ? playlist.videos[currVideoIndex+1].id : null,
-        prevVideoId: currVideoIndex > 0 ? playlist.videos[currVideoIndex-1].id : null,
-      });
+      if (currVideoIndex && currVideoIndex !== this.state.currVideoIndex ) {
+        this.setState({
+          currVideoIndex: currVideoIndex,
+          nextVideoId: currVideoIndex < playlist.videos.length - 1 ? playlist.videos[currVideoIndex+1].id : null,
+          prevVideoId: currVideoIndex > 0 ? playlist.videos[currVideoIndex-1].id : null,
+        });
+      }
     }
   }
 
@@ -217,7 +223,7 @@ class VideoPage extends Component {
       .then(({ data }) => {
         this.setState({
           playlist: data,
-          loading: false,
+          loadingPlaylist: false,
           error: null,
         });
       }).then(()=>{
@@ -227,7 +233,7 @@ class VideoPage extends Component {
         // TODO: do something
         this.setState({
           playlist: null,
-          loading: false,
+          loadingPlaylist: false,
           error: 'הפלייליסט אינו זמין',
         });
       });
@@ -295,7 +301,7 @@ class VideoPage extends Component {
   }
 
   render() {
-    const { nextVideoId, prevVideoId, playlist, video, error, likeDelta } = this.state;
+    const { nextVideoId, prevVideoId, playlist, video, error, likeDelta, currVideoIndex } = this.state;
     const { user } = this.props;
     
     let likeCount = 0;
@@ -415,8 +421,9 @@ class VideoPage extends Component {
               <Box width={[1, 1, 1, 0.35]}>
                 {playlist && playlist.videos.length ?
                   <PlaylistPanel
-                    videos={playlist.videos}
-                    loading={this.state.loadingRelated}
+                    playlist={playlist}
+                    currVideoIndex={currVideoIndex}
+                    loading={this.state.loadingPlaylist}
                     currentVideo={video && video.id}
                   /> : null
                 }
