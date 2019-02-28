@@ -4,10 +4,12 @@ import { Flex, Box } from 'grid-styled';
 import debounce from 'debounce';
 import { Link } from 'react-router-dom';
 import { transparentize } from 'polished';
+
 import {
   DocumentCard,
-  DocumentCardActivity,
   DocumentCardPreview,
+  DocumentCardDetails,
+  DocumentCardActivity,
   DocumentCardTitle,
   DocumentCardType,
 } from 'office-ui-fabric-react/lib/DocumentCard';
@@ -34,8 +36,7 @@ const CardContainer = styled.div`
         `}
 
   .ms-DocumentCardPreview {
-    width: 208px;
-    height: 118px;
+    max-width: fit-content;
   }
 `;
 
@@ -44,16 +45,19 @@ const StyledVideoCard = styled(DocumentCard)`
     min-width: ${({ type }) => (type === DocumentCardType.compact ? '360px' : 'inherit')};
   }
 
-  .ms-DocumentCardTitle {
-    box-sizing: content-box;
-    flex-grow: 1;
+  .ms-DocumentCardDetails{
+    height: fit-content;
+
+    .ms-DocumentCardTitle{
+      margin: 5px 0;
+      padding: 0 8px 0 24px;
+    }
   }
 
   .ms-DocumentCardActivity {
     transition: background-color 200ms ease-in-out, border 200ms ease-in-out;
     border-top: 2px solid transparent;
-    /* background-color: ${({ theme }) => theme.palette.neutralLighterAlt}; */
-    /* border-top-color: ${({ theme }) => theme.palette.neutralLighter}; */
+    padding-bottom: 5px;
 
     &:hover {
       background-color: ${({ theme }) => theme.palette.neutralLighterAlt};
@@ -66,16 +70,7 @@ const StyledVideoCard = styled(DocumentCard)`
   }
 
   &.ms-DocumentCard--compact {
-    height: 120px;
-
-    .ms-DocumentCardPreview {
-      max-width: none;
-      max-height: 118px;
-    }
-
-    .ms-DocumentCardTitle {
-      height: 46px;
-    }
+    height: fit-content;
   }
 `;
 
@@ -117,9 +112,9 @@ const PlaylistLogo = styled(Icon)`
 
 function LoadingCardContent(compact) {
   return (
-    <Flex style={{ height: compact ? 118 : 86 }}>
+    <Flex style={{ height: compact ? 95 : 86 }}>
       <ShimmerElementsGroup
-        shimmerElements={[{ type: ElemType.gap, height: compact ? 118 : 86, width: 16 }]}
+        shimmerElements={[{ type: ElemType.gap, height: compact ? 95 : 86, width: 16 }]}
       />
       <Box width={1}>
         <Flex flexWrap="wrap">
@@ -128,7 +123,7 @@ function LoadingCardContent(compact) {
             width="100%"
             shimmerElements={[
               { type: ElemType.gap, width: '100%', height: 0 },
-              { type: ElemType.line, width: '100%', height: 14, verticalAlign: 'top' },
+              { type: ElemType.line, width: '100%', height: 0, verticalAlign: 'top' },
               compact
                 ? { type: ElemType.line, width: '90%', height: 14, verticalAlign: 'bottom' }
                 : null,
@@ -165,7 +160,7 @@ function LoadingCardContent(compact) {
         </Flex>
       </Box>
       <ShimmerElementsGroup
-        shimmerElements={[{ type: ElemType.gap, height: compact ? 118 : 86, width: 16 }]}
+        shimmerElements={[{ type: ElemType.gap, height: compact ? 95 : 86, width: 16 }]}
       />
     </Flex>
   );
@@ -199,7 +194,7 @@ class VideoCard extends Component {
           to={
             item
               ? Object.keys(item).includes('videos')
-                ? `/watch?l=${item.id}&v=${item.videos[0].id}`
+                ? `/watch?v=${item.videos[0].id}&list=${item.id}`
                 : `/watch?v=${item.id}`
               : null
           }
@@ -209,7 +204,7 @@ class VideoCard extends Component {
             type={compact ? DocumentCardType.compact : DocumentCardType.normal}
           >
             <Shimmer
-              shimmerElements={[{ type: ElemType.line, width: 210, height: 118 }]}
+              shimmerElements={[{ type: ElemType.line, width: 210, height: 95 }]}
               width="100%"
               isDataLoaded={!showShimmer}
             >
@@ -221,8 +216,8 @@ class VideoCard extends Component {
                       `${process.env.REACT_APP_STREAMER_HOSTNAME}/${
                         Object.keys(item).includes('videos') ? item.videos[0].id : item.id
                       }/thumbnail.png`,
-                    width: compact ? null : 208,
-                    height: compact ? 118 : null,
+                    width: compact ? null : 210,
+                    height: compact ? 95 : null,
                   },
                 ]}
               />
@@ -235,7 +230,7 @@ class VideoCard extends Component {
                 </Overlay>
               )}
             </Shimmer>
-            <div className="ms-DocumentCard-details">
+            <DocumentCardDetails>
               <Shimmer
                 customElementsGroup={LoadingCardContent(compact)}
                 width="100%"
@@ -251,8 +246,7 @@ class VideoCard extends Component {
                   </Flex>
                 )}
                 <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
-                  {item && (<DocumentCardActivity
-                    // activity={item && `הועלה ב: ${(new Date(item.createdAt)).toLocaleString()}`}
+                  {item && ( <DocumentCardActivity
                     activity={item && `${item.viewCount} צפיות`}
                     people={
                       item && [
@@ -265,7 +259,7 @@ class VideoCard extends Component {
                   />)}
                 </LinkOnLoad>
               </Shimmer>
-            </div>
+            </DocumentCardDetails>
           </StyledVideoCard>
         </LinkOnLoad>
       </CardContainer>
