@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
@@ -420,12 +420,12 @@ class VideoPage extends Component {
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
                 {playlist && playlist.videos.length ?
-                  <PlaylistPanel
-                    playlist={playlist}
-                    currVideoIndex={currVideoIndex}
-                    loading={this.state.loadingPlaylist}
-                    currentVideo={video && video.id}
-                  /> : null
+                    <PlaylistPanel
+                      playlist={playlist}
+                      currVideoIndex={currVideoIndex}
+                      loading={this.state.loadingPlaylist}
+                      currentVideo={video && video.id}
+                    /> : null
                 }
                 <VideoList
                   videos={this.state.related}

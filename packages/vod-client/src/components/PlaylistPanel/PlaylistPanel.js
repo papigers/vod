@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
+import { List } from 'office-ui-fabric-react/lib/List';
 
-import VideoCard from 'components/VideoCard';
-import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
+import PlaylistVideoCard from 'components/PlaylistVideoCard';
 
 const PanelContainer = styled.div`
-
-  .vjs-hide-button {
-    display: none;
-  }
+  height: 36%;
 `;
 
 const PlaylistContainer = styled.div`
@@ -19,6 +17,13 @@ const PlaylistContainer = styled.div`
   background: ${({ theme }) => theme.palette.neutralLight};
   padding-bottom: 5px;
   width: 100%;
+`;
+
+const VideosContainer = styled.div`
+  background: ${({ theme }) => theme.palette.neutralLighter};
+  width: 100%;
+  height: 24.5em;
+  /* height: 100%; */
 `;
 
 const PlaylistName = styled(Label)`
@@ -104,12 +109,13 @@ class PlaylistPanel extends Component {
             </PlaylistDetails>
           </PlaylistDescription>
         </PlaylistContainer>
-        {playlist.videos.length ?
-          <VideoList
-            videos={playlist.videos}
-            loading={this.props.loadingRelated}
-            type={VIDEO_LIST_TYPE.LIST}
-            /> : null}
+        <VideosContainer>
+          {playlist.videos.length && currVideoIndex > -1 ?
+            <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
+              <PlaylistVideoCard item={item} index={index} currindex={currVideoIndex} playlistId={playlist.id}/>
+            } />
+             : null }
+        </VideosContainer>
       </PanelContainer>
     );
   }
