@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { List } from 'office-ui-fabric-react/lib/List';
+import { ScrollablePane, ScrollbarVisibility } from 'office-ui-fabric-react/lib/ScrollablePane';
 
 import PlaylistVideoCard from 'components/PlaylistVideoCard';
 
@@ -21,6 +22,7 @@ const PlaylistContainer = styled.div`
 
 const VideosContainer = styled.div`
   background: ${({ theme }) => theme.palette.neutralLighter};
+  position: sticky;
   width: 100%;
   height: 24.5em;
 `;
@@ -110,10 +112,12 @@ class PlaylistPanel extends Component {
         </PlaylistContainer>
         <VideosContainer>
           {playlist.videos.length  ?
-            <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
-              <PlaylistVideoCard item={item} index={index} currindex={currVideoIndex} playlistId={playlist.id}/>
-            } />
-             : null }
+             <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
+              <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
+                <PlaylistVideoCard item={item} index={index} currindex={currVideoIndex} playlistId={playlist.id}/>
+              } /> 
+            </ScrollablePane>
+          : null }
         </VideosContainer>
       </PanelContainer>
     );

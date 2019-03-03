@@ -25,8 +25,7 @@ const CardContent = styled.div`
 `;
 
 const VideoName = styled.h4`
-  white-space: nowrap;
-  overflow: hidden;
+  font-weight: unset;
   text-overflow: ellipsis;
   margin: 0;
   padding: 8px 0;
