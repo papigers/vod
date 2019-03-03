@@ -109,7 +109,7 @@ class PlaylistPanel extends Component {
           </PlaylistDescription>
         </PlaylistContainer>
         <VideosContainer>
-          {playlist.videos.length && currVideoIndex > -1 ?
+          {playlist.videos.length  ?
             <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
               <PlaylistVideoCard item={item} index={index} currindex={currVideoIndex} playlistId={playlist.id}/>
             } />

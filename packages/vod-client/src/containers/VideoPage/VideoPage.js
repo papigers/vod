@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
@@ -167,7 +167,7 @@ class VideoPage extends Component {
 
     if (playlist && playlist.videos.length && video && video.id) {
       const currVideoIndex = playlist.videos.findIndex(currvideo => currvideo.id === video.id);
-      if (currVideoIndex && currVideoIndex !== this.state.currVideoIndex ) {
+      if (currVideoIndex !== this.state.currVideoIndex ) {
         this.setState({
           currVideoIndex: currVideoIndex,
           nextVideoId: currVideoIndex < playlist.videos.length - 1 ? playlist.videos[currVideoIndex+1].id : null,
@@ -419,7 +419,7 @@ class VideoPage extends Component {
               </Box>
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
-                {playlist && playlist.videos.length ?
+                {playlist && playlist.videos.length && currVideoIndex >= 0 ?
                     <PlaylistPanel
                       playlist={playlist}
                       currVideoIndex={currVideoIndex}
