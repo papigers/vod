@@ -420,12 +420,12 @@ class VideoPage extends Component {
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
                 {playlist && playlist.videos.length ?
-                  <PlaylistPanel
-                    playlist={playlist}
-                    currVideoIndex={currVideoIndex}
-                    loading={this.state.loadingPlaylist}
-                    currentVideo={video && video.id}
-                  /> : null
+                    <PlaylistPanel
+                      playlist={playlist}
+                      currVideoIndex={currVideoIndex}
+                      loading={this.state.loadingPlaylist}
+                      currentVideo={video && video.id}
+                    /> : null
                 }
                 <VideoList
                   videos={this.state.related}

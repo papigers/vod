@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Box } from 'grid-styled';
-import VideoCard from '../VideoCard';
+
 import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+
+import VideoCard from '../VideoCard';
 
 export const VIDEO_LIST_TYPE = {
   GRID: 'GRID_VIDEO_LIST',
