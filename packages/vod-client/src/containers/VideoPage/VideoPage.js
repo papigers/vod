@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
