@@ -93,7 +93,9 @@ class PlaylistPanel extends Component {
         <PlaylistContainer>
           <PlaylistDescription>
             <PlaylistName>
+              <Link to={`/playlist?list=${playlist.id}`}>
                 {playlist.name}
+              </Link>
             </PlaylistName>
             <PlaylistDetails>
               <PlaylistState>
