@@ -3,38 +3,58 @@ import styled from 'styled-components';
 import qs from 'query-string';
 
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
-import { Overlay } from 'office-ui-fabric-react/lib/Overlay';
 import { Image } from 'office-ui-fabric-react/lib/Image';
 import { List } from 'office-ui-fabric-react/lib/List';
 
 import axios from 'utils/axios';
 import PlaylistVideoCard from 'components/PlaylistVideoCard';
+import ChannelRow from 'containers/ChannelRow';
 
 const PlaylistContainer = styled.div`
   display: flex;
-
+  height:100%;
 `;
 
-const PlaylistContent = styled.div`
-  cursor: pointer;
-  height:100%;
+const PlaylistDetails = styled.div`
   width:40%;
   display: flex;
   padding: 24px 32px;
   position: relative;
-  justify-content: center;
+  width: fit-content;
+  flex-direction: column;
+  background: ${({ theme }) => theme.palette.neutralLighterAlt};
 
-  .ms-Overlay{
-    margin: 193px 46px 24px 45px;
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    align-items: flex-end;
+  h1{
+    cursor: pointer;
+  }
+`;
+
+const PlaylistMetadata = styled.div`
+  display: flex;
+  font-size: small;
+  color: ${({ theme }) => theme.palette.neutralTertiary};
+  margin-bottom: 10px;
+
+  .ms-Icon{
+    font-size: xx-small;
+    padding-top: .3rem;
   }
 `;
 
 const PlaylistVideos = styled.div`
   width: 60%;
+`;
+
+const PlaylistChannel = styled(ChannelRow)`
+  border-top: ridge;
+  padding-top: 10px;
+`;
+
+const PlaylistThumbnail = styled.div`
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
 `;
 
 const ThumbnailOverlay = styled.div`
@@ -46,18 +66,15 @@ const ThumbnailOverlay = styled.div`
   color: white;
   position: absolute;
   align-items: center;
-  padding: 4px 9.1em;
+  width: 100%;
+  justify-content: center;
+  padding: 10px;
+  font-size: medium;
   
   p {
     margin: 0;
     padding-left: .5rem;
-    font-size: x-large;
   }
-
-  .ms-Icon{
-    font-size: large;
-  }
-  
 `;
 
 class PlaylistPage extends Component {
@@ -115,7 +132,7 @@ class PlaylistPage extends Component {
     }
   }
 
-  onThumbnailClick = () =>{
+  onLinkClick = () =>{
     const { playlist } = this.state;
     this.props.history.push(playlist && `/watch?v=${playlist.videos[0].id}&list=${playlist.id}`);
   }
@@ -125,20 +142,29 @@ class PlaylistPage extends Component {
     return (
       <PlaylistContainer>
         {!playlist ? null : <Fragment>
-          <PlaylistContent onClick={this.onThumbnailClick}>
-            <Image
-              src={playlist && `${process.env.REACT_APP_STREAMER_HOSTNAME}/${playlist.videos[0].id}/thumbnail.png`}
-              height={200}
-              />
-            <Overlay>
+          <PlaylistDetails>
+            <PlaylistThumbnail onClick={this.onLinkClick}>
+              <Image
+                src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${playlist.videos[0].id}/thumbnail.png`}
+                height={200}
+                />
               <ThumbnailOverlay>
                 <p>{'נגן הכל'}</p>
                 <Icon iconName={'CaretSolidRight'} />
               </ThumbnailOverlay>
-            </Overlay>
-          </PlaylistContent>
+            </PlaylistThumbnail>
+            <h1 onClick={this.onLinkClick}>
+              {playlist.name}
+            </h1>
+            <PlaylistMetadata>
+              {playlist.videos.length === 1 ? `סירטון אחד` : `${playlist.videos.length} סירטונים` }
+              <Icon iconName={'LocationDot'} />
+              {`עודכן לאחרונה בתאריך ${new Date(playlist.updatedAt).toDateString()}`}
+            </PlaylistMetadata>
+            <PlaylistChannel size={48} channel={playlist.channel} user={this.props.user} />
+          </PlaylistDetails>
           <PlaylistVideos>
-            <List items={playlist && playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
+            <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
                 <PlaylistVideoCard item={item} index={index} playlistId={playlist.id}/>
               } />
           </PlaylistVideos>
