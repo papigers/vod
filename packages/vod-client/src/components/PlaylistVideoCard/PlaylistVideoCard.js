@@ -10,6 +10,12 @@ const CardContainer = styled(Link)`
     padding: 4px 0px 4px 8px;
     box-sizing: border-box;
     display: flex;
+    border-bottom: ${({ compact, theme }) => !compact ?  `1px solid ${theme.palette.neutralTertiaryAlt}` : null};
+    
+    &:hover {
+      background-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighterAlt : null};
+      border-top-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighter : null};
+    }
 `;
 
 const CardThumbnail = styled(Image)`
@@ -24,7 +30,14 @@ const CardContent = styled.div`
   flex-grow: 1;
 `;
 
-const VideoName = styled.h4`
+const VideoName = styled.h3`
+  font-weight: unset;
+  text-overflow: ellipsis;
+  margin: 0;
+  padding: 8px 0;
+`;
+
+const CompactVideoName = styled.h4`
   font-weight: unset;
   text-overflow: ellipsis;
   margin: 0;
@@ -40,18 +53,18 @@ const SubTitle = styled.p`
 
 class PlaylistVideoCard extends Component {
   render() {
-    const { item, index, currindex, playlistId } = this.props;
+    const { item, index, currindex, playlistId, compact } = this.props;
 
     return (
-      <CardContainer to={item && `/watch?v=${item.id}&list=${playlistId}`}>
+      <CardContainer compact={compact} to={item && `/watch?v=${item.id}&list=${playlistId}`}>
           <div style={{ width: 24, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
             <SubTitle>
               {currindex === index ? <Icon iconName={'CaretSolidLeft'} /> : index + 1 }
             </SubTitle>
           </div>
-          <CardThumbnail src={item && `${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`} height={56} />
+          <CardThumbnail src={item && `${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`} width={compact ? 100 : 120} />
           <CardContent>
-            <VideoName>{item.name}</VideoName>
+          {compact ? <CompactVideoName>{item.name}</CompactVideoName> : <VideoName>{item.name}</VideoName> }
             <SubTitle>{item.channel.name}</SubTitle>
           </CardContent>
       </CardContainer>

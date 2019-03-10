@@ -5,6 +5,7 @@ import qs from 'query-string';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Image } from 'office-ui-fabric-react/lib/Image';
 import { List } from 'office-ui-fabric-react/lib/List';
+import { ScrollablePane, ScrollbarVisibility } from 'office-ui-fabric-react/lib/ScrollablePane';
 
 import axios from 'utils/axios';
 import PlaylistVideoCard from 'components/PlaylistVideoCard';
@@ -12,11 +13,10 @@ import ChannelRow from 'containers/ChannelRow';
 
 const PlaylistContainer = styled.div`
   display: flex;
-  height:100%;
+  height: 100%;
 `;
 
 const PlaylistDetails = styled.div`
-  width:40%;
   display: flex;
   padding: 24px 32px;
   position: relative;
@@ -42,11 +42,12 @@ const PlaylistMetadata = styled.div`
 `;
 
 const PlaylistVideos = styled.div`
-  width: 60%;
+  width: 100%;
+  position: relative;
 `;
 
-const PlaylistChannel = styled(ChannelRow)`
-  border-top: ridge;
+const PlaylistChannel = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.palette.neutralTertiaryAlt};
   padding-top: 10px;
 `;
 
@@ -122,8 +123,9 @@ class PlaylistPage extends Component {
           error: null,
         });
       }).catch(err => {
-        parseInt(err.response && err.response.status) === 404 ? this.props.history.push(`/`) : null
-        this.setState({
+        Number(err.response && err.response.status) === 404 ?
+        this.props.history.push(`/`)
+        : this.setState({
           playlist: null,
           loadingPlaylist: false,
           error: err.response && err.response.message,
@@ -161,12 +163,16 @@ class PlaylistPage extends Component {
               <Icon iconName={'LocationDot'} />
               {`עודכן לאחרונה בתאריך ${new Date(playlist.updatedAt).toDateString()}`}
             </PlaylistMetadata>
-            <PlaylistChannel size={48} channel={playlist.channel} user={this.props.user} />
+            <PlaylistChannel>
+              <ChannelRow size={48} channel={playlist.channel} user={this.props.user} />
+            </PlaylistChannel>
           </PlaylistDetails>
           <PlaylistVideos>
-            <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
-                <PlaylistVideoCard item={item} index={index} playlistId={playlist.id}/>
-              } />
+             <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
+              <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
+                  <PlaylistVideoCard item={item} index={index} playlistId={playlist.id}/>
+                } />
+            </ScrollablePane>
           </PlaylistVideos>
         </Fragment>}
       </PlaylistContainer>
