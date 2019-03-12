@@ -157,6 +157,25 @@ router.get('/video/:id', function(req, res) {
     });
 });
 
+router.get('/video/:id/playlists', function(req, res) {
+  db.videos
+    .getVideoPlaylists(req.user, req.params.id)
+    .then(function(playlists) {
+      if (playlists) {
+        return res.json(playlists);
+      }
+      return res.status(404).json({
+        error: 'No playlists for this video',
+      });
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
+        error: "Couldn't get playlists for this video",
+      });
+    });
+});
+
 router.put('/video/:id/view', function(req, res) {
   db.videos
     .viewVideo(req.user, req.params.id)
