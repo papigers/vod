@@ -19,7 +19,8 @@ import axios from 'utils/axios';
 
 const StyledCallout = styled(Callout)`
   .ms-List{
-    padding: 16px 24px;
+    padding: 16px 24px 8px;
+    
     .ms-List-cell{
       margin-bottom: 8px;
     }
