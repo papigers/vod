@@ -115,7 +115,7 @@ class PlaylistPanel extends Component {
         <VideosContainer>
           {playlist.videos.length  ?
              <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
-              <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
+              <List items={playlist.videos} data-is-scrollable="true" scrollToIndex={currVideoIndex} onRenderCell={ (item, index) => 
                 <PlaylistVideoCard item={item} index={index} currindex={currVideoIndex} playlistId={playlist.id} compact={true} />
               } />
             </ScrollablePane>
