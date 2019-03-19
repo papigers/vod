@@ -154,7 +154,7 @@ module.exports = function(db) {
         .select()
         .from(db.channels.table)
         .where(`${db.channels.table}.id`, playlist.channelId)
-        .modify(db.channels.authorizedViewSubquery, user)
+        .modify(db.channels.authorizedManageSubquery, user)
         .then(rows => {
           if (rows.length > 0) {
             return trx(playlists.table)
