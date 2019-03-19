@@ -514,10 +514,12 @@ module.exports = function(db) {
     return db.knexnest(
       db.knex
         .select(
-          `${db.playlists.table}.id`,
-          `${db.playlists.table}.name`,
-          `${db.playlists.table}.description`,
-          `${db.playlists.table}.updatedAt`,
+          `${db.playlistVideos.table}.playlistId as _id`,
+          `${db.playlists.table}.name as _name`,
+          `${db.playlists.table}.description as _description`,
+          `${db.playlists.table}.updatedAt as _updatedAt`,
+          `${db.channels.table}.id as _channel_id`,
+          `${db.channels.table}.name as _channel_name`,
         )
         .from(db.playlistVideos.table)
         .where(`${db.playlistVideos.table}.videoId`, videoId)
