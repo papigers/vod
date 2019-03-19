@@ -127,15 +127,6 @@ class SaveToPlaylistsCallout extends Component {
   };
 
   onSubmit = () => {
-    // const newPlaylist = {
-    //   name: this.state.newPlaylistName,
-    //   description: this.state.newPlaylistDescription,
-    //   state: this.state.newPlaylistState,
-    //   channelId: this.state.newPlaylistChannel,
-    //   videos: [this.props.video]
-    // };
-    // console.log(newPlaylist);
-    // debugger;
     axios.post(`/playlists/`, {
       name: this.state.newPlaylistName,
       description: this.state.newPlaylistDescription,
