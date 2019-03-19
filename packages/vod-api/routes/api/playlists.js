@@ -43,13 +43,11 @@ router.get('/:id', function(req, res) {
 router.post('/', function(req, res) {
   db.playlists
     .createPlaylist(req.user, req.body)
-    .then(function(result) {
-      if (result && result.id) {
-        return res.status(201).json({
-          playlistId: result.id,
-        });
+    .then(function(results) {
+      if (results[0] && results[0].rowCount) {
+        return res.sendStatus(201);
       }
-      return res.sendStatus(404);
+      return res.sendStatus(401);
     })
     .catch(function(err) {
       return res.status(err.code).json(err.code);
