@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
@@ -12,6 +12,7 @@ import {
   ShimmerElementsGroup,
 } from 'office-ui-fabric-react/lib/Shimmer';
 import { Label } from 'office-ui-fabric-react/lib/Label';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 import createReduxContainer from 'utils/createReduxContainer';
 import { makeSelectUser } from 'containers/ChannelPage/selectors';
@@ -21,9 +22,9 @@ import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 import ChannelRow from 'containers/ChannelRow';
 import PlaylistPanel from 'components/PlaylistPanel';
+import SaveToPlaylistsCallout from 'components/SaveToPlaylistsCallout';
 
 import axios from 'utils/axios';
-import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 const VideoContainer = styled.div`
   display: flex;
@@ -108,7 +109,9 @@ class VideoPage extends Component {
       playlist: null,
       prevVideoId: null,
       nextVideoId: null,
+      isCalloutVisible: false,
     };
+    this.addToPlaylistsRef = React.createRef();
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -122,6 +125,7 @@ class VideoPage extends Component {
         ...newState,
         videoId: videoId,
         playlistId,
+        isCalloutVisible: false,
         currVideoIndex: -1,
         video: null,
         related: [],
@@ -150,7 +154,7 @@ class VideoPage extends Component {
 
   componentDidMount() {
     this.fetchVideo();
-    this.fetchPlaylist();
+    this.fetchVideoPlaylist();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -158,7 +162,7 @@ class VideoPage extends Component {
       this.fetchVideo();
     }
     if (prevState.playlistId !== this.state.playlistId) {
-      this.fetchPlaylist();
+      this.fetchVideoPlaylist();
     }
   }
 
@@ -216,7 +220,7 @@ class VideoPage extends Component {
       });
   }
 
-  fetchPlaylist() {
+  fetchVideoPlaylist() {
     if (this.state.playlistId) {
       axios
       .get(`/playlists/${this.state.playlistId}`)
@@ -240,11 +244,40 @@ class VideoPage extends Component {
     }
   }
 
-  onRenderItem(item) {
+  onAddToPlaylistsClicked = () => {
+    this.setState({
+      isCalloutVisible: !this.state.isCalloutVisible,
+    });
+  };
+
+  onRenderItem = (item) => {
     if (item.onRender) {
       return item.onRender(item);
     }
     const { icon, subMenuProps, name, beforeText, ...props } = item;
+
+    if (item.key === 'Save') {
+      return (
+        <Fragment>
+          <div ref={this.addToPlaylistsRef}>
+            <VideoButton
+              iconProps={{ iconName: icon }}
+              menuProps={subMenuProps}
+              text={name}
+              beforeText={beforeText !== undefined ? `${beforeText}` : undefined}
+              {...props}
+            />
+          </div>
+          { this.state.isCalloutVisible ?
+            <SaveToPlaylistsCallout
+              StyledButton={VideoButton}
+              addToPlaylistsRef={this.addToPlaylistsRef}
+              video={this.state.video}
+              onDismiss={this.onAddToPlaylistsClicked}
+              /> : null}
+        </Fragment>
+      );
+    }
     return (
       <VideoButton
         iconProps={{ iconName: icon }}
@@ -366,6 +399,12 @@ class VideoPage extends Component {
                                 name: 'שתף',
                                 icon: 'Share',
                                 onClick: console.log,
+                              },
+                              {
+                                key: 'Save',
+                                name: 'שמור',
+                                icon: 'AddNotes',
+                                onClick: this.onAddToPlaylistsClicked,
                               },
                             ]}
                             onRenderOverflowButton={this.onRenderOverflowButton}
