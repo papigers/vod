@@ -50,7 +50,9 @@ router.post('/', function(req, res) {
       return res.sendStatus(401);
     })
     .catch(function(err) {
-      return res.status(err.code).json(err.code);
+      return res.status(500).json({
+        error: 'Failed to create new playlist',
+      });
     });
 });
 
@@ -65,9 +67,6 @@ router.put('/:id/add/:videoId', function(req, res) {
     })
     .catch(function(err) {
       console.error(err);
-      if (err.code === 200) {
-        return res.status(err.code).json(err.code);
-      }
       return res.status(500).json({
         error: 'Failed to add video to playlist',
       });
@@ -85,9 +84,6 @@ router.put('/:id/remove/:videoId', function(req, res) {
     })
     .catch(function(err) {
       console.error(err);
-      if (err.code === 200) {
-        return res.status(err.code).json(err.code);
-      }
       return res.status(500).json({
         error: 'Failed to remove video from playlist',
       });
