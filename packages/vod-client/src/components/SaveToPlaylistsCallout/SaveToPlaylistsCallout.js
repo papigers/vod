@@ -25,6 +25,10 @@ const StyledCallout = styled(Callout)`
       margin-bottom: 8px;
     }
   }
+  .no-playlists-found{
+    display: flex;
+    justify-content: center;
+  }
   .ms-Spinner{
     margin: 4px 0;
   }
@@ -113,7 +117,7 @@ class SaveToPlaylistsCallout extends Component {
   onAddToPlaylistsChecked = (playlistId, checked) => {
     const { video } = this.props;
     
-    checked === true ? axios.put(`playlists/${playlistId}/add/${video && video.id}`)
+    checked ? axios.put(`playlists/${playlistId}/add/${video && video.id}`)
       : axios.put(`playlists/${playlistId}/remove/${video && video.id}`);
   };
 
@@ -160,7 +164,7 @@ class SaveToPlaylistsCallout extends Component {
         <Fragment>
           { loadingManagedPlaylists ? 
             <Spinner size={SpinnerSize.medium} label="טוען..." labelPosition="right" />
-            : <List items={managedPlaylists} data-is-scrollable="true" onRenderCell={ (item) =>{
+            : managedPlaylists.length ? <List items={managedPlaylists} data-is-scrollable="true" onRenderCell={ (item) =>{
                 return (
                   <Checkbox
                     disabled={false}
@@ -169,6 +173,7 @@ class SaveToPlaylistsCallout extends Component {
                     onChange={({ target }) => this.onAddToPlaylistsChecked(item.id, target.checked)}
                     /> );
               }}/>
+              : <div className="no-playlists-found"><p>{'אין פלייליסטים זמינים'}</p></div>
             }
             <div style={{ padding: '4px 24px', display: 'flex', justifyContent: 'center', position: 'relative', borderTop: '1px solid rgba(0, 0, 0, 0.2)'}}>
               { !newPlaylistClicked ?
