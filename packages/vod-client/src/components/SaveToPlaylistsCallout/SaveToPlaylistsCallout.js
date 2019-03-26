@@ -17,10 +17,12 @@ import VideoStateDropdown from 'components/VideoStateDropdown';
 import axios from 'utils/axios';
 
 
-const StyledCallout = styled(Callout)`
+const PlaylistsContainer = styled.div`
+  overflow: auto;
+  
   .ms-List{
     padding: 16px 24px 8px;
-    
+    max-height: 300px;
     .ms-List-cell{
       margin-bottom: 8px;
     }
@@ -32,6 +34,15 @@ const StyledCallout = styled(Callout)`
   .ms-Spinner{
     margin: 4px 0;
   }
+`;
+
+const PlaylistFormContainer = styled.div`
+  padding: 4px 24px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  
   form{
     width: 100%;
     .ms-Button{
@@ -153,7 +164,7 @@ class SaveToPlaylistsCallout extends Component {
     const { StyledButton, addToPlaylistsRef, onDismiss } = this.props;
     
     return (
-      <StyledCallout
+      <Callout
         role="alertdialog"
         gapSpace={0}
         target={addToPlaylistsRef.current}
@@ -162,82 +173,84 @@ class SaveToPlaylistsCallout extends Component {
         calloutWidth={300}
         >
         <Fragment>
-          { loadingManagedPlaylists ? 
-            <Spinner size={SpinnerSize.medium} label="טוען..." labelPosition="right" />
-            : managedPlaylists.length ? <List items={managedPlaylists} data-is-scrollable="true" onRenderCell={ (item) =>{
-                return (
-                  <Checkbox
-                    disabled={false}
-                    label={`${item.name} (${item.channel.name})`}
-                    defaultChecked={!!selectedPlaylists.find(option => option.id === item.id)}
-                    onChange={({ target }) => this.onAddToPlaylistsChecked(item.id, target.checked)}
-                    /> );
-              }}/>
-              : <div className="no-playlists-found"><p>{'אין פלייליסטים זמינים'}</p></div>
+          <PlaylistsContainer>
+            { loadingManagedPlaylists ? 
+              <Spinner size={SpinnerSize.medium} label="טוען..." labelPosition="right" />
+              : managedPlaylists.length ? <List items={managedPlaylists} data-is-scrollable="true" onRenderCell={ (item) =>{
+                  return (
+                    <Checkbox
+                      disabled={false}
+                      label={`${item.name} (${item.channel.name})`}
+                      defaultChecked={!!selectedPlaylists.find(option => option.id === item.id)}
+                      onChange={({ target }) => this.onAddToPlaylistsChecked(item.id, target.checked)}
+                      /> );
+                }}/>
+                : <div className="no-playlists-found"><p>{'אין פלייליסטים זמינים'}</p></div>
             }
-            <div style={{ padding: '4px 24px', display: 'flex', justifyContent: 'center', position: 'relative', borderTop: '1px solid rgba(0, 0, 0, 0.2)'}}>
-              { !newPlaylistClicked ?
-                <StyledButton
-                  iconProps={{ iconName: 'Add' }}
-                  text={'הוסף לפלייליסט חדש'}
-                  onClick={() => {
-                    this.setState({
-                      newPlaylistClicked: true,
-                    });
-                    this.fetchManagedChannels();
-                  }}
+          </PlaylistsContainer>
+          <PlaylistFormContainer>
+            { !newPlaylistClicked ?
+              <StyledButton
+                iconProps={{ iconName: 'Add' }}
+                text={'הוסף לפלייליסט חדש'}
+                onClick={() => {
+                  this.setState({
+                    newPlaylistClicked: true,
+                  });
+                  this.fetchManagedChannels();
+                }}
+                />
+              : <form onSubmit={this.onSubmit}>
+                  <TextField
+                    label="שם"
+                    placeholder="לדוגמא: הדרכות לניהול ידע"
+                    required={true}
+                    onChange={this.onChangeName}
                   />
-                : <form onSubmit={this.onSubmit}>
-                    <TextField
-                      label="שם"
-                      placeholder="לדוגמא: הדרכות לניהול ידע"
-                      required={true}
-                      onChange={this.onChangeName}
+                  <TextField
+                    label="תיאור"
+                    placeholder="לדוגמא: הדרכות לדרכי ניהול ידע יעילות"
+                    onChange={this.onChangeDescription}
+                  />
+                  <VideoStateDropdown
+                    required
+                    label="מצב פרסום"
+                    onChange={this.onChangeState}
+                    placeHolder="בחר/י באיזו צורה הפלייליסט יוצג"
+                  />
+                  <Dropdown
+                    required
+                    label="בחר ערוץ"
+                    options={managedChannels}
+                    onChange={this.onChangeChannel}
+                    placeHolder="בחר/י לאיזה ערוץ הפלייליסט ישתייך"
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-around'}}>
+                    <DefaultButton
+                      text='שמור'
+                      iconProps={{ iconName: 'Save' }}
+                      primary
+                      onClick={this.onSubmit}
                     />
-                    <TextField
-                      label="תיאור"
-                      placeholder="לדוגמא: הדרכות לדרכי ניהול ידע יעילות"
-                      onChange={this.onChangeDescription}
+                    <DefaultButton
+                      text='בטל'
+                      iconProps={{ iconName: 'Cancel' }}
+                      onClick={() => {
+                        this.setState({
+                          newPlaylistClicked: false,
+                          newPlaylistName: null,
+                          newPlaylistDescription: null,
+                          newPlaylistState: null,
+                          newPlaylistChannel: null,
+                        });
+                      }}
                     />
-                    <VideoStateDropdown
-                      required
-                      label="מצב פרסום"
-                      onChange={this.onChangeState}
-                      placeHolder="בחר/י באיזו צורה הפלייליסט יוצג"
-                    />
-                    <Dropdown
-                      required
-                      label="בחר ערוץ"
-                      options={managedChannels}
-                      onChange={this.onChangeChannel}
-                      placeHolder="בחר/י לאיזה ערוץ הפלייליסט ישתייך"
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'space-around'}}>
-                      <DefaultButton
-                        text='שמור'
-                        iconProps={{ iconName: 'Save' }}
-                        primary
-                        onClick={this.onSubmit}
-                      />
-                      <DefaultButton
-                        text='בטל'
-                        iconProps={{ iconName: 'Cancel' }}
-                        onClick={() => {
-                          this.setState({
-                            newPlaylistClicked: false,
-                            newPlaylistName: null,
-                            newPlaylistDescription: null, 
-                            newPlaylistState: null,
-                            newPlaylistChannel: null,
-                          });
-                        }}
-                      />
-                    </div>
-                  </form>
-                }
-            </div>
+                  </div>
+                </form>
+              }
+          </PlaylistFormContainer>
         </Fragment>
-      </StyledCallout>
+      </Callout>
     );
   }
 }
