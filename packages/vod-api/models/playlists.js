@@ -330,22 +330,15 @@ module.exports = function(db) {
         db.knex
           .select(
             `${playlists.table}.id as _id`,
-            `${db.playlistVideos.table}.videoId as _videos__videoId`,
-            `${db.playlistVideos.table}.position as _videos__position`,
             `${db.channels.table}.id as _channelId`,
           )
           .from(playlists.table)
           .where(`${playlists.table}.id`, id)
-          .leftJoin(
-            db.playlistVideos.table,
-            `${playlists.table}.id`,
-            `${db.playlistVideos.table}.playlistId`,
-          )
           .leftJoin(db.channels.table, `${db.channels.table}.id`, `${playlists.table}.channelId`)
           .modify(db.channels.authorizedManageSubquery, user)
       )
       .then(function(rows) {
-        if (rows.length) {
+        if (rows && rows.length) {
           return db.knex(playlists.table)
             .where('id', id)
             .del()
