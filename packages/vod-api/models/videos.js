@@ -509,7 +509,7 @@ module.exports = function(db) {
         .modify(videos.authorizedManageSubquery, user),
     );
   };
-  
+
   videos.getVideoPlaylists = function(user, videoId) {
     return db.knexnest(
       db.knex
@@ -523,12 +523,16 @@ module.exports = function(db) {
         )
         .from(db.playlistVideos.table)
         .where(`${db.playlistVideos.table}.videoId`, videoId)
-        .leftJoin(db.playlists.table, `${db.playlistVideos.table}.playlistId`, `${db.playlists.table}.id`)
+        .leftJoin(
+          db.playlists.table,
+          `${db.playlistVideos.table}.playlistId`,
+          `${db.playlists.table}.id`,
+        )
         .leftJoin(db.channels.table, `${db.channels.table}.id`, `${db.playlists.table}.channelId`)
         .modify(db.channels.authorizedManageSubquery, user),
-        true,
+      true,
     );
-  }
+  };
 
   videos.getVideo = function(user, videoId) {
     return db.knexnest(

@@ -1,1 +1,1 @@
-export {default} from './SaveToPlaylistsCallout';
+export { default } from './SaveToPlaylistsCallout';

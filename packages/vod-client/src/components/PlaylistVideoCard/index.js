@@ -1,1 +1,1 @@
-export { default } from "./PlaylistVideoCard";
+export { default } from './PlaylistVideoCard';

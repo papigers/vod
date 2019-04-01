@@ -119,7 +119,7 @@ class VideoPage extends Component {
     const playlistId = qs.parse(props.location.search).list;
 
     let newState = {};
-    
+
     if (!state.videoId || state.videoId !== videoId) {
       newState = {
         ...newState,
@@ -171,15 +171,18 @@ class VideoPage extends Component {
 
     if (playlist && playlist.videos.length && video && video.id) {
       const currVideoIndex = playlist.videos.findIndex(currvideo => currvideo.id === video.id);
-      if (currVideoIndex !== this.state.currVideoIndex ) {
+      if (currVideoIndex !== this.state.currVideoIndex) {
         this.setState({
           currVideoIndex: currVideoIndex,
-          nextVideoId: currVideoIndex < playlist.videos.length - 1 ? playlist.videos[currVideoIndex+1].id : null,
-          prevVideoId: currVideoIndex > 0 ? playlist.videos[currVideoIndex-1].id : null,
+          nextVideoId:
+            currVideoIndex < playlist.videos.length - 1
+              ? playlist.videos[currVideoIndex + 1].id
+              : null,
+          prevVideoId: currVideoIndex > 0 ? playlist.videos[currVideoIndex - 1].id : null,
         });
       }
     }
-  }
+  };
 
   fetchVideo() {
     axios
@@ -190,7 +193,8 @@ class VideoPage extends Component {
           loading: false,
           error: null,
         });
-      }).then(()=>{
+      })
+      .then(() => {
         this.updateNextPrevVideos();
       })
       .catch(err => {
@@ -223,24 +227,25 @@ class VideoPage extends Component {
   fetchVideoPlaylist() {
     if (this.state.playlistId) {
       axios
-      .get(`/playlists/${this.state.playlistId}`)
-      .then(({ data }) => {
-        this.setState({
-          playlist: data,
-          loadingPlaylist: false,
-          error: null,
+        .get(`/playlists/${this.state.playlistId}`)
+        .then(({ data }) => {
+          this.setState({
+            playlist: data,
+            loadingPlaylist: false,
+            error: null,
+          });
+        })
+        .then(() => {
+          this.updateNextPrevVideos();
+        })
+        .catch(err => {
+          // TODO: do something
+          this.setState({
+            playlist: null,
+            loadingPlaylist: false,
+            error: 'הפלייליסט אינו זמין',
+          });
         });
-      }).then(()=>{
-        this.updateNextPrevVideos();
-      })
-      .catch(err => {
-        // TODO: do something
-        this.setState({
-          playlist: null,
-          loadingPlaylist: false,
-          error: 'הפלייליסט אינו זמין',
-        });
-      });
     }
   }
 
@@ -250,7 +255,7 @@ class VideoPage extends Component {
     });
   };
 
-  onRenderItem = (item) => {
+  onRenderItem = item => {
     if (item.onRender) {
       return item.onRender(item);
     }
@@ -268,13 +273,14 @@ class VideoPage extends Component {
               {...props}
             />
           </div>
-          { this.state.isCalloutVisible ?
+          {this.state.isCalloutVisible ? (
             <SaveToPlaylistsCallout
               StyledButton={VideoButton}
               addToPlaylistsRef={this.addToPlaylistsRef}
               video={this.state.video}
               onDismiss={this.onAddToPlaylistsClicked}
-              /> : null}
+            />
+          ) : null}
         </Fragment>
       );
     }
@@ -287,7 +293,7 @@ class VideoPage extends Component {
         {...props}
       />
     );
-  }
+  };
 
   fetchComments = before => axios.get(`/videos/${this.state.videoId}/comments?before=${before}`);
 
@@ -315,7 +321,7 @@ class VideoPage extends Component {
     }
   };
 
-  renderRedirect = (buttonClicked) => {
+  renderRedirect = buttonClicked => {
     const { nextVideoId, prevVideoId, playlist } = this.state;
 
     switch (buttonClicked) {
@@ -331,12 +337,20 @@ class VideoPage extends Component {
         }
         break;
     }
-  }
+  };
 
   render() {
-    const { nextVideoId, prevVideoId, playlist, video, error, likeDelta, currVideoIndex } = this.state;
+    const {
+      nextVideoId,
+      prevVideoId,
+      playlist,
+      video,
+      error,
+      likeDelta,
+      currVideoIndex,
+    } = this.state;
     const { user } = this.props;
-    
+
     let likeCount = 0;
     let userLikes = false;
     if (video) {
@@ -458,14 +472,14 @@ class VideoPage extends Component {
               </Box>
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
-                {playlist && playlist.videos.length && currVideoIndex >= 0 ?
-                    <PlaylistPanel
-                      playlist={playlist}
-                      currVideoIndex={currVideoIndex}
-                      loading={this.state.loadingPlaylist}
-                      currentVideo={video && video.id}
-                    /> : null
-                }
+                {playlist && playlist.videos.length && currVideoIndex >= 0 ? (
+                  <PlaylistPanel
+                    playlist={playlist}
+                    currVideoIndex={currVideoIndex}
+                    loading={this.state.loadingPlaylist}
+                    currentVideo={video && video.id}
+                  />
+                ) : null}
                 <VideoList
                   videos={this.state.related}
                   loading={this.state.loadingRelated}
