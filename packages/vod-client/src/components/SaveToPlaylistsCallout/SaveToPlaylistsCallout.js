@@ -19,19 +19,22 @@ import axios from 'utils/axios';
 
 const PlaylistsContainer = styled.div`
   overflow: auto;
-  
-  .ms-List{
+
+  .ms-List {
     padding: 16px 24px 8px;
     max-height: 300px;
-    .ms-List-cell{
+
+    .ms-List-cell {
       margin-bottom: 8px;
     }
   }
-  .no-playlists-found{
+
+  .no-playlists-found {
     display: flex;
     justify-content: center;
   }
-  .ms-Spinner{
+
+  .ms-Spinner {
     margin: 4px 0;
   }
 `;
@@ -42,10 +45,11 @@ const PlaylistFormContainer = styled.div`
   justify-content: center;
   position: relative;
   border-top: 1px solid rgba(0, 0, 0, 0.2);
-  
-  form{
+
+  form {
     width: 100%;
-    .ms-Button{
+
+    .ms-Button {
       margin: 10px 0;
     }
   }

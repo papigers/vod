@@ -228,21 +228,18 @@ const StyledVideoContainer = styled.div`
   }
 
   /* CUSTOM BUTTONS */
-  [class^="icon-"]:before,
-  [class*=" icon-"]:before {
-    font-family: VideoJS;
+  [class^="icon-"]::before,
+  [class*=" icon-"]::before {
+    font-family: VideoJS; /* stylelint-disable-line font-family-no-missing-generic-family-keyword */
     font-size: 1.8em;
     position: relative;
     top: 1px;
   }
 
-  .video-js .icon-angle-right, .video-js .icon-angle-left {
-      cursor: pointer;
-      -webkit-box-flex: none;
-      -moz-box-flex: none;
-      -webkit-flex: none;
-      -ms-flex: none;
-      flex: none;
+  .video-js .icon-angle-right,
+  .video-js .icon-angle-left {
+    cursor: pointer;
+    flex: none;
   }
 
   .vjs-hide-button {

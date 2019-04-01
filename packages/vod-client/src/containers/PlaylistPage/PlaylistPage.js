@@ -24,7 +24,7 @@ const PlaylistDetails = styled.div`
   flex-direction: column;
   background: ${({ theme }) => theme.palette.neutralLighterAlt};
 
-  h1{
+  h1 {
     cursor: pointer;
   }
 `;
@@ -35,9 +35,9 @@ const PlaylistMetadata = styled.div`
   color: ${({ theme }) => theme.palette.neutralTertiary};
   margin-bottom: 10px;
 
-  .ms-Icon{
+  .ms-Icon {
     font-size: xx-small;
-    padding-top: .3rem;
+    padding-top: 0.3rem;
   }
 `;
 
@@ -61,7 +61,6 @@ const PlaylistThumbnail = styled.div`
 const ThumbnailOverlay = styled.div`
   background-color: black;
   display: flex;
-  position: relative;
   align-content: center;
   opacity: 0.8;
   color: white;
@@ -71,10 +70,10 @@ const ThumbnailOverlay = styled.div`
   justify-content: center;
   padding: 10px;
   font-size: medium;
-  
+
   p {
     margin: 0;
-    padding-left: .5rem;
+    padding-left: 0.5rem;
   }
 `;
 
