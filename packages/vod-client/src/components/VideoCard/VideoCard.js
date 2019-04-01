@@ -246,17 +246,19 @@ class VideoCard extends Component {
                   </Flex>
                 )}
                 <LinkOnLoad to={item && `/channel/${item.channel.id}`}>
-                  {item && ( <DocumentCardActivity
-                    activity={item && `${item.viewCount} צפיות`}
-                    people={
-                      item && [
-                        {
-                          name: item.channel.name,
-                          profileImageSrc: `/profile/${item.channel.id}/profile.png`,
-                        },
-                      ]
-                    }
-                  />)}
+                  {item && (
+                    <DocumentCardActivity
+                      activity={item && `${item.viewCount} צפיות`}
+                      people={
+                        item && [
+                          {
+                            name: item.channel.name,
+                            profileImageSrc: `/profile/${item.channel.id}/profile.png`,
+                          },
+                        ]
+                      }
+                    />
+                  )}
                 </LinkOnLoad>
               </Shimmer>
             </DocumentCardDetails>

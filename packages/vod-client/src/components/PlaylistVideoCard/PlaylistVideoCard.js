@@ -10,11 +10,13 @@ const CardContainer = styled(Link)`
   padding: 4px 0 4px 8px;
   box-sizing: border-box;
   display: flex;
-  border-bottom: ${({ compact, theme }) => !compact ?  `1px solid ${theme.palette.neutralTertiaryAlt}` : null};
+  border-bottom: ${({ compact, theme }) =>
+    !compact ? `1px solid ${theme.palette.neutralTertiaryAlt}` : null};
 
   &:hover {
-    background-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighterAlt : null};
-    border-top-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighter : null};
+    background-color: ${({ compact, theme }) =>
+      !compact ? theme.palette.neutralLighterAlt : null};
+    border-top-color: ${({ compact, theme }) => (!compact ? theme.palette.neutralLighter : null)};
   }
 `;
 
@@ -57,16 +59,23 @@ class PlaylistVideoCard extends Component {
 
     return (
       <CardContainer compact={compact} to={item && `/watch?v=${item.id}&list=${playlistId}`}>
-          <div style={{ width: 24, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-            <SubTitle>
-              {currindex === index ? <Icon iconName={'CaretSolidLeft'} /> : index + 1 }
-            </SubTitle>
-          </div>
-          <CardThumbnail src={item && `${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`} width={compact ? 100 : 120} />
-          <CardContent>
-          {compact ? <CompactVideoName>{item.name}</CompactVideoName> : <VideoName>{item.name}</VideoName> }
-            <SubTitle>{item.channel.name}</SubTitle>
-          </CardContent>
+        <div style={{ width: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <SubTitle>
+            {currindex === index ? <Icon iconName={'CaretSolidLeft'} /> : index + 1}
+          </SubTitle>
+        </div>
+        <CardThumbnail
+          src={item && `${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`}
+          width={compact ? 100 : 120}
+        />
+        <CardContent>
+          {compact ? (
+            <CompactVideoName>{item.name}</CompactVideoName>
+          ) : (
+            <VideoName>{item.name}</VideoName>
+          )}
+          <SubTitle>{item.channel.name}</SubTitle>
+        </CardContent>
       </CardContainer>
     );
   }

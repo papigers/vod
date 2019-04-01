@@ -113,67 +113,73 @@ class PlaylistPage extends Component {
   fetchPlaylist() {
     if (this.state.playlistId) {
       axios
-      .get(`/playlists/${this.state.playlistId}`)
-      .then(({ data }) => {
-        
-        this.setState({
-          playlist: data,
-          loadingPlaylist: false,
-          error: null,
+        .get(`/playlists/${this.state.playlistId}`)
+        .then(({ data }) => {
+          this.setState({
+            playlist: data,
+            loadingPlaylist: false,
+            error: null,
+          });
+        })
+        .catch(err => {
+          Number(err.response && err.response.status) === 404
+            ? this.props.history.push(`/`)
+            : this.setState({
+                playlist: null,
+                loadingPlaylist: false,
+                error: err.response && err.response.message,
+              });
         });
-      }).catch(err => {
-        Number(err.response && err.response.status) === 404 ?
-        this.props.history.push(`/`)
-        : this.setState({
-          playlist: null,
-          loadingPlaylist: false,
-          error: err.response && err.response.message,
-        });
-      });
     }
   }
 
-  onLinkClick = () =>{
+  onLinkClick = () => {
     const { playlist } = this.state;
     this.props.history.push(playlist && `/watch?v=${playlist.videos[0].id}&list=${playlist.id}`);
-  }
+  };
 
   render() {
-    const { playlist }= this.state;
+    const { playlist } = this.state;
     return (
       <PlaylistContainer>
-        {!playlist ? null : <Fragment>
-          <PlaylistDetails>
-            <PlaylistThumbnail onClick={this.onLinkClick}>
-              <Image
-                src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${playlist.videos[0].id}/thumbnail.png`}
-                height={200}
+        {!playlist ? null : (
+          <Fragment>
+            <PlaylistDetails>
+              <PlaylistThumbnail onClick={this.onLinkClick}>
+                <Image
+                  src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${
+                    playlist.videos[0].id
+                  }/thumbnail.png`}
+                  height={200}
                 />
-              <ThumbnailOverlay>
-                <p>{'נגן הכל'}</p>
-                <Icon iconName={'CaretSolidRight'} />
-              </ThumbnailOverlay>
-            </PlaylistThumbnail>
-            <h1 onClick={this.onLinkClick}>
-              {playlist.name}
-            </h1>
-            <PlaylistMetadata>
-              {playlist.videos.length === 1 ? `סירטון אחד` : `${playlist.videos.length} סירטונים` }
-              <Icon iconName={'LocationDot'} />
-              {`עודכן לאחרונה בתאריך ${new Date(playlist.updatedAt).toDateString()}`}
-            </PlaylistMetadata>
-            <PlaylistChannel>
-              <ChannelRow size={48} channel={playlist.channel} user={this.props.user} />
-            </PlaylistChannel>
-          </PlaylistDetails>
-          <PlaylistVideos>
-             <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
-              <List items={playlist.videos} data-is-scrollable="true" onRenderCell={ (item, index) => 
-                  <PlaylistVideoCard item={item} index={index} playlistId={playlist.id}/>
-                } />
-            </ScrollablePane>
-          </PlaylistVideos>
-        </Fragment>}
+                <ThumbnailOverlay>
+                  <p>{'נגן הכל'}</p>
+                  <Icon iconName={'CaretSolidRight'} />
+                </ThumbnailOverlay>
+              </PlaylistThumbnail>
+              <h1 onClick={this.onLinkClick}>{playlist.name}</h1>
+              <PlaylistMetadata>
+                {playlist.videos.length === 1 ? `סירטון אחד` : `${playlist.videos.length} סירטונים`}
+                <Icon iconName={'LocationDot'} />
+                {`עודכן לאחרונה בתאריך ${new Date(playlist.updatedAt).toDateString()}`}
+              </PlaylistMetadata>
+              <PlaylistChannel>
+                <ChannelRow size={48} channel={playlist.channel} user={this.props.user} />
+              </PlaylistChannel>
+            </PlaylistDetails>
+            <PlaylistVideos>
+              <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
+                <List
+                  items={playlist.videos}
+                  data-is-scrollable="true"
+                  onRenderCell={(item, index) => (
+                    <PlaylistVideoCard item={item} index={index} playlistId={playlist.id} />
+                  )}
+                />
+              </ScrollablePane>
+            </PlaylistVideos>
+          </Fragment>
+        )}
       </PlaylistContainer>
     );
   }

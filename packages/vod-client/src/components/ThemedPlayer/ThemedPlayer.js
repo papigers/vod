@@ -228,8 +228,8 @@ const StyledVideoContainer = styled.div`
   }
 
   /* CUSTOM BUTTONS */
-  [class^="icon-"]::before,
-  [class*=" icon-"]::before {
+  [class^='icon-']::before,
+  [class*=' icon-']::before {
     font-family: VideoJS; /* stylelint-disable-line font-family-no-missing-generic-family-keyword */
     font-size: 1.8em;
     position: relative;
@@ -261,24 +261,31 @@ const StyledVideoContainer = styled.div`
   }
 
   ${({ playlistId, nextVideoId, prevVideoId }) => css`
-    ${playlistId ? css`
-      ${!nextVideoId ? css`
-        .vjs-icon-next-item {
-          opacity: 0.4;
-          pointer-events: none;
-        }
-      ` : css([])}
-      ${!prevVideoId ? css`
-        .vjs-icon-previous-item {
-          opacity: 0.4;
-          pointer-events: none;
-        }
-      ` : css([])}
-    ` : css`
-      .vjs-icon-previous-item, .vjs-icon-next-item {
-        display: none;
-      }
-    `}
+    ${playlistId
+      ? css`
+          ${!nextVideoId
+            ? css`
+                .vjs-icon-next-item {
+                  opacity: 0.4;
+                  pointer-events: none;
+                }
+              `
+            : css([])}
+          ${!prevVideoId
+            ? css`
+                .vjs-icon-previous-item {
+                  opacity: 0.4;
+                  pointer-events: none;
+                }
+              `
+            : css([])}
+        `
+      : css`
+          .vjs-icon-previous-item,
+          .vjs-icon-next-item {
+            display: none;
+          }
+        `}
   `}
 `;
 
@@ -373,39 +380,39 @@ class ThemedPlayer extends Component {
 
   addOrRemovePlayerButtons = () => {
     var Button = videojs.getComponent('Button');
-    
+
     if (!this.player.getChild('controlBar').getChild('Next')) {
       var NextButton = videojs.extend(Button, {
         constructor: function() {
           Button.apply(this, arguments);
           this.addClass('icon-angle-right');
           this.addClass('vjs-icon-next-item');
-          this.controlText("Next");
+          this.controlText('Next');
         },
         handleClick: () => {
-          this.props.renderRedirect('Next')
-        }
+          this.props.renderRedirect('Next');
+        },
       });
       videojs.registerComponent('Next', NextButton);
       this.player.getChild('controlBar').addChild('Next', {}, 1);
     }
-    
+
     if (!this.player.getChild('controlBar').getChild('Previous')) {
       var PrevButton = videojs.extend(Button, {
         constructor: function() {
           Button.apply(this, arguments);
           this.addClass('icon-angle-left');
           this.addClass('vjs-icon-previous-item');
-          this.controlText("Previous");
+          this.controlText('Previous');
         },
         handleClick: () => {
-          this.props.renderRedirect('Previous')
-        }
+          this.props.renderRedirect('Previous');
+        },
       });
       videojs.registerComponent('Previous', PrevButton);
       this.player.getChild('controlBar').addChild('Previous', {}, 0);
     }
-  }
+  };
 
   onPlayerReady = () => {
     this.addOrRemovePlayerButtons();
@@ -416,7 +423,11 @@ class ThemedPlayer extends Component {
     const { playlistId, nextVideoId, prevVideoId } = this.props;
 
     return (
-      <StyledVideoContainer playlistId={playlistId} nextVideoId={nextVideoId} prevVideoId={prevVideoId}>
+      <StyledVideoContainer
+        playlistId={playlistId}
+        nextVideoId={nextVideoId}
+        prevVideoId={prevVideoId}
+      >
         <video
           className="video-js vjs-16-9"
           preload="auto"

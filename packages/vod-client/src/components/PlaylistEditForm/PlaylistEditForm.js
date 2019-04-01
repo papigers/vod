@@ -242,7 +242,7 @@ class PlaylistEditForm extends Component {
           loading: false,
         });
       });
-  }
+  };
 
   render() {
     const { name, description, videos, state, selection, error, loading } = this.state;

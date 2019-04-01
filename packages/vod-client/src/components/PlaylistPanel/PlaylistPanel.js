@@ -62,29 +62,30 @@ const PlaylistState = styled.div`
   }
 `;
 
-
 class PlaylistPanel extends Component {
-
-  renderPlaylistState = () =>{
+  renderPlaylistState = () => {
     switch (this.props.playlist.state) {
       case 'PUBLISHED':
         return (
           <Label>
             <Icon iconName="RedEye" /> פומבי
-          </Label>);
+          </Label>
+        );
       case 'UNLISTED':
         return (
           <Label>
             <Icon iconName="Link" /> קישור בלבד
-          </Label>);
+          </Label>
+        );
       case 'PRIVATE':
       default:
         return (
           <Label>
             <Icon iconName="Hide" /> פרטי
-          </Label>);
+          </Label>
+        );
     }
-  }
+  };
 
   render() {
     const { playlist, currVideoIndex } = this.props;
@@ -94,33 +95,38 @@ class PlaylistPanel extends Component {
         <PlaylistContainer>
           <PlaylistDescription>
             <PlaylistName>
-              <Link to={`/playlist?list=${playlist.id}`}>
-                {playlist.name}
-              </Link>
+              <Link to={`/playlist?list=${playlist.id}`}>{playlist.name}</Link>
             </PlaylistName>
             <PlaylistDetails>
-              <PlaylistState>
-                {this.renderPlaylistState()}
-              </PlaylistState>
-              <Link to={`/channel/${playlist.channel.id}`}>
-                {playlist.channel.name}
-              </Link>
-              <div style={{ marginRight: '.5em'}}>
+              <PlaylistState>{this.renderPlaylistState()}</PlaylistState>
+              <Link to={`/channel/${playlist.channel.id}`}>{playlist.channel.name}</Link>
+              <div style={{ marginRight: '.5em' }}>
                 <Label>
-                  סרטון {currVideoIndex+1} מתוך {playlist && playlist.videos.length}
+                  סרטון {currVideoIndex + 1} מתוך {playlist && playlist.videos.length}
                 </Label>
               </div>
             </PlaylistDetails>
           </PlaylistDescription>
         </PlaylistContainer>
         <VideosContainer>
-          {playlist.videos.length  ?
-             <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
-              <List items={playlist.videos} data-is-scrollable="true" scrollToIndex={currVideoIndex} onRenderCell={ (item, index) => 
-                <PlaylistVideoCard item={item} index={index} currindex={currVideoIndex} playlistId={playlist.id} compact={true} />
-              } />
+          {playlist.videos.length ? (
+            <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
+              <List
+                items={playlist.videos}
+                data-is-scrollable="true"
+                scrollToIndex={currVideoIndex}
+                onRenderCell={(item, index) => (
+                  <PlaylistVideoCard
+                    item={item}
+                    index={index}
+                    currindex={currVideoIndex}
+                    playlistId={playlist.id}
+                    compact={true}
+                  />
+                )}
+              />
             </ScrollablePane>
-          : null }
+          ) : null}
         </VideosContainer>
       </PanelContainer>
     );

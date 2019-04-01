@@ -46,13 +46,13 @@ class DeleteForm extends Component {
       error: null,
     });
     onSubmit(playlist.id)
-    .then(onClose)
-    .catch(err => {
-      this.setState({
-        error: err,
-        loading: false,
+      .then(onClose)
+      .catch(err => {
+        this.setState({
+          error: err,
+          loading: false,
+        });
       });
-    });
   }
 
   render() {

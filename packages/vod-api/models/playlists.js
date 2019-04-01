@@ -309,11 +309,12 @@ module.exports = function(db) {
         }
       })
       .then(function() {
-        return db.knex(playlists.table)
-        .where('id', id)
-        .update({
-          id: id,
-        });
+        return db
+          .knex(playlists.table)
+          .where('id', id)
+          .update({
+            id: id,
+          });
       })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);
@@ -354,11 +355,12 @@ module.exports = function(db) {
         }
       })
       .then(function() {
-        return db.knex(playlists.table)
-        .where('id', id)
-        .update({
-          id: id,
-        });
+        return db
+          .knex(playlists.table)
+          .where('id', id)
+          .update({
+            id: id,
+          });
       })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);
@@ -369,20 +371,18 @@ module.exports = function(db) {
     return db
       .knexnest(
         db.knex
-          .select(
-            `${playlists.table}.id as _id`,
-            `${db.channels.table}.id as _channelId`,
-          )
+          .select(`${playlists.table}.id as _id`, `${db.channels.table}.id as _channelId`)
           .from(playlists.table)
           .where(`${playlists.table}.id`, id)
           .leftJoin(db.channels.table, `${db.channels.table}.id`, `${playlists.table}.channelId`)
-          .modify(db.channels.authorizedManageSubquery, user)
+          .modify(db.channels.authorizedManageSubquery, user),
       )
       .then(function(rows) {
         if (rows && rows.length) {
-          return db.knex(playlists.table)
+          return db
+            .knex(playlists.table)
             .where('id', id)
-            .del()
+            .del();
         }
       })
       .catch(function(err) {
