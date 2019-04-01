@@ -56,7 +56,6 @@ const PlaylistState = styled.div`
   & + & {
     margin-right: 5px;
   }
-
   .ms-Label {
     padding: 0;
   }
