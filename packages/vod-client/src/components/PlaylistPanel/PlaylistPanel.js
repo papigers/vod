@@ -40,8 +40,8 @@ const PlaylistDetails = styled.div`
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  
-  .ms-Label{
+
+  .ms-Label {
     color: ${({ theme }) => theme.palette.neutralTertiary};
     font-size: smaller;
   }
@@ -56,7 +56,8 @@ const PlaylistState = styled.div`
   & + & {
     margin-right: 5px;
   }
-  .ms-Label{
+  
+  .ms-Label {
     padding: 0;
   }
 `;

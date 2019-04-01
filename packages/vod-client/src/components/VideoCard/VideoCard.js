@@ -45,10 +45,10 @@ const StyledVideoCard = styled(DocumentCard)`
     min-width: ${({ type }) => (type === DocumentCardType.compact ? '360px' : 'inherit')};
   }
 
-  .ms-DocumentCardDetails{
+  .ms-DocumentCardDetails {
     height: fit-content;
 
-    .ms-DocumentCardTitle{
+    .ms-DocumentCardTitle {
       margin: 5px 0;
       padding: 0 8px 0 24px;
     }

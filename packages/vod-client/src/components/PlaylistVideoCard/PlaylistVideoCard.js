@@ -6,16 +6,16 @@ import { Image } from 'office-ui-fabric-react/lib/Image';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 const CardContainer = styled(Link)`
-    min-height: 54px;
-    padding: 4px 0px 4px 8px;
-    box-sizing: border-box;
-    display: flex;
-    border-bottom: ${({ compact, theme }) => !compact ?  `1px solid ${theme.palette.neutralTertiaryAlt}` : null};
-    
-    &:hover {
-      background-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighterAlt : null};
-      border-top-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighter : null};
-    }
+  min-height: 54px;
+  padding: 4px 0 4px 8px;
+  box-sizing: border-box;
+  display: flex;
+  border-bottom: ${({ compact, theme }) => !compact ?  `1px solid ${theme.palette.neutralTertiaryAlt}` : null};
+
+  &:hover {
+    background-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighterAlt : null};
+    border-top-color: ${({ compact, theme }) => !compact ?  theme.palette.neutralLighter : null};
+  }
 `;
 
 const CardThumbnail = styled(Image)`
