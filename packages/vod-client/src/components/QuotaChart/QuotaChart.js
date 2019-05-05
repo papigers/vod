@@ -106,7 +106,7 @@ class QuotaChart extends Component {
     const ex = mx + (cos >= 0 ? 1 : -1) * 22;
     const ey = my;
     const textAnchor = cos >= 0 ? 'start' : 'end';
-    const total = Math.round(value / percent);
+    const total = this.state.data.total; // Math.round(value / percent);
 
     return (
       <g>
@@ -176,7 +176,7 @@ class QuotaChart extends Component {
           const percent = d.value / total;
           const current = d.name === (props.payload[0] && props.payload[0].name);
           return (
-            <div className={current ? 'current_value' : null}>
+            <div key={d.name} className={current ? 'current_value' : null}>
               <span>{d.name}:</span>
               <div dir="ltr">
                 {this.stringifySize(d.value)} ({(percent * 100).toFixed(2)}%)
@@ -199,19 +199,18 @@ class QuotaChart extends Component {
   }
 
   stringifySize(size) {
-    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (size === 0) {
-      return '0 Byte';
+      return '0 B';
     }
-    var i = parseInt(Math.floor(Math.log(size) / Math.log(1024)), 10);
+    const i = parseInt(Math.floor(Math.log(size) / Math.log(1024)), 10);
     return Math.round((size / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   render() {
     const data = this.formatData();
-
     return (
-      <PieChart width={400} height={220}>
+      <PieChart width={380} height={220}>
         {data ? (
           <Pie
             dataKey="value"

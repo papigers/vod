@@ -11,13 +11,11 @@ import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button'
 
 import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
+import QuotaPlans from 'components/QuotaPlans';
+import ChangeSubscriptionModal from 'components/ChangeSubscriptionModal';
 
 const DropdownContainer = styled.div`
   max-width: 250px;
-`;
-
-const Form = styled.form`
-  margin: 1em 17em;
 `;
 
 const DropdownOption = styled.div`
@@ -57,6 +55,12 @@ const SuccessMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
+const SubDate = styled.div`
+  font-weight: 500;
+  text-align: center;
+  margin: 6px auto;
+`;
+
 class ChannelSettings extends Component {
   constructor(props) {
     super();
@@ -67,6 +71,7 @@ class ChannelSettings extends Component {
       privacy: 'PUBLIC',
       viewACL: [],
       manageACL: [],
+      subscription: null,
       personal: false,
       profile: null,
       cover: null,
@@ -77,11 +82,13 @@ class ChannelSettings extends Component {
 
   componentDidMount() {
     this.fetchACL();
+    this.fetchSubscription();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.id !== prevState.id) {
       this.fetchACL();
+      this.fetchSubscription();
     }
   }
 
@@ -148,6 +155,19 @@ class ChannelSettings extends Component {
           viewACL: data.viewACL,
           privacy: data.viewACL.length ? 'PRIVATE' : 'PUBLIC',
           manageACL: data.manageACL,
+        });
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  };
+
+  fetchSubscription = () => {
+    axios
+      .get(`channels/${this.state.id}/subscription`)
+      .then(({ data }) => {
+        this.setState({
+          subscription: data.subscription,
         });
       })
       .catch(err => {
@@ -234,58 +254,114 @@ class ChannelSettings extends Component {
   };
 
   render() {
-    const { name, description, privacy, viewACL, manageACL, error, done, personal } = this.state;
+    const {
+      id,
+      name,
+      description,
+      privacy,
+      viewACL,
+      manageACL,
+      error,
+      done,
+      personal,
+      subscription,
+    } = this.state;
 
     return (
-      <Form onSubmit={this.onSubmit}>
-        {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
-        {done && <SuccessMsg width={1}>{done}</SuccessMsg>}
-        {personal === false ? (
-          <TextField
-            label="שם הערוץ"
-            required
-            placeholder='לדוגמה: אג"ף התקשוב'
-            value={name}
-            onChange={this.onChangeName}
-          />
-        ) : null}
-        <DropdownContainer>
-          <Dropdown
-            required
-            label="גישה"
-            selectedKey={privacy}
-            onChange={this.onChangePrivacy}
-            onRenderTitle={this.onRenderPrivacyOption}
-            onRenderOption={this.onRenderPrivacyOption}
-            placeholder="בחר/י גישה לערוץ"
-            options={[
-              { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
-              { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
-            ]}
-          />
-        </DropdownContainer>
-        {privacy !== 'PUBLIC' ? (
-          <PeoplePicker label="הרשאות צפייה" onChange={this.onChangeViewACL} value={viewACL} />
-        ) : null}
-        {personal === false ? (
-          <PeoplePicker label="הרשאות ניהול" onChange={this.onChangeManageACL} value={manageACL} />
-        ) : null}
-        <TextField
-          label="תיאור"
-          required
-          multiline
-          autoAdjustHeight
-          value={description}
-          onChange={this.onChangeDescription}
-        />
-        <Buttons py={2} px={32}>
-          <Flex>
-            <PrimaryButton text="שמור" onClick={this.onSubmit} />
-            <Box mx={3} />
-            <DefaultButton text="אפס" onClick={this.resetForm} />
-          </Flex>
-        </Buttons>
-      </Form>
+      <Box width={0.9}>
+        <Flex>
+          <Box width={0.2} my={3}>
+            {!!subscription && (
+              <Flex flexDirection="column" alignItems="center">
+                <QuotaPlans
+                  displayOnly
+                  plans={{
+                    [subscription.plan.id]: {
+                      ...subscription.plan,
+                    },
+                  }}
+                />
+                <SubDate>
+                  {new Date(subscription.to).getFullYear() -
+                    new Date(subscription.from).getFullYear() >=
+                  10
+                    ? 'ללא הגבלה'
+                    : `${new Date(subscription.to).toLocaleDateString()} - ${new Date(
+                        subscription.from,
+                      ).toLocaleDateString()}`}
+                </SubDate>
+                {!personal && (
+                  <ChangeSubscriptionModal
+                    currentSubscription={subscription}
+                    channelId={id}
+                    onSubmit={this.fetchSubscription}
+                  />
+                )}
+              </Flex>
+            )}
+          </Box>
+          <Box mx={2} />
+          <Box my={2} flex="1 0 0">
+            <form onSubmit={this.onSubmit}>
+              {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
+              {done && <SuccessMsg width={1}>{done}</SuccessMsg>}
+              {personal === false ? (
+                <TextField
+                  label="שם הערוץ"
+                  required
+                  placeholder='לדוגמה: אג"ף התקשוב'
+                  value={name}
+                  onChange={this.onChangeName}
+                />
+              ) : null}
+              <DropdownContainer>
+                <Dropdown
+                  required
+                  label="גישה"
+                  selectedKey={privacy}
+                  onChange={this.onChangePrivacy}
+                  onRenderTitle={this.onRenderPrivacyOption}
+                  onRenderOption={this.onRenderPrivacyOption}
+                  placeholder="בחר/י גישה לערוץ"
+                  options={[
+                    { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                    { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
+                  ]}
+                />
+              </DropdownContainer>
+              {privacy !== 'PUBLIC' ? (
+                <PeoplePicker
+                  label="הרשאות צפייה"
+                  onChange={this.onChangeViewACL}
+                  value={viewACL}
+                />
+              ) : null}
+              {personal === false ? (
+                <PeoplePicker
+                  label="הרשאות ניהול"
+                  onChange={this.onChangeManageACL}
+                  value={manageACL}
+                />
+              ) : null}
+              <TextField
+                label="תיאור"
+                required
+                multiline
+                autoAdjustHeight
+                value={description}
+                onChange={this.onChangeDescription}
+              />
+              <Buttons py={2} px={32}>
+                <Flex>
+                  <PrimaryButton text="שמור" onClick={this.onSubmit} />
+                  <Box mx={3} />
+                  <DefaultButton text="אפס" onClick={this.resetForm} />
+                </Flex>
+              </Buttons>
+            </form>
+          </Box>
+        </Flex>
+      </Box>
     );
   }
 }

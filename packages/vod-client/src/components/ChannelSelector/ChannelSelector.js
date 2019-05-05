@@ -76,6 +76,7 @@ class ChannelSelector extends Component {
           <Flex>
             {item.map(option => (
               <Persona
+                key={option.key}
                 imageUrl={`/profile/${option.key}/profile.png`}
                 text={option.text}
                 size={PersonaSize.size24}

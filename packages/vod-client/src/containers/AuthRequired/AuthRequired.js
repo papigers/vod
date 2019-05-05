@@ -4,7 +4,7 @@ import { createStructuredSelector } from 'reselect';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 
 import * as actions from './actions';
 

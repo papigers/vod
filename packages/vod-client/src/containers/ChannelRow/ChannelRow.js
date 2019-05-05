@@ -16,7 +16,7 @@ import {
 import createReduxContainer from 'utils/createReduxContainer';
 
 import ChannelProfileImage from 'components/ChannelProfileImage';
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 import * as actions from './actions';
 
 const FlexGrow = styled(Box)`
@@ -55,7 +55,7 @@ class ChannelRow extends Component {
   );
 
   render() {
-    const { channel, user, size } = this.props;
+    const { channel, user, size, displayOnly } = this.props;
     const { followDelta } = this.state;
 
     let userFollows = false;
@@ -116,7 +116,7 @@ class ChannelRow extends Component {
               />
             </FlexGrow>
             <Box ml={16}>
-              {channel && user.id !== channel.id ? (
+              {!displayOnly && channel && user.id !== channel.id ? (
                 <PrimaryButton
                   text={userFollows ? 'עוקב' : 'עקוב'}
                   iconProps={{ iconName: userFollows ? 'UserFollowed' : 'FollowUser' }}

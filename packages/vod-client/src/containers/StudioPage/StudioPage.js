@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 
 import { Pivot, PivotItem, PivotLinkSize } from 'office-ui-fabric-react/lib/Pivot';
 

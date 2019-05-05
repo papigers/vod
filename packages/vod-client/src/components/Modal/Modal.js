@@ -7,6 +7,7 @@ export const MODAL_SIZE = {
   LARGE: 'MODAL_SIZE_LARGE',
   MEDIUM: 'MODAL_SIZE_MEDIUM',
   SMALL: 'MODAL_SIZE_SMALL',
+  TINY: 'MODAL_SIZE_TINY',
 };
 
 const sizes = {
@@ -15,10 +16,14 @@ const sizes = {
     width: 95vw;
   `,
   [MODAL_SIZE.MEDIUM]: css`
+    height: 75vh;
+    width: 75vw;
+  `,
+  [MODAL_SIZE.SMALL]: css`
     height: 60vh;
     width: 60vw;
   `,
-  [MODAL_SIZE.SMALL]: css`
+  [MODAL_SIZE.TINY]: css`
     height: 40vh;
     width: 40vw;
   `,

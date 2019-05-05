@@ -104,7 +104,6 @@ class TagPicker extends Component {
   };
 
   onChange = () => {
-    console.log(this.state.selected);
     if (this.props.onChange) {
       this.props.onChange(this.state.selected.map(tag => tag.name));
     }

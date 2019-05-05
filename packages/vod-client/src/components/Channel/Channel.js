@@ -189,7 +189,7 @@ export default class Channel extends Component {
             {canEditChannel ? <PivotItem itemIcon="Settings" itemKey="settings" /> : <div />}
           </ChannelPivot>
         </TitleBox>
-        <ContentBox>{this.renderTab()}</ContentBox>
+        <ContentBox width={1}>{this.renderTab()}</ContentBox>
       </Fragment>
     );
   }

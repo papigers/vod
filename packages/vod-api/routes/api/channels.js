@@ -5,8 +5,9 @@ var path = require('path');
 var express = require('express');
 var multer = require('multer');
 var sharp = require('sharp');
+var config = require('config');
 var db = require('../../models');
-var adFilter = require('../ldap').adFilter;
+var ldap = require('../ldap');
 var router = express.Router();
 
 var OSClient = require('@vod/vod-object-storage-client').S3Client();
@@ -81,15 +82,48 @@ router.get('/search', function(req, res) {
 });
 
 router.get('/plans', function(req, res, next) {
-  db.plans
-    .getAvailablePlans()
-    .then(function(result) {
-      return res.json(result);
+  db.subscriptions
+    .getGlobalSubscription()
+    .then(function(subs) {
+      return res.json(subs);
     })
     .catch(function(err) {
       console.error(err);
       next(err);
     });
+  // Promise.all(
+  //   config.plans
+  //     .filter(function(plan) {
+  //       return plan.id !== 'personal';
+  //     })
+  //     .map(function(plan) {
+  //       return db.subscriptions.getGlobalSubscription(plan.id).then(function(sub) {
+  //         return Promise.resolve({
+  //           ...plan,
+  //           subscription: sub && sub.id,
+  //         });
+  //       });
+  //     }),
+  // )
+  //   .then(function(result) {
+  //     return res.json(
+  //       result.sort(function(p1, p2) {
+  //         return p1.price - p2.price;
+  //       }),
+  //     );
+  //   })
+  //   .catch(function(err) {
+  //     console.error(err);
+  //     next(err);
+  //   });
+});
+
+router.get('/balance', function(req, res) {
+  res.redirect(`${req.user && req.user.id}/balance`);
+});
+
+router.get('/balance-unverified', function(req, res) {
+  res.redirect(`${req.user && req.user.id}/balance-unverified`);
 });
 
 router.get('/:id', function(req, res) {
@@ -273,15 +307,24 @@ router.post('/images/:id', channelImagesUpload, function(req, res) {
 });
 
 router.post('/', channelImagesUpload, function(req, res) {
-  db.channels
-    .createChannel(req.body, req.user)
-    .then(function(result) {
-      return res.json(result);
+  // TODO: check if user has kabams
+  // ldap
+  //   .getUserKabams(req.user)
+  Promise.resolve(['TODO'])
+    .then(function(kabams) {
+      if (!kabams.length) {
+        return res.status(412).json({
+          error: 'לא מוגדר קב"ם ליחידתך',
+        });
+      }
+      return db.channels.createChannel(req.body, req.user).then(function(result) {
+        return res.json(result);
+      });
     })
     .catch(function(err) {
       console.error(err);
       return res.status(500).json({
-        error: 'Failed to create channel',
+        error: 'עלתה שגיאה ביצירת הערוץ',
       });
     });
 });
@@ -312,6 +355,18 @@ router.get('/:id/videos/:sort', function(req, res) {
     });
 });
 
+router.get('/:channelId/subscription', function(req, res, next) {
+  db.channels
+    .getChannelSubscriptions(req.params.channelId, req.user)
+    .then(function(subscriptions) {
+      res.json(subscriptions[0]);
+    })
+    .catch(function(error) {
+      console.log(error);
+      next(error);
+    });
+});
+
 router.get('/:channelId/permissions', function(req, res) {
   db.channelAcls
     .getChannelAcls(req.params.channelId, req.user)
@@ -328,37 +383,38 @@ router.get('/:channelId/permissions', function(req, res) {
             break;
         }
       });
-      // return Promise.all(permissions.map(function(perm) {
-      //   return adFilter(perm.id, perm.type === 'USER' ? 'user' : 'group')
-      //   .then(function([adObject]) {
-      //     if (adObject) {
-      //       var obj = {
-      //         id: adObject.sAMAccountName || adObject.dn,
-      //         name: adObject.displayName || adObject.cn,
-      //         type: adObject.sAMAccountName ? 'USER' : 'AD_GROUP',
-      //         profile: adObject.sAMAccountName ? "/images/user.svg" : "/images/group.svg"
-      //       }
-      //       switch(perm.access) {
-      //         case 'VIEW':
-      //           viewACL.push(obj);
-      //           break;
-      //         case 'MANAGE':
-      //           manageACL.push(obj);
-      //           break;
-      //       }
-      //     }
-      //     return Promise.resolve();
-      //   });
-      // })).then(function() {
       res.json({
         viewACL,
         manageACL,
       });
-      // })
     })
     .catch(function(err) {
       console.error(err);
       res.sendStatus(500);
+    });
+});
+
+router.get('/:id/balance', function(req, res, next) {
+  db.transactions
+    .getChannelBalance(req.params.id, req.user)
+    .then(function(balance) {
+      res.json(balance);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
+    });
+});
+
+router.get('/:id/balance-unverified', function(req, res, next) {
+  db.transactions
+    .getChannelBalanceUnverified(req.params.id, req.user)
+    .then(function(balance) {
+      res.json(balance);
+    })
+    .catch(function(err) {
+      console.error(err);
+      next(err);
     });
 });
 

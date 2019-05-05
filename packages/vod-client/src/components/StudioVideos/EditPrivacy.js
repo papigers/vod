@@ -99,7 +99,6 @@ class EditPrivacy extends Component {
 
     onSubmit(items)
       .then(results => {
-        console.log(results);
         onClose();
       })
       .catch(e => {

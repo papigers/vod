@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { Box } from 'grid-styled';
+import { withRouter } from 'react-router-dom';
 import { transparentize, clearFix } from 'polished';
 
 import { Link } from 'react-router-dom';
@@ -205,7 +206,7 @@ const HeaderButton = styled.div`
   height: 100%;
 `;
 
-export default class Header extends Component {
+class Header extends Component {
   constructor() {
     super();
     this.state = {
@@ -303,7 +304,7 @@ export default class Header extends Component {
     }
   };
 
-  getHeaderButtons = ({ theme, toggleTheme }) => {
+  getChannelSubmenu() {
     const { user, toggleChannelModalOpen } = this.props;
 
     const managedChannelsLinks =
@@ -324,6 +325,39 @@ export default class Header extends Component {
             },
           ];
 
+    const submenu = [
+      ...managedChannelsLinks,
+      {
+        key: 'divider_1',
+        itemType: ContextualMenuItemType.Divider,
+      },
+      {
+        key: 'manage',
+        to: '/mgmt',
+        text: 'ניהול',
+        onRender: this.renderSubMenuLink,
+        iconProps: {
+          iconName: 'AccountManagement',
+        },
+      },
+      {
+        key: 'divider_2',
+        itemType: ContextualMenuItemType.Divider,
+      },
+      {
+        key: 'createChannel',
+        to: '/channel/new',
+        onClick: toggleChannelModalOpen,
+        text: 'צור ערוץ',
+        iconProps: {
+          iconName: 'AddGroup',
+        },
+      },
+    ];
+    return submenu;
+  }
+
+  getHeaderButtons = ({ theme, toggleTheme }) => {
     return [
       {
         key: 'upload',
@@ -366,22 +400,7 @@ export default class Header extends Component {
         to: '/channel',
         iconOnly: true,
         menuProps: {
-          items: [
-            ...managedChannelsLinks,
-            {
-              key: 'divider_1',
-              itemType: ContextualMenuItemType.Divider,
-            },
-            {
-              key: 'createChannel',
-              to: '/channel/new',
-              onClick: toggleChannelModalOpen,
-              text: 'צור ערוץ',
-              iconProps: {
-                iconName: 'AddGroup',
-              },
-            },
-          ],
+          items: this.getChannelSubmenu(),
         },
       },
     ];
@@ -438,3 +457,5 @@ export default class Header extends Component {
     );
   }
 }
+
+export default withRouter(Header);

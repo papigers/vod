@@ -16,7 +16,7 @@ import {
   makeSelectNotificationsError,
   makeSelectNotificationsLoading,
 } from './selectors';
-import { makeSelectUser } from '../ChannelPage/selectors';
+import { makeSelectUser } from '../Root/selectors';
 import * as actions from './actions';
 
 const ContentPadding = styled(Box).attrs(() => ({

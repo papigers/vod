@@ -26,7 +26,7 @@ module.exports = function(db) {
         column: 'id',
         table: 'plans',
         onUpdate: 'cascade',
-        onDelete: 'cascade',
+        onDelete: 'set default',
       },
     },
     channelId: {
@@ -37,13 +37,6 @@ module.exports = function(db) {
         onUpdate: 'cascade',
         onDelete: 'cascade',
       },
-    },
-    verified: {
-      type: 'boolean',
-      default: false,
-    },
-    emf: {
-      type: 'string',
     },
     from: {
       type: 'date',
@@ -57,21 +50,33 @@ module.exports = function(db) {
   subscriptions.createdAt = true;
   subscriptions.updatedAt = false;
 
-  subscriptions.getInitialSubscription = function getInitialSubscription(subId) {
-    if (!subId) {
-      return db.knex
-        .select('id')
-        .from(subscriptions.table)
-        .where('planId', 'free')
-        .whereNull('channelId')
-        .limit(1)
-        .first();
-    }
+  subscriptions.getGlobalSubscription = function getGlobalSubscription() {
+    return db.knex
+      .select(`${db.plans.table}.*`)
+      .select(`${subscriptions.table}.id as subscription`)
+      .from(db.plans.table)
+      .leftJoin(subscriptions.table, function() {
+        this.on(`${subscriptions.table}.planId`, `${db.plans.table}.id`).on(
+          db.knex.raw('? <= ?', [
+            db.knex
+              .count('id')
+              .from(subscriptions.table)
+              .where('planId', `${db.plans.table}.id`),
+            1,
+          ]),
+        );
+      })
+      .where(`${db.plans.table}.id`, '<>', 'personal')
+      .orderBy([`${db.plans.table}.price`, `${db.plans.table}.sizeQuota`]);
+  };
+
+  subscriptions.getInitialSubscription = function getInitialSubscription() {
     return db.knex
       .select('id')
       .from(subscriptions.table)
-      .where('id', subId)
+      .where('planId', 'free')
       .whereNull('channelId')
+      .limit(1)
       .first();
   };
 

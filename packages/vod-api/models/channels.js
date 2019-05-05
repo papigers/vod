@@ -120,6 +120,7 @@ module.exports = function(db) {
     return db.knex
       .select(`${channels.table}.id`, `${channels.table}.name`)
       .from(channels.table)
+      .where(`${channels.table}.verified`, true)
       .modify(channels.authorizedManageSubquery, user);
   };
 
@@ -128,6 +129,7 @@ module.exports = function(db) {
       .queryBuilder()
       .modify(db.videos.videoListSelect)
       .where(`${channels.table}.id`, channelId)
+      .where(`${channels.table}.verified`, true)
       .limit(limit)
       .offset(offset)
       .groupBy(`${db.videos.table}.id`, `${channels.table}.id`)
@@ -174,6 +176,7 @@ module.exports = function(db) {
           ]),
         )
         .where(`${channels.table}.id`, id)
+        .where(`${channels.table}.verified`, true)
         .modify(channels.authorizedViewSubquery, user),
     );
   };
@@ -291,7 +294,7 @@ module.exports = function(db) {
     let initialSub = null;
     return db.knex.transaction(function(trx) {
       return db.subscriptions
-        .getInitialSubscription(channel.subscription)
+        .getInitialSubscription()
         .then(function(activeSubscription) {
           if (!activeSubscription || !activeSubscription.id) {
             throw new Error("Couldn't find a valid subscription");
@@ -303,30 +306,8 @@ module.exports = function(db) {
             description: channel.description,
             privacy: channel.privacy,
             personal: channel.personal,
-            active: !!channel.personal,
+            verified: !!channel.personal,
             activeSubscriptionId: initialSub,
-          });
-        })
-        .then(function() {
-          sub = initialSub !== channel.subscription ? db.subscriptions.generateId() : initialSub;
-          if (initialSub !== sub) {
-            return trx(db.subscriptions.table).insert({
-              id: sub,
-              planId: channel.plan,
-              verified: false,
-              emf: channel.emf,
-              channelId: channel.id,
-            });
-          }
-          return Promise.resolve();
-        })
-        .then(function() {
-          return trx(db.workflows.table).insert({
-            id: db.workflows.generateId(),
-            type: 'CREATE_CHANNEL',
-            requester: user && user.id,
-            subject: channel.id,
-            secondarySubject: sub,
           });
         })
         .then(function() {
@@ -341,6 +322,27 @@ module.exports = function(db) {
               });
             }),
           );
+        })
+        .then(function() {
+          return trx(db.workflows.table)
+            .insert({
+              id: db.workflows.generateId(),
+              type: 'CREATE_CHANNEL',
+              requester: user && user.id,
+              subject: channel.id,
+            })
+            .returning('id');
+        })
+        .then(function(ids) {
+          return trx(db.workflowActivities.table)
+            .insert({
+              id: db.workflowActivities.generateId(),
+              workflowId: ids[0],
+              name: 'KABAM',
+            })
+            .then(function() {
+              return ids[0];
+            });
         });
     });
   };
@@ -433,6 +435,7 @@ module.exports = function(db) {
         `${channels.table}.id`,
         'search.search_id',
       )
+      .where(`${channels.table}.verified`, true)
       .groupBy(`${channels.table}.id`, 'search.rank', `${db.channelFollowers.table}.followerId`)
       .modify(channels.order, 'relevance')
       .modify(channels.authorizedViewSubquery, user, { channelsName: 'c2' });
@@ -467,11 +470,22 @@ module.exports = function(db) {
         .select('id', 'total', 'used', db.knex.raw('(?? - ??) as free', ['total', 'used']))
         .from(function() {
           this.select(`${channels.table}.id`)
-            .select(db.knex.raw('cast(? as bigint) as total', [2147483648]))
-            .sum(`${db.videos.table}.metadata_size as used`)
+            .select(
+              db.knex.raw('(cast(?? as bigint) * ?) as total', [
+                `${db.plans.table}.sizeQuota`,
+                1048576,
+              ]),
+            )
+            .select(db.knex.raw(`sum(coalesce(${db.videos.table}.metadata_size, 0)) as used`))
             .from(channels.table)
             .leftJoin(db.videos.table, `${channels.table}.id`, `${db.videos.table}.channelId`)
-            .groupBy(`${channels.table}.id`)
+            .leftJoin(
+              db.subscriptions.table,
+              `${channels.table}.activeSubscriptionId`,
+              `${db.subscriptions.table}.id`,
+            )
+            .leftJoin(db.plans.table, `${db.plans.table}.id`, `${db.subscriptions.table}.planId`)
+            .groupBy(`${channels.table}.id`, `${db.plans.table}.sizeQuota`)
             .where(`${channels.table}.id`, channel)
             .modify(channels.authorizedManageSubquery, user)
             .as('quota');
@@ -480,7 +494,6 @@ module.exports = function(db) {
   };
 
   channels.getChannelStats = function(user, chs) {
-    console.log(chs);
     return db.knexnest(
       db.knex
         .countDistinct(`${db.channelFollowers.table}.followerId as followerCount`)
@@ -500,6 +513,31 @@ module.exports = function(db) {
         .leftJoin(db.videoViews.table, `${db.videos.table}.id`, `${db.videoViews.table}.videoId`)
         .leftJoin(db.comments.table, `${db.videos.table}.id`, `${db.comments.table}.videoId`)
         .whereIn(`${channels.table}.id`, chs)
+        .modify(channels.authorizedManageSubquery, user),
+    );
+  };
+
+  channels.getChannelSubscriptions = function getChannelSubscriptions(id, user) {
+    return db.knexnest(
+      db.knex
+        .select(
+          `${db.subscriptions.table}.id as _subscription_id`,
+          `${db.subscriptions.table}.from as _subscription_from`,
+          `${db.subscriptions.table}.to as _subscription_to`,
+          `${db.plans.table}.id as _subscription_plan_id`,
+          `${db.plans.table}.name as _subscription_plan_name`,
+          `${db.plans.table}.price as _subscription_plan_price`,
+          `${db.plans.table}.sizeQuota as _subscription_plan_sizeQuota`,
+          `${db.plans.table}.videoQuota as _subscription_plan_videoQuota`,
+        )
+        .from(channels.table)
+        .leftJoin(
+          db.subscriptions.table,
+          `${channels.table}.activeSubscriptionId`,
+          `${db.subscriptions.table}.id`,
+        )
+        .leftJoin(db.plans.table, `${db.subscriptions.table}.planId`, `${db.plans.table}.id`)
+        .where(`${channels.table}.id`, id)
         .modify(channels.authorizedManageSubquery, user),
     );
   };

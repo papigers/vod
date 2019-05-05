@@ -13,7 +13,6 @@ import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
-import QuotaPlanSelector from 'components/QuotaPlanSelector';
 import ChannelCoverImage from 'components/ChannelCoverImage';
 import ChannelProfileImage from 'components/ChannelProfileImage';
 
@@ -81,8 +80,6 @@ class NewChannelForm extends Component {
       profile: null,
       cover: null,
       error: null,
-      emf: null,
-      plan: null,
       loading: false,
     };
   }
@@ -141,8 +138,6 @@ class NewChannelForm extends Component {
   onMoveCover = position => this.setState({ coverPosition: position });
   onChangeViewACL = acls => this.setState({ viewACL: this.formatACL(acls, 'view') });
   onChangeManageACL = acls => this.setState({ manageACL: this.formatACL(acls, 'manage') });
-  onChangePlan = plan => this.setState({ plan });
-  onChangeEMF = ({ target: { value } }) => this.setState({ emf: value });
 
   setError(error) {
     this.setState({ error, loading: false }, () => {
@@ -157,7 +152,7 @@ class NewChannelForm extends Component {
   }
 
   validate() {
-    const { name, id, privacy, emf, plan } = this.state;
+    const { name, id, privacy } = this.state;
 
     if (!name) {
       this.setError('חובה להזין שם ערוץ');
@@ -171,10 +166,6 @@ class NewChannelForm extends Component {
       this.setError('חובה להזין גישה לערוץ');
       return false;
     }
-    if (!plan || (plan.price !== 0 && !emf)) {
-      this.setError('חובה לבחור מנוי ולהזין אישור העברה');
-      return false;
-    }
     return true;
   }
 
@@ -182,10 +173,11 @@ class NewChannelForm extends Component {
     this.setError(null);
     this.setState({ loading: true });
     if (this.validate()) {
-      const { name, id, profile, cover, privacy, description, viewACL, manageACL, plan, emf } = this.state;
+      const { name, id, profile, cover, privacy, description, viewACL, manageACL } = this.state;
 
       const data = new FormData();
       let filePromise = Promise.resolve();
+      let workflowId = '';
       if (profile) {
         filePromise = filePromise
           .then(() => fetch(profile))
@@ -208,11 +200,11 @@ class NewChannelForm extends Component {
           viewACL,
           manageACL: this.formatACL(manageACL, 'manage'),
           privacy,
-          plan: plan.id,
-          emf,
-          subscription: plan.subscription,
         })
-        .then(() => filePromise)
+        .then(res => {
+          workflowId = res.data;
+          return filePromise;
+        })
         .then(() => {
           return axios.post(`channels/images/${id}`, data, {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -224,11 +216,14 @@ class NewChannelForm extends Component {
             if (this.props.onSubmit) {
               this.props.onSubmit();
             }
-            this.props.history.push(`/channel/${id}`);
+            this.props.history.push(`/mgmt/workflows/${workflowId}`);
           }, 3000);
         })
         .catch(error => {
           console.error(error);
+          if (error.response && error.response.data && error.response.data.error) {
+            return this.setError(error.response.data.error);
+          }
           this.setError('עלתה שגיאה ביצירת הערוץ');
         });
     }
@@ -262,71 +257,14 @@ class NewChannelForm extends Component {
       error,
       viewACL,
       manageACL,
-      plan,
-      emf,
       loading,
     } = this.state;
 
     return (
       <Form onSubmit={this.onSubmit}>
         <Flex>
-          <Box flex="1 1 0">
+          <Box flex="3 1 0">
             {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
-            <Persona
-              imageUrl={profile || '/images/user.svg'}
-              primaryText={name}
-              secondaryText={description}
-              size={PersonaSize.size72}
-              onRenderCoin={this.onRenderCoin}
-            />
-            <TextField
-              label="מזהה הערוץ"
-              required
-              placeholder="לדוגמה: tikshuv"
-              value={id}
-              onChange={this.onChangeId}
-            />
-            <TextField
-              label="שם הערוץ"
-              required
-              placeholder='לדוגמה: אג"ף התקשוב'
-              value={name}
-              onChange={this.onChangeName}
-            />
-            <DropdownContainer>
-              <Dropdown
-                required
-                label="גישה"
-                selectedKey={privacy}
-                onChange={this.onChangePrivacy}
-                onRenderTitle={this.onRenderPrivacyOption}
-                onRenderOption={this.onRenderPrivacyOption}
-                placeholder="בחר/י גישה לערוץ"
-                options={[
-                  { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
-                  { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
-                ]}
-              />
-            </DropdownContainer>
-            {privacy !== 'PUBLIC' ? (
-              <PeoplePicker label="הרשאות צפייה" onChange={this.onChangeViewACL} value={viewACL} />
-            ) : null}
-            <PeoplePicker
-              label="הרשאות ניהול"
-              onChange={this.onChangeManageACL}
-              value={manageACL}
-            />
-            <TextField
-              label="תיאור"
-              required
-              multiline
-              autoAdjustHeight
-              value={description}
-              onChange={this.onChangeDescription}
-            />
-          </Box>
-          <Box mx={2} />
-          <Box flex="2 1 0">
             <Box pb={2} width="100%">
               <ChannelCoverImage
                 src={cover}
@@ -335,13 +273,74 @@ class NewChannelForm extends Component {
                 onEditImage={this.onMoveCover}
               />
             </Box>
-            <QuotaPlanSelector
-              selectedPlan={plan && plan.id}
-              emf={emf}
-              onChangePlan={this.onChangePlan}
-              onChangeEMF={this.onChangeEMF}
-            />
+            <Flex>
+              <Box>
+                <TextField
+                  label="מזהה הערוץ"
+                  required
+                  placeholder="לדוגמה: tikshuv"
+                  value={id}
+                  onChange={this.onChangeId}
+                />
+                <TextField
+                  label="שם הערוץ"
+                  required
+                  placeholder='לדוגמה: אג"ף התקשוב'
+                  value={name}
+                  onChange={this.onChangeName}
+                />
+                <TextField
+                  label="תיאור"
+                  required
+                  multiline
+                  autoAdjustHeight
+                  value={description}
+                  onChange={this.onChangeDescription}
+                />
+              </Box>
+              <Box mx={3} />
+              <Box>
+                <DropdownContainer>
+                  <Dropdown
+                    required
+                    label="גישה"
+                    selectedKey={privacy}
+                    onChange={this.onChangePrivacy}
+                    onRenderTitle={this.onRenderPrivacyOption}
+                    onRenderOption={this.onRenderPrivacyOption}
+                    placeholder="בחר/י גישה לערוץ"
+                    options={[
+                      { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                      { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
+                    ]}
+                  />
+                </DropdownContainer>
+                {privacy !== 'PUBLIC' ? (
+                  <PeoplePicker
+                    label="הרשאות צפייה"
+                    onChange={this.onChangeViewACL}
+                    value={viewACL}
+                  />
+                ) : null}
+                <PeoplePicker
+                  label="הרשאות ניהול"
+                  onChange={this.onChangeManageACL}
+                  value={manageACL}
+                />
+              </Box>
+              <Box mx={3} />
+
+              <Persona
+                imageUrl={profile || '/images/user.svg'}
+                primaryText={name}
+                secondaryText={description}
+                size={PersonaSize.size72}
+                onRenderCoin={this.onRenderCoin}
+              />
+            </Flex>
           </Box>
+          <Box mx={2} />
+          <Box flex="0 1 0" />
         </Flex>
         <Buttons py={2} px={32}>
           <Flex>

@@ -30,6 +30,12 @@ router.use('/playlists', playlists);
 var analytics = require('./analytics');
 router.use('/analytics', analytics);
 
+var workflows = require('./workflows');
+router.use('/workflows', workflows);
+
+var transactions = require('./transactions');
+router.use('/transactions', transactions);
+
 router.get('/profile', function(req, res) {
   res.json(req.user);
 });
@@ -45,10 +51,5 @@ router.get(
     res.sendStatus(200);
   },
 );
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
 
 module.exports = router;

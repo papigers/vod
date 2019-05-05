@@ -1,4 +1,5 @@
 var models = require('../models').models;
+var config = require('config');
 var createTable = require('../knexfile').createTable;
 var dropTable = require('../knexfile').dropTable;
 
@@ -12,51 +13,7 @@ exports.up = async function(knex) {
   foreverTo.setFullYear(foreverTo.getFullYear() + 100);
   return createTable(knex, models.plans, 'plans')
     .then(function() {
-      return knex.table('plans').insert([
-        {
-          id: 'free',
-          name: 'ניסיון',
-          sizeQuota: 100,
-          videoQuota: 1,
-          price: 0,
-        },
-        {
-          id: 'personal',
-          name: 'יוזר אישי',
-          sizeQuota: 2048,
-          price: 0,
-        },
-        {
-          id: '1',
-          name: 'ערוץ הילדים',
-          sizeQuota: 1024,
-          price: 499,
-        },
-        {
-          id: '2',
-          name: 'קולנוע ישראלי',
-          sizeQuota: 2048,
-          price: 899,
-        },
-        {
-          id: '5',
-          name: 'HBO',
-          sizeQuota: 5120,
-          price: 1999,
-        },
-        {
-          id: '10',
-          name: 'אוסקר',
-          sizeQuota: 10240,
-          price: 3499,
-        },
-        {
-          id: 'test',
-          name: 'בדיקה',
-          sizeQuota: 10240,
-          price: 0,
-        },
-      ]);
+      return knex.table('plans').insert(config.plans);
     })
     .then(function() {
       return createTable(knex, models.subscriptions, 'subscriptions');
@@ -66,48 +23,49 @@ exports.up = async function(knex) {
         {
           id: freeSubId,
           planId: 'free',
-          verified: true,
           from: foreverFrom,
           to: foreverTo,
         },
         {
           id: testSubId,
           planId: 'test',
-          verified: true,
           from: foreverFrom,
           to: foreverTo,
         },
         {
           id: personalSubId,
           planId: 'personal',
-          verified: true,
           from: foreverFrom,
           to: foreverTo,
         },
       ]);
     })
     .then(function() {
+      return createTable(knex, models.transactions, 'transactions');
+    })
+    .then(function() {
       return createTable(knex, models.workflows, 'workflows');
+    })
+    .then(function() {
+      return createTable(knex, models.workflowActivities, 'workflowActivities');
     })
     .then(function() {
       return knex.schema.table('channels', function(table) {
         table
           .specificType('activeSubscriptionId', 'char(16)')
-          // .notNullable()
-          // .defaultTo(freeSubId)
           .references('id')
           .inTable('subscriptions')
           .onDelete('set null')
           .onUpdate('cascade');
         table
-          .boolean('active')
+          .boolean('verified')
           .notNullable()
           .defaultTo(false);
       });
     })
     .then(function() {
       return knex.table('channels').update({
-        active: true,
+        verified: true,
         activeSubscriptionId: knex.raw('case when ?? = ? then ? else ? end', [
           'channels.personal',
           true,
@@ -131,7 +89,7 @@ exports.up = async function(knex) {
             CREATE OR REPLACE FUNCTION on_delete_workflow_cascade()
             RETURNS trigger AS $$
             BEGIN
-              DELETE FROM workflows WHERE (TG_TABLE_NAME = 'channels' AND type = 'CREATE_CHANNEL') OR (TG_TABLE_NAME = 'subscriptions' AND type = 'CREATE_SUBSCRIPTION') AND (subject = OLD.id OR "secondarySubject" = OLD.id);
+              DELETE FROM workflows WHERE ((TG_TABLE_NAME = 'channels' AND type = 'CREATE_CHANNEL') OR (TG_TABLE_NAME = 'transactions' AND type = 'LOAD_CREDIT')) AND subject = OLD.id;
               RETURN NEW;
             END;
             $$ language 'plpgsql';
@@ -142,8 +100,7 @@ exports.up = async function(knex) {
             CREATE OR REPLACE FUNCTION on_update_workflow_cascade()
             RETURNS trigger AS $$
             BEGIN
-              UPDATE workflows SET subject = NEW.id WHERE (TG_TABLE_NAME = 'channels' AND type = 'CREATE_CHANNEL') OR (TG_TABLE_NAME = 'subscriptions' AND type = 'CREATE_SUBSCRIPTION') AND (subject = OLD.id);
-              UPDATE workflows SET "secondarySubject" = NEW.id WHERE (TG_TABLE_NAME = 'channels' AND type = 'CREATE_CHANNEL') OR (TG_TABLE_NAME = 'subscriptions' AND type = 'CREATE_SUBSCRIPTION') AND ("secondarySubject" = OLD.id);
+              UPDATE workflows SET subject = NEW.id WHERE (TG_TABLE_NAME = 'channels' AND type = 'CREATE_CHANNEL') OR (TG_TABLE_NAME = 'transactions' AND type = 'LOAD_CREDIT') AND (subject = OLD.id);
               RETURN NEW;
             END;
             $$ language 'plpgsql';
@@ -167,7 +124,7 @@ exports.up = async function(knex) {
     })
     .then(function() {
       return Promise.all(
-        ['subscriptions', 'channels'].map(function(subjectTable) {
+        ['transactions', 'channels'].map(function(subjectTable) {
           return knex.schema
             .raw(
               `
@@ -207,7 +164,7 @@ exports.up = async function(knex) {
 
 exports.down = async function(knex) {
   return Promise.all(
-    ['subscriptions', 'channels'].map(function(subjectTable) {
+    ['transactions', 'channels'].map(function(subjectTable) {
       return knex.schema
         .raw(
           `
@@ -224,20 +181,34 @@ exports.down = async function(knex) {
     }),
   )
     .then(function() {
-      return knex.schema
-        .raw(
-          `
+      return (
+        knex.schema
+          .raw(
+            `
             drop trigger if exists ?? on ??;
           `,
-          ['default_channel_subscription_trigger', 'channels'],
-        )
-        .table('channels', function(table) {
-          table.dropColumn('activeSubscriptionId');
-          table.dropColumn('active');
-        });
+            ['default_channel_subscription_trigger', 'channels'],
+          )
+          // .raw(
+          //   `
+          //     drop trigger if exists ?? on ??;
+          //   `,
+          //   ['reject_workflow_step_trigger', 'workflowActivities'],
+          // )
+          .table('channels', function(table) {
+            table.dropColumn('activeSubscriptionId');
+            table.dropColumn('verified');
+          })
+      );
+    })
+    .then(function() {
+      return dropTable(knex, models.workflowActivities, 'workflowActivities');
     })
     .then(function() {
       return dropTable(knex, models.workflows, 'workflows');
+    })
+    .then(function() {
+      return dropTable(knex, models.transactions, 'transactions');
     })
     .then(function() {
       return dropTable(knex, models.subscriptions, 'subscriptions');
@@ -250,5 +221,6 @@ exports.down = async function(knex) {
         .raw('drop function if exists on_update_workflow_cascade() cascade')
         .raw('drop function if exists on_delete_workflow_cascade() cascade')
         .raw('drop function if exists default_channel_subscription() cascade');
+      // .raw('drop function if exists reject_workflow_step() cascade');
     });
 };

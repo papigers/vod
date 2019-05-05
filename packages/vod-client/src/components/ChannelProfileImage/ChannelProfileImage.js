@@ -50,7 +50,6 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-
   ${({ src, size, theme }) =>
     !src
       ? css`
