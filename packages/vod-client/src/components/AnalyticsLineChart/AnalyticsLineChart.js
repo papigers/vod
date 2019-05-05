@@ -47,7 +47,6 @@ class AnalyticsLineChart extends Component {
   loadData() {
     const { selectedVideos, selectedChannels, selectedTab } = this.props;
     const channelQuery = (selectedChannels || []).join('&channel=');
-    console.log(this.props);
     this.setState({ data: null }, () => {
       axios
         .get(
@@ -64,11 +63,13 @@ class AnalyticsLineChart extends Component {
   }
 
   renderTooltip = props => {
+    const before = new Date(props.label);
+    before.setDate(before.getDate() - 14);
     return (
       <TooltipContent>
-        {`${props.label}: `}
+        {`${before.toLocaleDateString()} - ${props.label}: `}
         {props.payload.map(d => (
-          <span>
+          <span key={d.payload.date}>
             {d.payload.value} {this.props.selectedTab.label}
           </span>
         ))}

@@ -28,7 +28,7 @@ const ExapndCardButton = styled(IconButton)`
   position: absolute;
   top: 10px;
   right: 10px;
-  transform: rotate(${({ expanded }) => (expanded ? 180 : 0)}deg);
+  transform: rotate(${({ open }) => (open ? 180 : 0)}deg);
   transition: transform 300ms ease-in-out;
 `;
 
@@ -52,7 +52,7 @@ const CardVideoSelector = props => <CardChannelSelector {...props} as={VideoSele
 
 const SlidingOptions = styled(Box)`
   overflow: hidden;
-  max-height: ${({ expanded }) => (expanded ? '100px' : 0)};
+  max-height: ${({ open }) => (open ? '100px' : 0)};
   transition: max-height 500ms ease-in-out;
 `;
 
@@ -151,17 +151,24 @@ class DashboardCard extends Component {
           }
         : {};
 
+    const hasOptions =
+      (tabs && tabs.length) ||
+      (channelSelector && channelSelector.channels) ||
+      (videoSelector && videoSelector.videos);
+
     return (
       <Card px="1em" m={2} {...props}>
         <Box my="0.6em">
           <Title>{this.props.title}</Title>
-          <ExapndCardButton
-            iconProps={{ iconName: 'ChevronDownSmall' }}
-            title="אפשרויות"
-            onClick={this.onToggleExpanded}
-            expanded={expanded}
-          />
-          <SlidingOptions expanded={expanded}>
+          {hasOptions ? (
+            <ExapndCardButton
+              iconProps={{ iconName: 'ChevronDownSmall' }}
+              title="אפשרויות"
+              onClick={this.onToggleExpanded}
+              open={expanded}
+            />
+          ) : null}
+          <SlidingOptions open={expanded}>
             <Flex alignItems="flex-end">
               {tabs && tabs.length ? (
                 <Box flex="1 0 0">
@@ -173,7 +180,7 @@ class DashboardCard extends Component {
                     linkFormat={PivotLinkFormat.tabs}
                   >
                     {tabs.map(tab => (
-                      <PivotItem linkText={tab.label} itemKey={tab.key} />
+                      <PivotItem key={tab.key} linkText={tab.label} itemKey={tab.key} />
                     ))}
                   </Pivot>
                 </Box>

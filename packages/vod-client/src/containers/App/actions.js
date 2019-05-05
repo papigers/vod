@@ -1,12 +1,11 @@
 import {
   SIDEBAR_OPEN_TOGGLE,
   CHANNEL_MODAL_OPEN_TOGGLE,
-  SET_MANAGED_CHANNELS,
   SET_FOLLOWED_CHANNELS,
 } from 'constants/actionTypes';
 import axios from 'utils/axios';
 
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 
 export function toggleSidebarOpen() {
   return {
@@ -18,24 +17,6 @@ export function toggleChannelModalOpen() {
   return {
     type: CHANNEL_MODAL_OPEN_TOGGLE,
   };
-}
-
-function setManagedChannels(managed) {
-  return {
-    type: SET_MANAGED_CHANNELS,
-    managed,
-  };
-}
-
-export function getManagedChannels() {
-  return dispatch =>
-    axios
-      .get('channels/managed')
-      .then(result => dispatch(setManagedChannels(result.data)))
-      .catch(error => {
-        console.log('Could not fetch managed channels');
-        console.error(error);
-      });
 }
 
 function setFollowedChannels(followed) {

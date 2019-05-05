@@ -7,18 +7,23 @@ export const MODAL_SIZE = {
   LARGE: 'MODAL_SIZE_LARGE',
   MEDIUM: 'MODAL_SIZE_MEDIUM',
   SMALL: 'MODAL_SIZE_SMALL',
+  TINY: 'MODAL_SIZE_TINY',
 };
 
 const sizes = {
   [MODAL_SIZE.LARGE]: css`
-    height: 80vh;
-    width: 80vw;
+    height: 90vh;
+    width: 95vw;
   `,
   [MODAL_SIZE.MEDIUM]: css`
+    height: 75vh;
+    width: 75vw;
+  `,
+  [MODAL_SIZE.SMALL]: css`
     height: 60vh;
     width: 60vw;
   `,
-  [MODAL_SIZE.SMALL]: css`
+  [MODAL_SIZE.TINY]: css`
     height: 40vh;
     width: 40vw;
   `,
@@ -28,18 +33,30 @@ const sizes = {
 const StyledModal = styled(FabricModal).attrs(({ theme }) => ({
   isDarkOverlay: theme.name === 'dark',
 }))`
-  top: -2vh;
+  animation: enlarge 200ms ease-in-out;
 
   .ms-Dialog-main {
     z-index: 1;
 
     & > div {
-      ${size => (size && sizes[size]) || sizes[MODAL_SIZE.AUTO]}
+      ${({ size }) => (size && sizes[size]) || sizes[MODAL_SIZE.AUTO]}
+      max-height: 100vh;
+      max-width: 100vw;
       display: flex;
       flex-flow: column nowrap;
       align-items: stretch;
       background: ${({ theme }) => theme.palette.neutralLighterAlt};
       color: ${({ theme }) => theme.palette.neutralDark};
+    }
+  }
+
+  @keyframes enlarge {
+    from {
+      transform: scale(0.1);
+    }
+
+    to {
+      transform: scale(1);
     }
   }
 `;

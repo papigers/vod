@@ -6,7 +6,7 @@ import axios from 'utils/axios';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
-import { makeSelectUser } from './selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 
 class ChannelPage extends Component {
   constructor() {

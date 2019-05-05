@@ -1,4 +1,5 @@
 import React, { Fragment, Component } from 'react';
+import { matchPath } from 'react-router-dom';
 import styled from 'styled-components';
 import { mix, transparentize, invert } from 'polished';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
@@ -44,6 +45,11 @@ const StyledPanel = styled(Panel)`
   .ms-Overlay {
     background-color: ${({ theme }) => transparentize(0.6, invert(theme.palette.neutralPrimary))};
   }
+
+  .ms-Nav-link a {
+    width: 100%;
+    text-align: right;
+  }
 `;
 
 const HeaderContainer = styled.div`
@@ -53,7 +59,7 @@ const HeaderContainer = styled.div`
   margin-right: 10px;
 `;
 
-export default class Sidebar extends Component {
+class Sidebar extends Component {
   onRenderLink = (link, defRender) => {
     return (
       <Link to={link.to}>
@@ -68,6 +74,14 @@ export default class Sidebar extends Component {
 
   render() {
     const { isSidebarTrapped, isSidebarOpen, onDismissed, followedChannels } = this.props;
+    const navLinks = [
+      { name: 'בית', key: 'home', to: '/' },
+      { name: 'חם', to: '/trending', key: 'trending' },
+      { name: 'ערוצים', to: '/channels', key: 'channels' },
+    ];
+    const activeLink = navLinks
+      .filter(link => matchPath(link.to, { path: window.location.pathname, exact: true }))
+      .map(link => link.key);
     return (
       <Fragment>
         <PanelHost id="panelHost" />
@@ -107,11 +121,7 @@ export default class Sidebar extends Component {
                   onRenderLink={this.onRenderLink}
                   groups={[
                     {
-                      links: [
-                        { name: 'בית', key: 'home', to: '/' },
-                        { name: 'חם', to: '/trending', key: 'trending' },
-                        { name: 'ערוצים', to: '/channels', key: 'channels' },
-                      ],
+                      links: navLinks,
                     },
                     followedChannels &&
                       followedChannels.length && {
@@ -126,7 +136,7 @@ export default class Sidebar extends Component {
                   ]}
                   expandedStateText={'expanded'}
                   collapsedStateText={'collapsed'}
-                  selectedKey={'home'}
+                  selectedKey={activeLink && activeLink[0]}
                 />
               </StyledPanel>
             )}
@@ -136,3 +146,5 @@ export default class Sidebar extends Component {
     );
   }
 }
+
+export default Sidebar;

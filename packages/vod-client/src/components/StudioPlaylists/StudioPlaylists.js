@@ -237,6 +237,7 @@ class StudioPlaylists extends Component {
             ]}
           />
         </ActionsBox>
+
         <div style={{ position: 'relative', flexGrow: 1, flexShrink: 0 }}>
           <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
             <Box>

@@ -7,7 +7,7 @@ import io from 'socket.io-client';
 
 import createReduxContainer from 'utils/createReduxContainer';
 import axios from 'utils/axios';
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
@@ -180,7 +180,6 @@ class UploadEdit extends Component {
     });
   initUploadData = videoData => {
     const { tags, metadata, upload, ...video } = videoData;
-    console.log('received upload', upload);
 
     if (video.id === this.state.videoId) {
       this.setState({
@@ -204,7 +203,6 @@ class UploadEdit extends Component {
     }
   };
   setUploadStep = ({ id, step }) => {
-    console.log('received step', step);
     if (id === this.state.videoId) {
       this.setState({
         upload: {

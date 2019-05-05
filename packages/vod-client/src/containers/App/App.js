@@ -7,7 +7,7 @@ import { bindActionCreators } from 'redux';
 import Header from 'components/Header';
 import Results from 'components/Results';
 import Sidebar from 'components/Sidebar';
-import Modal from 'components/Modal';
+import Modal, { MODAL_SIZE } from 'components/Modal';
 import NewChannelForm from 'components/NewChannelForm';
 
 import HomePage from 'containers/HomePage';
@@ -22,9 +22,10 @@ import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectSidebar, makeSelectChannelModal } from './selectors';
 import { makeSelectUnreadNotificationCount } from '../NotificationsCallout/selectors';
-import { makeSelectUser, makeSelectFollowedChannels } from '../ChannelPage/selectors';
+import { makeSelectUser, makeSelectFollowedChannels } from '../Root/selectors';
 import * as actions from './actions';
-import { getNotifications } from '../NotificationsCallout/actions';
+import { getNotifications } from 'containers/NotificationsCallout/actions';
+import { getManagedChannels } from 'containers/Root/actions';
 
 const Container = styled.div`
   display: flex;
@@ -42,7 +43,6 @@ const Content = styled.div`
 
 class App extends Component {
   componentDidMount() {
-    this.props.getManagedChannels();
     this.props.getFollowedChannels();
     this.props.getNotifications();
   }
@@ -93,7 +93,12 @@ class App extends Component {
             </Switch>
           </Content>
         </Container>
-        <Modal isOpen={channelModalOpen} title="יצירת ערוץ" onDismiss={toggleChannelModalOpen}>
+        <Modal
+          size={MODAL_SIZE.MEDIUM}
+          isOpen={channelModalOpen}
+          title="יצירת ערוץ"
+          onDismiss={toggleChannelModalOpen}
+        >
           <NewChannelForm user={user} onSubmit={this.props.getManagedChannels} />
         </Modal>
       </Fragment>
@@ -114,6 +119,7 @@ const mapDispatchToProps = dispatch => {
     {
       ...actions,
       getNotifications,
+      getManagedChannels,
     },
     dispatch,
   );

@@ -5,37 +5,17 @@ import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-import { Image, ImageCoverStyle } from 'office-ui-fabric-react/lib/Image';
 
 import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
+import QuotaPlans from 'components/QuotaPlans';
+import ChangeSubscriptionModal from 'components/ChangeSubscriptionModal';
 
 const DropdownContainer = styled.div`
   max-width: 250px;
-`;
-
-const InputButton = styled(DefaultButton)`
-  position: relative;
-
-  input[type='file'] {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    position: absolute;
-    width: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
-`;
-
-const Form = styled.form`
-  margin: 1em 17em;
 `;
 
 const DropdownOption = styled.div`
@@ -75,6 +55,12 @@ const SuccessMsg = styled(Box)`
   font-size: 1.1em;
 `;
 
+const SubDate = styled.div`
+  font-weight: 500;
+  text-align: center;
+  margin: 6px auto;
+`;
+
 class ChannelSettings extends Component {
   constructor(props) {
     super();
@@ -85,6 +71,7 @@ class ChannelSettings extends Component {
       privacy: 'PUBLIC',
       viewACL: [],
       manageACL: [],
+      subscription: null,
       personal: false,
       profile: null,
       cover: null,
@@ -95,11 +82,13 @@ class ChannelSettings extends Component {
 
   componentDidMount() {
     this.fetchACL();
+    this.fetchSubscription();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.id !== prevState.id) {
       this.fetchACL();
+      this.fetchSubscription();
     }
   }
 
@@ -173,6 +162,19 @@ class ChannelSettings extends Component {
       });
   };
 
+  fetchSubscription = () => {
+    axios
+      .get(`channels/${this.state.id}/subscription`)
+      .then(({ data }) => {
+        this.setState({
+          subscription: data.subscription,
+        });
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  };
+
   formatACL = acls => {
     return acls;
   };
@@ -182,8 +184,6 @@ class ChannelSettings extends Component {
   onChangePrivacy = (e, { key: privacy }) => {
     this.setState({ privacy });
   };
-  onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
-  onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
   onChangeViewACL = acls => this.setState({ viewACL: this.formatACL(acls) });
   onChangeManageACL = acls => this.setState({ manageACL: this.formatACL(acls) });
 
@@ -221,7 +221,7 @@ class ChannelSettings extends Component {
     this.setError(null);
     if (this.validate()) {
       const user = this.props.user;
-      const { id, name, description, privacy, viewACL, manageACL, profile, cover } = this.state;
+      const { id, name, description, privacy, viewACL, manageACL } = this.state;
 
       const channel = {
         id,
@@ -231,26 +231,17 @@ class ChannelSettings extends Component {
         viewACL,
         manageACL,
       };
-      const data = new FormData();
-      if (profile && profile.file) {
-        data.append('profile', profile.file);
-      }
-      if (cover && cover.file) {
-        data.append('cover', cover.file);
-      }
-      // Form type
-      data.set('formType', 'edit');
       axios
         .put(`/channels/${id}`, {
           user,
           id,
           channel,
         })
-        .then(response => {
-          return axios.post(`channels/images/${id}`, data, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-        })
+        // .then(response => {
+        //   return axios.post(`channels/images/${id}`, data, {
+        //     headers: { 'Content-Type': 'multipart/form-data' },
+        //   });
+        // })
         .then(() => {
           this.setState({
             done: 'הערוץ התעדכן בהצלחה',
@@ -264,93 +255,113 @@ class ChannelSettings extends Component {
 
   render() {
     const {
+      id,
       name,
       description,
       privacy,
       viewACL,
       manageACL,
-      profile,
-      cover,
       error,
       done,
       personal,
+      subscription,
     } = this.state;
 
     return (
-      <Form onSubmit={this.onSubmit}>
-        {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
-        {done && <SuccessMsg width={1}>{done}</SuccessMsg>}
-        {personal === false ? (
-          <TextField
-            label="שם הערוץ"
-            required
-            placeholder='לדוגמה: אג"ף התקשוב'
-            value={name}
-            onChange={this.onChangeName}
-          />
-        ) : null}
-        <DropdownContainer>
-          <Dropdown
-            required
-            label="גישה"
-            selectedKey={privacy}
-            onChange={this.onChangePrivacy}
-            onRenderTitle={this.onRenderPrivacyOption}
-            onRenderOption={this.onRenderPrivacyOption}
-            placeholder="בחר/י גישה לערוץ"
-            options={[
-              { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
-              { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
-            ]}
-          />
-        </DropdownContainer>
-        {privacy !== 'PUBLIC' ? (
-          <PeoplePicker label="הרשאות צפייה" onChange={this.onChangeViewACL} value={viewACL} />
-        ) : null}
-        {personal === false ? (
-          <PeoplePicker label="הרשאות ניהול" onChange={this.onChangeManageACL} value={manageACL} />
-        ) : null}
-        <TextField
-          label="תיאור"
-          required
-          multiline
-          autoAdjustHeight
-          value={description}
-          onChange={this.onChangeDescription}
-        />
-
-        <Label>בחר תמונת תצוגה:</Label>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Box>
-            <InputButton iconProps={{ iconName: 'Upload' }} text="תמונת פרופיל">
-              <input type="file" accept="image/*" onChange={this.onChangeProfile} />
-            </InputButton>
+      <Box width={0.9}>
+        <Flex>
+          <Box width={0.2} my={3}>
+            {!!subscription && (
+              <Flex flexDirection="column" alignItems="center">
+                <QuotaPlans
+                  displayOnly
+                  plans={{
+                    [subscription.plan.id]: {
+                      ...subscription.plan,
+                    },
+                  }}
+                />
+                <SubDate>
+                  {new Date(subscription.to).getFullYear() -
+                    new Date(subscription.from).getFullYear() >=
+                  10
+                    ? 'ללא הגבלה'
+                    : `${new Date(subscription.to).toLocaleDateString()} - ${new Date(
+                        subscription.from,
+                      ).toLocaleDateString()}`}
+                </SubDate>
+                {!personal && (
+                  <ChangeSubscriptionModal
+                    currentSubscription={subscription}
+                    channelId={id}
+                    onSubmit={this.fetchSubscription}
+                  />
+                )}
+              </Flex>
+            )}
           </Box>
-          <Persona
-            size={PersonaSize.size100}
-            imageUrl={(profile && profile.preview) || '/images/user.svg'}
-          />
-        </Flex>
-
-        <Label>בחר תמונת נושא:</Label>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Box>
-            <InputButton iconProps={{ iconName: 'Upload' }} text="תמונת נושא">
-              <input type="file" accept="image/*" onChange={this.onChangeCover} />
-            </InputButton>
+          <Box mx={2} />
+          <Box my={2} flex="1 0 0">
+            <form onSubmit={this.onSubmit}>
+              {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
+              {done && <SuccessMsg width={1}>{done}</SuccessMsg>}
+              {personal === false ? (
+                <TextField
+                  label="שם הערוץ"
+                  required
+                  placeholder='לדוגמה: אג"ף התקשוב'
+                  value={name}
+                  onChange={this.onChangeName}
+                />
+              ) : null}
+              <DropdownContainer>
+                <Dropdown
+                  required
+                  label="גישה"
+                  selectedKey={privacy}
+                  onChange={this.onChangePrivacy}
+                  onRenderTitle={this.onRenderPrivacyOption}
+                  onRenderOption={this.onRenderPrivacyOption}
+                  placeholder="בחר/י גישה לערוץ"
+                  options={[
+                    { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                    { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
+                  ]}
+                />
+              </DropdownContainer>
+              {privacy !== 'PUBLIC' ? (
+                <PeoplePicker
+                  label="הרשאות צפייה"
+                  onChange={this.onChangeViewACL}
+                  value={viewACL}
+                />
+              ) : null}
+              {personal === false ? (
+                <PeoplePicker
+                  label="הרשאות ניהול"
+                  onChange={this.onChangeManageACL}
+                  value={manageACL}
+                />
+              ) : null}
+              <TextField
+                label="תיאור"
+                required
+                multiline
+                autoAdjustHeight
+                value={description}
+                onChange={this.onChangeDescription}
+              />
+              <Buttons py={2} px={32}>
+                <Flex>
+                  <PrimaryButton text="שמור" onClick={this.onSubmit} />
+                  <Box mx={3} />
+                  <DefaultButton text="אפס" onClick={this.resetForm} />
+                </Flex>
+              </Buttons>
+            </form>
           </Box>
         </Flex>
-        <Box mt={2}>
-          <Image src={cover && cover.preview} coverStyle={ImageCoverStyle.landscape} width={420} />
-        </Box>
-        <Buttons py={2} px={32}>
-          <Flex>
-            <PrimaryButton text="שמור" onClick={this.onSubmit} />
-            <Box mx={3} />
-            <DefaultButton text="אפס" onClick={this.resetForm} />
-          </Flex>
-        </Buttons>
-      </Form>
+      </Box>
     );
   }
 }

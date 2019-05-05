@@ -11,7 +11,7 @@ class StudioAnalytics extends Component {
     const {
       user: { managedChannels, ...user },
     } = this.props;
-    return [user].concat(managedChannels);
+    return [user].concat(managedChannels || []);
   }
 
   render() {

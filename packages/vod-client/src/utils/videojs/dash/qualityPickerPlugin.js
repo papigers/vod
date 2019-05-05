@@ -91,7 +91,6 @@ function qualityPickerPluginDASH() {
       }
 
       if (qualityData[track] && qualityData[track].length > 0) {
-        qualityData[track].forEach(console.log);
         qualityPickerButton = new QualityPickerButton(player, {
           name,
           qualityList: qualityData[track]

@@ -37,7 +37,7 @@ module.exports = {
     password: 'Aa123123',
     scope: 'sub',
     attributes: {
-      user: ['sAMAccountName', 'displayName', 'objectClass'],
+      user: ['sAMAccountName', 'displayName', 'objectClass', 'dn'],
       group: ['dn', 'cn', 'displayName', 'objectClass'],
     },
   },

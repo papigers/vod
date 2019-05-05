@@ -1,37 +1,23 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-import { Image, ImageCoverStyle } from 'office-ui-fabric-react/lib/Image';
+import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import axios from 'utils/axios';
 import PeoplePicker from 'components/PeoplePicker';
+import ChannelCoverImage from 'components/ChannelCoverImage';
+import ChannelProfileImage from 'components/ChannelProfileImage';
 
 const DropdownContainer = styled.div`
   max-width: 250px;
-`;
-
-const InputButton = styled(DefaultButton)`
-  position: relative;
-
-  input[type='file'] {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    position: absolute;
-    width: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
 `;
 
 const Form = styled.form`
@@ -88,12 +74,13 @@ class NewChannelForm extends Component {
       name: '',
       id: '',
       description: '',
-      privacy: 'public',
+      privacy: 'PUBLIC',
       viewACL: [],
       manageACL: [],
       profile: null,
       cover: null,
       error: null,
+      loading: false,
     };
   }
 
@@ -145,13 +132,15 @@ class NewChannelForm extends Component {
   onChangeId = ({ target }) => this.setState({ id: target.value });
   onChangeDescription = ({ target }) => this.setState({ description: target.value });
   onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
-  onChangeProfile = ({ target }) => this.readFileIntoState(target, 'profile');
-  onChangeCover = ({ target }) => this.readFileIntoState(target, 'cover');
+  onChangeProfile = profile => this.setState({ profile });
+  onMoveProfile = position => this.setState({ profilePosition: position });
+  onChangeCover = cover => this.setState({ cover });
+  onMoveCover = position => this.setState({ coverPosition: position });
   onChangeViewACL = acls => this.setState({ viewACL: this.formatACL(acls, 'view') });
   onChangeManageACL = acls => this.setState({ manageACL: this.formatACL(acls, 'manage') });
 
   setError(error) {
-    this.setState({ error }, () => {
+    this.setState({ error, loading: false }, () => {
       if (error) {
         ReactDOM.findDOMNode(this).parentNode.scrollTo({
           top: 0,
@@ -182,15 +171,24 @@ class NewChannelForm extends Component {
 
   onSubmit = () => {
     this.setError(null);
+    this.setState({ loading: true });
     if (this.validate()) {
       const { name, id, profile, cover, privacy, description, viewACL, manageACL } = this.state;
 
       const data = new FormData();
-      if (profile && profile.file) {
-        data.append('profile', profile.file);
+      let filePromise = Promise.resolve();
+      let workflowId = '';
+      if (profile) {
+        filePromise = filePromise
+          .then(() => fetch(profile))
+          .then(img => img.blob())
+          .then(blob => data.append('profile', blob));
       }
-      if (cover && cover.file) {
-        data.append('cover', cover.file);
+      if (cover) {
+        filePromise = filePromise
+          .then(() => fetch(cover))
+          .then(img => img.blob())
+          .then(blob => data.append('cover', blob));
       }
       // Form type
       data.set('formType', 'create');
@@ -203,6 +201,10 @@ class NewChannelForm extends Component {
           manageACL: this.formatACL(manageACL, 'manage'),
           privacy,
         })
+        .then(res => {
+          workflowId = res.data;
+          return filePromise;
+        })
         .then(() => {
           return axios.post(`channels/images/${id}`, data, {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -214,11 +216,14 @@ class NewChannelForm extends Component {
             if (this.props.onSubmit) {
               this.props.onSubmit();
             }
-            this.props.history.push(`/channel/${id}`);
+            this.props.history.push(`/mgmt/workflows/${workflowId}`);
           }, 3000);
         })
         .catch(error => {
           console.error(error);
+          if (error.response && error.response.data && error.response.data.error) {
+            return this.setError(error.response.data.error);
+          }
           this.setError('עלתה שגיאה ביצירת הערוץ');
         });
     }
@@ -231,6 +236,16 @@ class NewChannelForm extends Component {
     };
   }
 
+  onRenderCoin = props => (
+    <ChannelProfileImage
+      editable
+      size={props.size}
+      src={props.imageUrl}
+      onFileChange={this.onChangeProfile}
+      onEditImage={this.onMoveProfile}
+    />
+  );
+
   render() {
     const {
       name,
@@ -242,80 +257,100 @@ class NewChannelForm extends Component {
       error,
       viewACL,
       manageACL,
+      loading,
     } = this.state;
 
     return (
       <Form onSubmit={this.onSubmit}>
-        {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
-        <TextField
-          label="מזהה הערוץ"
-          required
-          placeholder="לדוגמה: tikshuv"
-          value={id}
-          onChange={this.onChangeId}
-        />
-        <TextField
-          label="שם הערוץ"
-          required
-          placeholder='לדוגמה: אג"ף התקשוב'
-          value={name}
-          onChange={this.onChangeName}
-        />
-        <DropdownContainer>
-          <Dropdown
-            required
-            label="גישה"
-            selectedKey={privacy}
-            onChange={this.onChangePrivacy}
-            onRenderTitle={this.onRenderPrivacyOption}
-            onRenderOption={this.onRenderPrivacyOption}
-            placeholder="בחר/י גישה לערוץ"
-            options={[
-              { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
-              { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
-            ]}
-          />
-        </DropdownContainer>
-        {privacy !== 'PUBLIC' ? (
-          <PeoplePicker label="הרשאות צפייה" onChange={this.onChangeViewACL} value={viewACL} />
-        ) : null}
-        <PeoplePicker label="הרשאות ניהול" onChange={this.onChangeManageACL} value={manageACL} />
-        <TextField
-          label="תיאור"
-          required
-          multiline
-          autoAdjustHeight
-          value={description}
-          onChange={this.onChangeDescription}
-        />
+        <Flex>
+          <Box flex="3 1 0">
+            {error && <ErrorMsg width={1}>{error}</ErrorMsg>}
+            <Box pb={2} width="100%">
+              <ChannelCoverImage
+                src={cover}
+                editable
+                onFileChange={this.onChangeCover}
+                onEditImage={this.onMoveCover}
+              />
+            </Box>
+            <Flex>
+              <Box>
+                <TextField
+                  label="מזהה הערוץ"
+                  required
+                  placeholder="לדוגמה: tikshuv"
+                  value={id}
+                  onChange={this.onChangeId}
+                />
+                <TextField
+                  label="שם הערוץ"
+                  required
+                  placeholder='לדוגמה: אג"ף התקשוב'
+                  value={name}
+                  onChange={this.onChangeName}
+                />
+                <TextField
+                  label="תיאור"
+                  required
+                  multiline
+                  autoAdjustHeight
+                  value={description}
+                  onChange={this.onChangeDescription}
+                />
+              </Box>
+              <Box mx={3} />
+              <Box>
+                <DropdownContainer>
+                  <Dropdown
+                    required
+                    label="גישה"
+                    selectedKey={privacy}
+                    onChange={this.onChangePrivacy}
+                    onRenderTitle={this.onRenderPrivacyOption}
+                    onRenderOption={this.onRenderPrivacyOption}
+                    placeholder="בחר/י גישה לערוץ"
+                    options={[
+                      { key: 'PUBLIC', text: 'ציבורי', data: { icon: 'Group' } },
+                      { key: 'PRIVATE', text: 'פרטי', data: { icon: 'Contact' } },
+                    ]}
+                  />
+                </DropdownContainer>
+                {privacy !== 'PUBLIC' ? (
+                  <PeoplePicker
+                    label="הרשאות צפייה"
+                    onChange={this.onChangeViewACL}
+                    value={viewACL}
+                  />
+                ) : null}
+                <PeoplePicker
+                  label="הרשאות ניהול"
+                  onChange={this.onChangeManageACL}
+                  value={manageACL}
+                />
+              </Box>
+              <Box mx={3} />
 
-        <Label>בחר תמונת תצוגה:</Label>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Box>
-            <InputButton iconProps={{ iconName: 'Upload' }} text="תמונת פרופיל">
-              <input type="file" accept="image/*" onChange={this.onChangeProfile} />
-            </InputButton>
+              <Persona
+                imageUrl={profile || '/images/user.svg'}
+                primaryText={name}
+                secondaryText={description}
+                size={PersonaSize.size72}
+                onRenderCoin={this.onRenderCoin}
+              />
+            </Flex>
           </Box>
-          <Persona
-            size={PersonaSize.size48}
-            imageUrl={(profile && profile.preview) || '/images/user.svg'}
-          />
+          <Box mx={2} />
+          <Box flex="0 1 0" />
         </Flex>
-
-        <Label>בחר תמונת נושא:</Label>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Box>
-            <InputButton iconProps={{ iconName: 'Upload' }} text="תמונת נושא">
-              <input type="file" accept="image/*" onChange={this.onChangeCover} />
-            </InputButton>
-          </Box>
-        </Flex>
-        <Box mt={2}>
-          <Image src={cover && cover.preview} coverStyle={ImageCoverStyle.landscape} width={420} />
-        </Box>
         <Buttons py={2} px={32}>
           <Flex>
-            <PrimaryButton text="צור ערוץ" onClick={this.onSubmit} />
+            {loading ? (
+              <Fragment>
+                <Spinner size={SpinnerSize.large} />
+                <Box mx={3} />
+              </Fragment>
+            ) : null}
+            <PrimaryButton disabled={loading} text="צור ערוץ" onClick={this.onSubmit} />
             <Box mx={3} />
             <DefaultButton text="ביטול" onClick={this.props.onDismiss} />
           </Flex>

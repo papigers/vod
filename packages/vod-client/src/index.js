@@ -1,18 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import createHistory from 'history/createBrowserHistory';
 import { Route } from 'react-router-dom';
+import createHistory from 'history/createBrowserHistory';
 import { ConnectedRouter } from 'react-router-redux';
 import { ScrollContext } from 'react-router-scroll-4';
 
 import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
 import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
 
-import App from './containers/App';
-import AuthRequired from './containers/AuthRequired';
 import ThemeProvider from './theme';
-
+import Root from 'containers/Root';
 import configureStore from './configureStore';
 
 import 'video.js/dist/video-js.min.css';
@@ -23,20 +21,14 @@ initializeIcons(`${window.location.origin}/fonts/`);
 const history = createHistory();
 const store = configureStore({}, history);
 
-function render(App) {
+function render(Root) {
   ReactDOM.render(
     <Provider store={store}>
       <ConnectedRouter history={history}>
         <ScrollContext>
           <ThemeProvider>
             <Fabric>
-              <Route
-                render={props => (
-                  <AuthRequired>
-                    <App {...props} />
-                  </AuthRequired>
-                )}
-              />
+              <Route component={Root} />
             </Fabric>
           </ThemeProvider>
         </ScrollContext>
@@ -46,13 +38,13 @@ function render(App) {
   );
 }
 
-render(App);
+render(Root);
 
 if (process.env.NODE_ENV !== 'production') {
   if (module.hot) {
-    module.hot.accept('./containers/App', () => {
-      const NextApp = require('./containers/App').default;
-      render(NextApp);
+    module.hot.accept('containers/Root', () => {
+      const NextRoot = require('containers/Root').default;
+      render(NextRoot);
     });
   }
 }

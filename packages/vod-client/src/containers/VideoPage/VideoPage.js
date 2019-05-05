@@ -14,7 +14,7 @@ import {
 import { Label } from 'office-ui-fabric-react/lib/Label';
 
 import createReduxContainer from 'utils/createReduxContainer';
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 
 // import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';

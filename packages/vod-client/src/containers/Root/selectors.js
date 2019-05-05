@@ -7,6 +7,7 @@ const makeSelectUser = () =>
     selectUser,
     state => state.get('user'),
   );
+
 const makeSelectFollowedChannels = () =>
   createSelector(
     selectUser,
