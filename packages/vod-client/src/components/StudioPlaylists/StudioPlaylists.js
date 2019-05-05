@@ -12,7 +12,7 @@ import { TooltipHost } from 'office-ui-fabric-react/lib/Tooltip';
 import playlistsColumns from './columns';
 import VideoThumbnail from 'components/VideoThumbnail';
 import Modal from 'components/Modal';
-// import DeleteForm from './DeleteForm';
+import DeleteForm from './DeleteForm';
 import PlaylistEditForm from 'components/PlaylistEditForm';
 import axios from 'utils/axios';
 
@@ -183,22 +183,21 @@ class StudioPlaylists extends Component {
   renderModal() {
     const { editType, selectionDetails } = this.state;
 
-    const { onPlaylistUpdate } = this.props;
-
     switch (editType) {
       case 'delete':
-        return true;
-      // <DeleteForm
-      //   videos={selectionDetails}
-      //   onClose={this.changeModalState}
-      //   onSubmit={onDelete}
-      // />
+        return (
+          <DeleteForm
+            playlist={selectionDetails[0]}
+            onClose={this.changeModalState}
+            onSubmit={this.deletePlaylist}
+          />
+        );
       case 'editPlaylist':
         return (
           <PlaylistEditForm
             playlist={selectionDetails[0]}
             onClose={this.changeModalState}
-            onSubmit={onPlaylistUpdate}
+            onSubmit={this.updatePlaylist}
           />
         );
       default:

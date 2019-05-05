@@ -17,6 +17,7 @@ import UploadEdit from 'containers/UploadEdit';
 import ChannelPage from 'containers/ChannelPage';
 import VideoPreloader from 'containers/VideoPreloader';
 import StudioPage from 'containers/StudioPage';
+import PlaylistPage from 'containers/PlaylistPage';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -89,6 +90,7 @@ class App extends Component {
               <Route exact path="/upload/edit" component={UploadEdit} />
               <Route exact path="/results" component={Results} />
               <Route exact path="/studio" component={StudioPage} />
+              <Route exact path="/playlist" component={PlaylistPage} />
               <Redirect to="/" />
             </Switch>
           </Content>

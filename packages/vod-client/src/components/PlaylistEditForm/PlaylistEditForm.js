@@ -169,7 +169,7 @@ class PlaylistEditForm extends Component {
         name: video.name,
         stateDisplay: this.getPlaylistState(video.state),
         privacyDisplay: video.privacy === 'PUBLIC' ? 'ציבורי' : 'פרטי',
-        channelName: video.channelName,
+        channelName: video.channel.name,
       };
     });
   };
@@ -223,7 +223,7 @@ class PlaylistEditForm extends Component {
     this.setState({ videos: videos });
   };
 
-  onSubmit() {
+  onSubmit = () => {
     const { onSubmit, onClose } = this.props;
     const { id, name, description, videos, state } = this.state;
     const playlist = { id, name, description, videos, state };
@@ -242,7 +242,7 @@ class PlaylistEditForm extends Component {
           loading: false,
         });
       });
-  }
+  };
 
   render() {
     const { name, description, videos, state, selection, error, loading } = this.state;
@@ -319,7 +319,7 @@ class PlaylistEditForm extends Component {
                 primary
                 disabled={loading}
                 iconProps={{ iconName: 'Save' }}
-                onClick={() => this.onSubmit()}
+                onClick={this.onSubmit}
               />
               <FormButton
                 text="בטל"

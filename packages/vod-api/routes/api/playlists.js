@@ -6,12 +6,9 @@ router.get('/managed', function(req, res) {
   db.playlists
     .getManagedPlaylists(req.user)
     .then(function(playlists) {
-      if (playlists && playlists.length) {
+      if (playlists) {
         return res.json(playlists);
       }
-      return res.status(404).json({
-        error: 'There are no playlists',
-      });
     })
     .catch(function(err) {
       console.error(err);
@@ -24,9 +21,9 @@ router.get('/managed', function(req, res) {
 router.get('/:id', function(req, res) {
   db.playlists
     .getPlaylist(req.user, req.params.id)
-    .then(function(playlist) {
-      if (playlist && playlist.length === 1) {
-        return res.json(playlist[0]);
+    .then(function(playlists) {
+      if (playlists && playlists[0]) {
+        return res.json(playlists[0]);
       }
       return res.status(404).json({
         error: "There's no such playlist",
@@ -40,19 +37,35 @@ router.get('/:id', function(req, res) {
     });
 });
 
+router.get('/channel/:id', function(req, res) {
+  db.playlists
+    .getPlaylistsByChannel(req.user, req.params.id)
+    .then(function(playlists) {
+      if (playlists) {
+        return res.json(playlists);
+      }
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).json({
+        error: "Couldn't get channel playlists",
+      });
+    });
+});
+
 router.post('/', function(req, res) {
   db.playlists
     .createPlaylist(req.user, req.body)
-    .then(function(result) {
-      if (result && result.id) {
-        return res.status(201).json({
-          playlistId: result.id,
-        });
+    .then(function(results) {
+      if (results[0] && results[0].rowCount) {
+        return res.sendStatus(201);
       }
-      return res.sendStatus(404);
+      return res.sendStatus(401);
     })
     .catch(function(err) {
-      return res.status(err.code).json(err.code);
+      return res.status(500).json({
+        error: 'Failed to create new playlist',
+      });
     });
 });
 
@@ -67,9 +80,6 @@ router.put('/:id/add/:videoId', function(req, res) {
     })
     .catch(function(err) {
       console.error(err);
-      if (err.code === 200) {
-        return res.status(err.code).json(err.code);
-      }
       return res.status(500).json({
         error: 'Failed to add video to playlist',
       });
@@ -87,9 +97,6 @@ router.put('/:id/remove/:videoId', function(req, res) {
     })
     .catch(function(err) {
       console.error(err);
-      if (err.code === 200) {
-        return res.status(err.code).json(err.code);
-      }
       return res.status(500).json({
         error: 'Failed to remove video from playlist',
       });
@@ -114,7 +121,7 @@ router.put('/:id', function(req, res) {
 });
 
 router.delete('/:id', function(req, res) {
-  db.videos
+  db.playlists
     .deletePlaylist(req.user, req.params.id)
     .then(function(deleted) {
       if (deleted) {

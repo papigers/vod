@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
@@ -12,18 +12,19 @@ import {
   ShimmerElementsGroup,
 } from 'office-ui-fabric-react/lib/Shimmer';
 import { Label } from 'office-ui-fabric-react/lib/Label';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 import createReduxContainer from 'utils/createReduxContainer';
 import { makeSelectUser } from 'containers/Root/selectors';
 
-// import Plyr from 'components/ThemedPlyr';
 import Player from 'components/ThemedPlayer';
 import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 import ChannelRow from 'containers/ChannelRow';
+import PlaylistPanel from 'components/PlaylistPanel';
+import SaveToPlaylistsCallout from 'components/SaveToPlaylistsCallout';
 
 import axios from 'utils/axios';
-import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 const VideoContainer = styled.div`
   display: flex;
@@ -100,38 +101,88 @@ class VideoPage extends Component {
       error: null,
       related: [],
       loadingRelated: true,
+      loadingPlaylist: true,
       errorRelated: null,
       video: null,
       likeDelta: 0,
       viewed: false,
+      playlist: null,
+      prevVideoId: null,
+      nextVideoId: null,
+      isCalloutVisible: false,
     };
+    this.addToPlaylistsRef = React.createRef();
   }
 
   static getDerivedStateFromProps(props, state) {
-    const propsId = qs.parse(props.location.search).v;
-    if (!state.videoId || state.videoId !== propsId) {
-      return {
-        videoId: propsId,
+    const videoId = qs.parse(props.location.search).v;
+    const playlistId = qs.parse(props.location.search).list;
+
+    let newState = {};
+
+    if (!state.videoId || state.videoId !== videoId) {
+      newState = {
+        ...newState,
+        videoId: videoId,
+        playlistId,
+        isCalloutVisible: false,
+        currVideoIndex: -1,
         video: null,
         related: [],
         loading: true,
         error: null,
         loadingRelated: true,
+        loadingPlaylist: true,
         errorRelated: null,
       };
+    }
+    if (!state.playlistId || state.playlistId !== playlistId) {
+      newState = {
+        ...newState,
+        playlist: null,
+        nextVideoId: null,
+        prevVideoId: null,
+        loading: true,
+        error: null,
+      };
+    }
+    if (Object.keys(newState).length) {
+      return newState;
     }
     return null;
   }
 
   componentDidMount() {
     this.fetchVideo();
+    this.fetchVideoPlaylist();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.videoId !== this.state.videoId) {
       this.fetchVideo();
     }
+    if (prevState.playlistId !== this.state.playlistId) {
+      this.fetchVideoPlaylist();
+    }
   }
+
+  updateNextPrevVideos = () => {
+    const { playlist, video } = this.state;
+
+    if (playlist && playlist.videos.length && video && video.id) {
+      const currVideoIndex = playlist.videos.findIndex(currvideo => currvideo.id === video.id);
+      if (currVideoIndex !== this.state.currVideoIndex) {
+        this.setState({
+          currVideoIndex: currVideoIndex,
+          nextVideoId:
+            currVideoIndex < playlist.videos.length - 1
+              ? playlist.videos[currVideoIndex + 1].id
+              : null,
+          prevVideoId: currVideoIndex > 0 ? playlist.videos[currVideoIndex - 1].id : null,
+        });
+      }
+    }
+  };
 
   fetchVideo() {
     axios
@@ -142,6 +193,9 @@ class VideoPage extends Component {
           loading: false,
           error: null,
         });
+      })
+      .then(() => {
+        this.updateNextPrevVideos();
       })
       .catch(err => {
         // TODO: do something
@@ -170,11 +224,66 @@ class VideoPage extends Component {
       });
   }
 
-  onRenderItem(item) {
+  fetchVideoPlaylist() {
+    if (this.state.playlistId) {
+      axios
+        .get(`/playlists/${this.state.playlistId}`)
+        .then(({ data }) => {
+          this.setState({
+            playlist: data,
+            loadingPlaylist: false,
+            error: null,
+          });
+        })
+        .then(() => {
+          this.updateNextPrevVideos();
+        })
+        .catch(err => {
+          // TODO: do something
+          this.setState({
+            playlist: null,
+            loadingPlaylist: false,
+            error: 'הפלייליסט אינו זמין',
+          });
+        });
+    }
+  }
+
+  onAddToPlaylistsClicked = () => {
+    this.setState({
+      isCalloutVisible: !this.state.isCalloutVisible,
+    });
+  };
+
+  onRenderItem = item => {
     if (item.onRender) {
       return item.onRender(item);
     }
     const { icon, subMenuProps, name, beforeText, ...props } = item;
+
+    if (item.key === 'Save') {
+      return (
+        <Fragment>
+          <div ref={this.addToPlaylistsRef}>
+            <VideoButton
+              iconProps={{ iconName: icon }}
+              menuProps={subMenuProps}
+              text={name}
+              beforeText={beforeText !== undefined ? `${beforeText}` : undefined}
+              {...props}
+            />
+          </div>
+          {this.state.isCalloutVisible ? (
+            <SaveToPlaylistsCallout
+              StyledButton={VideoButton}
+              addToPlaylistsRef={this.addToPlaylistsRef}
+              video={this.state.video}
+              onDismiss={this.onAddToPlaylistsClicked}
+            />
+          ) : null}
+        </Fragment>
+      );
+    }
     return (
       <VideoButton
         iconProps={{ iconName: icon }}
@@ -184,7 +293,7 @@ class VideoPage extends Component {
         {...props}
       />
     );
-  }
+  };
 
   fetchComments = before => axios.get(`/videos/${this.state.videoId}/comments?before=${before}`);
 
@@ -212,9 +321,36 @@ class VideoPage extends Component {
     }
   };
 
+  renderRedirect = buttonClicked => {
+    const { nextVideoId, prevVideoId, playlist } = this.state;
+
+    switch (buttonClicked) {
+      case 'Previous':
+        if (prevVideoId) {
+          this.props.history.push(`/watch?v=${prevVideoId}&list=${playlist.id}`);
+        }
+        break;
+      case 'Next':
+      default:
+        if (nextVideoId) {
+          this.props.history.push(`/watch?v=${nextVideoId}&list=${playlist.id}`);
+        }
+        break;
+    }
+  };
+
   render() {
-    const { video, error, likeDelta } = this.state;
+    const {
+      nextVideoId,
+      prevVideoId,
+      playlist,
+      video,
+      error,
+      likeDelta,
+      currVideoIndex,
+    } = this.state;
     const { user } = this.props;
+
     let likeCount = 0;
     let userLikes = false;
     if (video) {
@@ -233,6 +369,10 @@ class VideoPage extends Component {
                     videoId={video && video.id}
                     error={error}
                     onTimeUpdate={this.onTimeUpdate}
+                    nextVideoId={nextVideoId}
+                    prevVideoId={prevVideoId}
+                    playlistId={playlist && playlist.id}
+                    renderRedirect={this.renderRedirect}
                   />
                   <Box mt={20}>
                     <Shimmer
@@ -273,6 +413,12 @@ class VideoPage extends Component {
                                 name: 'שתף',
                                 icon: 'Share',
                                 onClick: console.log,
+                              },
+                              {
+                                key: 'Save',
+                                name: 'שמור',
+                                icon: 'AddNotes',
+                                onClick: this.onAddToPlaylistsClicked,
                               },
                             ]}
                             onRenderOverflowButton={this.onRenderOverflowButton}
@@ -326,6 +472,14 @@ class VideoPage extends Component {
               </Box>
               <Box mx={2} />
               <Box width={[1, 1, 1, 0.35]}>
+                {playlist && playlist.videos.length && currVideoIndex >= 0 ? (
+                  <PlaylistPanel
+                    playlist={playlist}
+                    currVideoIndex={currVideoIndex}
+                    loading={this.state.loadingPlaylist}
+                    currentVideo={video && video.id}
+                  />
+                ) : null}
                 <VideoList
                   videos={this.state.related}
                   loading={this.state.loadingRelated}

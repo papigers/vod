@@ -62,7 +62,9 @@ module.exports = function(db) {
           `playlistVideo.name as _videos__name`,
           `playlistVideo.description as _videos__description`,
           `playlistVideo.state as _videos__state`,
-          `videoChannel.name as _videos__channelName`,
+          `videoChannel.id as _videos__channel_id`,
+          `videoChannel.name as _videos__channel_name`,
+          `videoChannel.personal as _videos__channel_personal`,
           `${db.playlistVideos.table}.position as _videos__position`,
           `${db.channels.table}.id as _channel_id`,
           `${db.channels.table}.name as _channel_name`,
@@ -87,11 +89,8 @@ module.exports = function(db) {
           `playlistVideo.channelId`,
           `videoChannel.id`,
         )
-        .orderBy(`${db.channels.table}.personal`, 'desc')
-        .orderBy(`${playlists.table}.name`, 'desc')
-        .orderBy(`${playlists.table}.createdAt`, 'desc')
-        .orderBy('_videos__position')
-        .modify(db.channels.authorizedViewSubquery, user),
+        .orderBy(`${playlists.table}.updatedAt`, 'desc')
+        .modify(db.channels.authorizedManageSubquery, user),
       true,
     );
   };
@@ -108,7 +107,9 @@ module.exports = function(db) {
           `playlistVideo.name as _videos__name`,
           `playlistVideo.description as _videos__description`,
           `playlistVideo.state as _videos__state`,
-          `videoChannel.name as _videos__channelName`,
+          `videoChannel.id as _videos__channel_id`,
+          `videoChannel.name as _videos__channel_name`,
+          `videoChannel.personal as _videos__channel_personal`,
           `${db.playlistVideos.table}.position as _videos__position`,
           `${db.channels.table}.id as _channel_id`,
           `${db.channels.table}.name as _channel_name`,
@@ -117,6 +118,7 @@ module.exports = function(db) {
           `${playlists.table}.updatedAt as _updatedAt`,
         )
         .from(playlists.table)
+        .whereNot(`${playlists.table}.state`, 'DRAFT')
         .where(`${playlists.table}.id`, id)
         .leftJoin(
           db.playlistVideos.table,
@@ -134,10 +136,53 @@ module.exports = function(db) {
           `playlistVideo.channelId`,
           `videoChannel.id`,
         )
-        .orderBy(`${db.channels.table}.personal`, 'desc')
-        .orderBy(`${playlists.table}.name`, 'desc')
-        .orderBy(`${playlists.table}.createdAt`, 'desc')
-        .orderBy('_videos__position')
+        .modify(db.channels.authorizedViewSubquery, user),
+      true,
+    );
+  };
+
+  playlists.getPlaylistsByChannel = function(user, channelId) {
+    return db.knexnest(
+      db.knex
+        .select(
+          `${playlists.table}.id as _id`,
+          `${playlists.table}.name as _name`,
+          `${playlists.table}.description as _description`,
+          `${playlists.table}.state as _state`,
+          `playlistVideo.id as _videos__id`,
+          `playlistVideo.name as _videos__name`,
+          `playlistVideo.description as _videos__description`,
+          `playlistVideo.state as _videos__state`,
+          `videoChannel.id as _videos__channel_id`,
+          `videoChannel.name as _videos__channel_name`,
+          `videoChannel.personal as _videos__channel_personal`,
+          `${db.playlistVideos.table}.position as _videos__position`,
+          `${db.channels.table}.id as _channel_id`,
+          `${db.channels.table}.name as _channel_name`,
+          `${db.channels.table}.personal as _channel_personal`,
+          `${playlists.table}.createdAt as _createdAt`,
+          `${playlists.table}.updatedAt as _updatedAt`,
+        )
+        .from(playlists.table)
+        .whereNot(`${playlists.table}.state`, 'DRAFT')
+        .andWhere(`${playlists.table}.channelId`, channelId)
+        .leftJoin(
+          db.playlistVideos.table,
+          `${playlists.table}.id`,
+          `${db.playlistVideos.table}.playlistId`,
+        )
+        .leftJoin(`${db.channels.table}`, `${playlists.table}.channelId`, `${db.channels.table}.id`)
+        .leftJoin(
+          `${db.videos.table} as playlistVideo`,
+          `${db.playlistVideos.table}.videoId`,
+          `playlistVideo.id`,
+        )
+        .leftJoin(
+          `${db.channels.table} as videoChannel`,
+          `playlistVideo.channelId`,
+          `videoChannel.id`,
+        )
+        .orderBy(`${playlists.table}.updatedAt`, 'desc')
         .modify(db.channels.authorizedViewSubquery, user),
       true,
     );
@@ -150,7 +195,7 @@ module.exports = function(db) {
         .select()
         .from(db.channels.table)
         .where(`${db.channels.table}.id`, playlist.channelId)
-        .modify(db.channels.authorizedViewSubquery, user)
+        .modify(db.channels.authorizedManageSubquery, user)
         .then(rows => {
           if (rows.length > 0) {
             return trx(playlists.table)
@@ -263,6 +308,14 @@ module.exports = function(db) {
           });
         }
       })
+      .then(function() {
+        return db
+          .knex(playlists.table)
+          .where('id', id)
+          .update({
+            id: id,
+          });
+      })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);
       });
@@ -301,6 +354,14 @@ module.exports = function(db) {
             .del();
         }
       })
+      .then(function() {
+        return db
+          .knex(playlists.table)
+          .where('id', id)
+          .update({
+            id: id,
+          });
+      })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);
       });
@@ -308,10 +369,22 @@ module.exports = function(db) {
 
   playlists.deletePlaylist = function(user, id) {
     return db
-      .knex(playlists.table)
-      .where('id', id)
-      .modify(db.channels.authorizedManageSubquery, user)
-      .del()
+      .knexnest(
+        db.knex
+          .select(`${playlists.table}.id as _id`, `${db.channels.table}.id as _channelId`)
+          .from(playlists.table)
+          .where(`${playlists.table}.id`, id)
+          .leftJoin(db.channels.table, `${db.channels.table}.id`, `${playlists.table}.channelId`)
+          .modify(db.channels.authorizedManageSubquery, user),
+      )
+      .then(function(rows) {
+        if (rows && rows.length) {
+          return db
+            .knex(playlists.table)
+            .where('id', id)
+            .del();
+        }
+      })
       .catch(function(err) {
         return new PlaylistError(err.message, err.code);
       });

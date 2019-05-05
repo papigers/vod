@@ -510,6 +510,30 @@ module.exports = function(db) {
     );
   };
 
+  videos.getVideoPlaylists = function(user, videoId) {
+    return db.knexnest(
+      db.knex
+        .select(
+          `${db.playlistVideos.table}.playlistId as _id`,
+          `${db.playlists.table}.name as _name`,
+          `${db.playlists.table}.description as _description`,
+          `${db.playlists.table}.updatedAt as _updatedAt`,
+          `${db.channels.table}.id as _channel_id`,
+          `${db.channels.table}.name as _channel_name`,
+        )
+        .from(db.playlistVideos.table)
+        .where(`${db.playlistVideos.table}.videoId`, videoId)
+        .leftJoin(
+          db.playlists.table,
+          `${db.playlistVideos.table}.playlistId`,
+          `${db.playlists.table}.id`,
+        )
+        .leftJoin(db.channels.table, `${db.channels.table}.id`, `${db.playlists.table}.channelId`)
+        .modify(db.channels.authorizedManageSubquery, user),
+      true,
+    );
+  };
+
   videos.getVideo = function(user, videoId) {
     return db.knexnest(
       db.knex
