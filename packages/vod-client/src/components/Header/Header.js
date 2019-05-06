@@ -360,19 +360,6 @@ class Header extends Component {
         itemType: ContextualMenuItemType.Divider,
       },
       {
-        key: 'manage',
-        to: '/mgmt',
-        text: 'ניהול',
-        onRender: this.renderSubMenuLink,
-        iconProps: {
-          iconName: 'AccountManagement',
-        },
-      },
-      {
-        key: 'divider_2',
-        itemType: ContextualMenuItemType.Divider,
-      },
-      {
         key: 'createChannel',
         to: '/channel/new',
         onClick: toggleChannelModalOpen,
