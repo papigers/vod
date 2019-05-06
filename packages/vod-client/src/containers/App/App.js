@@ -35,11 +35,11 @@ const Container = styled.div`
 const Content = styled.div`
   margin-right: ${({ addSidebarMargin }) => (addSidebarMargin ? '240px' : 0)};
   flex-grow: 1;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 50px);
   transition: margin 0.1s ease-in-out;
-  margin-top: 64px;
+  margin-top: 50px;
   overflow-y: auto;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 50px);
 `;
 
 class App extends Component {

@@ -2,13 +2,11 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { transparentize } from 'polished';
 import { Link } from 'react-router-dom';
-import { Flex } from 'grid-styled';
 
 import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox';
 import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
-import { CommandBarButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { CommandBarButton } from 'office-ui-fabric-react/lib/Button';
 import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-import { Callout } from 'office-ui-fabric-react/lib/Callout';
 
 import HeaderLogo from 'components/MgmtLogo';
 import { ThemeContext } from 'theme';
@@ -152,36 +150,6 @@ const HeaderButton = styled.div`
   }
 `;
 
-const WaffleButton = styled(PrimaryButton)`
-  width: 100px;
-  height: 100px;
-  margin: 8px 4px;
-
-  &:first-child {
-    margin-right: 8px;
-  }
-
-  &:last-child {
-    margin-left: 8px;
-  }
-
-  .ms-Button-flexContainer {
-    flex-direction: column;
-
-    .ms-Button-icon {
-      flex-grow: 1;
-      font-size: 38px;
-      line-height: 38px;
-      display: flex;
-      align-items: center;
-    }
-
-    .ms-Button-textContainer {
-      flex-grow: 0.2;
-    }
-  }
-`;
-
 export default class Header extends Component {
   constructor() {
     super();
@@ -266,26 +234,7 @@ export default class Header extends Component {
     return (
       <HeaderContainer>
         <HeaderGroup>
-          <HeaderLogo ref={this.calloutRef} toggleCallout={this.toggleCallout} />
-          {this.state.calloutOpen ? (
-            <Callout
-              target={this.calloutRef.current}
-              onDismiss={this.toggleCallout}
-              gapSpace={0}
-              setInitialFocus
-              beakWidth={10}
-              minPagePadding={26}
-            >
-              <Flex>
-                <Link to="/">
-                  <WaffleButton iconProps={{ iconName: 'MSNVideosSolid' }}>האתר הראשי</WaffleButton>
-                </Link>
-                <Link to="/studio">
-                  <WaffleButton iconProps={{ iconName: 'MyMoviesTV' }}>סטודיו</WaffleButton>
-                </Link>
-              </Flex>
-            </Callout>
-          ) : null}
+          <HeaderLogo to="/mgmt" ref={this.calloutRef} toggleCallout={this.toggleCallout} />
         </HeaderGroup>
         <SearchGroup>
           <StyledSearchBox placeholder="חיפוש" onSearch={this.onSearch} />

@@ -79,12 +79,6 @@ const VideoButton = styled(DefaultButton)`
   }
 `;
 
-const TagsContainer = styled(Box)`
-  .ms-Label i {
-    color: ${({ theme }) => theme.palette.themePrimary};
-  }
-`;
-
 const VideoTag = styled.span`
   background: ${({ theme }) => theme.palette.neutralLight};
   border-radius: 4px;
@@ -142,6 +136,12 @@ const NextVideoButton = styled(IconButton)`
   i {
     font-weight: bold;
     font-size: 2.2em;
+  }
+`;
+
+const TagsContainer = styled(Box)`
+  .ms-Label i {
+    color: ${({ theme }) => theme.palette.themePrimary};
   }
 `;
 

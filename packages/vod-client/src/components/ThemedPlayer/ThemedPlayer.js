@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
 import { darken, rgba, lighten } from 'polished';
-import { Flex } from 'grid-styled';
 import videojs from 'video.js';
 
 import { withPreload } from 'containers/VideoPreloader';
 
 const StyledVideoContainer = styled.div`
   position: relative;
+
   --fg-color: #fff;
   --bg-color: ${({ theme }) => theme.palette.themePrimary};
 

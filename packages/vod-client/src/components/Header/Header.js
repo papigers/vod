@@ -14,12 +14,12 @@ import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { TooltipHost, Tooltip, DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 
-import HeaderLogo from 'components/HeaderLogo';
+import HeaderLogo from 'components/MgmtLogo';
 import NotificationsCallout from 'containers/NotificationsCallout';
 import { ThemeContext } from 'theme';
 
 const HeaderContainer = styled.div`
-  padding: 12px 10px;
+  height: 50px;
   box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@ const HeaderContainer = styled.div`
   left: 0;
   width: 100%;
   background-color: ${({ theme }) =>
-    theme.name === 'light' ? theme.palette.bodyBackground : theme.palette.neutralLighterAlt};
+    theme.name === 'light' ? theme.palette.black : theme.palette.neutralLighterAlt};
 `;
 
 const HeaderGroup = styled.div`
@@ -39,6 +39,7 @@ const HeaderGroup = styled.div`
   justify-content: space-between;
   flex-shrink: 0;
   margin: 0 12px;
+  height: 100%;
 
   &:first-child {
     margin-right: 0;
@@ -59,8 +60,8 @@ const SearchGroup = styled(HeaderGroup)`
 `;
 
 const StyledSearchBox = styled(SearchBox)`
-  height: 40px;
-  font-size: 16px;
+  height: 32px;
+  font-size: 14px;
 `;
 
 export const StyledCommandBar = styled(CommandBar)`
@@ -69,15 +70,16 @@ export const StyledCommandBar = styled(CommandBar)`
   }
 
   .ms-Button-icon {
-    font-size: 19px;
+    font-size: 18px;
   }
 
   .ms-Button--commandBar {
     background-color: transparent;
     height: 100%;
+    width: 100%;
 
     &:hover {
-      background-color: ${({ theme }) => transparentize(0.96, theme.palette.neutralPrimary)};
+      background-color: ${({ theme }) => transparentize(0.8, '#fff')};
     }
   }
 `;
@@ -90,6 +92,15 @@ const StyledChannelButton = styled(CommandBarButton)`
 
   .ms-Persona {
     padding: 0 4px;
+  }
+
+  .ms-Persona-primaryText {
+    overflow: visible;
+  }
+
+  .ms-Persona-primaryText,
+  &:hover .ms-Persona-primaryText {
+    color: #fff;
   }
 
   &.ms-Button {
@@ -108,8 +119,9 @@ const StyledChannelButton = styled(CommandBarButton)`
     justify-content: center;
     align-items: center;
     margin: 0;
-    padding: 0 4px;
     position: relative;
+    padding: 0 10px;
+    color: #fff;
 
     &::after {
       content: '';
@@ -125,7 +137,7 @@ const StyledChannelButton = styled(CommandBarButton)`
 
   &:hover .ms-Persona:not(:hover),
   &:hover .ms-Button-menuIcon:not(:hover) {
-    background-color: ${({ theme }) => transparentize(0.45, theme.palette.white)};
+    background-color: ${({ theme }) => transparentize(0.6, '#000')};
   }
 `;
 
@@ -140,10 +152,6 @@ const StyledSubMenuButton = styled(DefaultButton)`
 
   a {
     width: 100%;
-  }
-
-  .ms-Persona-primaryText {
-    overflow: visible;
   }
 
   .ms-Persona-details {
@@ -198,12 +206,29 @@ const HeaderButtons = styled(StyledCommandBar).attrs(() => ({
   as: 'div',
 }))`
   display: flex;
-  padding: 0 16px;
-  height: 40px;
+  height: 100%;
 `;
 
 const HeaderButton = styled.div`
   height: 100%;
+  min-width: 50px;
+  text-align: center;
+
+  &:first-child {
+    border-right: 1px solid ${transparentize(0.7, '#fff')};
+  }
+
+  & + & {
+    border-right: 1px solid ${transparentize(0.7, '#fff')};
+
+    .ms-Button--commandBar {
+      padding-right: 6px;
+    }
+  }
+
+  .ms-Button-label {
+    color: #fff;
+  }
 `;
 
 class Header extends Component {
@@ -213,10 +238,13 @@ class Header extends Component {
       notifCalloutOpen: false,
     };
     this.notificationRef = React.createRef();
+    this.calloutRef = React.createRef();
   }
 
   toggleNotificationCallout = () =>
     this.setState({ notifCalloutOpen: !this.state.notifCalloutOpen });
+
+  toggleCallout = () => this.setState({ calloutOpen: !this.state.calloutOpen });
 
   renderHeaderButton = props => {
     const {
@@ -407,12 +435,12 @@ class Header extends Component {
   };
 
   render() {
-    const { toggleSidebar, unreadNotifications } = this.props;
+    const { unreadNotifications } = this.props;
 
     return (
       <HeaderContainer>
         <HeaderGroup>
-          <HeaderLogo toggleSidebar={toggleSidebar} />
+          <HeaderLogo to="/" ref={this.calloutRef} toggleCallout={this.toggleCallout} />
         </HeaderGroup>
         <SearchGroup>
           <StyledSearchBox placeholder="חיפוש" onSearch={this.onSearch} />

@@ -13,8 +13,8 @@ import HeaderLogo from 'components/HeaderLogo';
 
 const PanelHost = styled(LayerHost)`
   position: fixed;
-  margin-top: 64px;
-  height: calc(100% - 64px);
+  margin-top: 50px;
+  height: calc(100% - 50px);
   z-index: 1000;
 `;
 
