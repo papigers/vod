@@ -3,6 +3,7 @@ import { createStructuredSelector } from 'reselect';
 import styled from 'styled-components';
 import { Flex, Box } from 'grid-styled';
 import qs from 'query-string';
+import { Helmet } from 'react-helmet';
 
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import {
@@ -439,6 +440,9 @@ class VideoPage extends Component {
 
     return (
       <Box px={20} pt={24}>
+        <Helmet>
+          <title>{`VOD${video && video.id ? ` - ${video.name}` : ''}`}</title>
+        </Helmet>
         <Flex justifyContent="center">
           <Box width={[1, 1, 1, 11 / 12]}>
             <Flex justifyContent="center">

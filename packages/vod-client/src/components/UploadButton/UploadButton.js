@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import Dropzone from 'react-dropzone';
 import tus from 'tus-js-client';
+import Helmet from 'react-helmet';
 
 import { CompoundButton } from 'office-ui-fabric-react/lib/Button';
 import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
@@ -161,6 +162,9 @@ export default class UploadButton extends Component {
         };
     return (
       <Container>
+        <Helmet>
+          <title>VOD - העלאת סרטון</title>
+        </Helmet>
         {error ? (
           <ErrorBox
             messageBarType={MessageBarType.error}

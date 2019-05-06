@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
 import { Box, Flex } from 'grid-styled';
 import styled from 'styled-components';
+import { Helmet } from 'react-helmet';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -46,6 +47,9 @@ class MyWorkflowsPage extends Component {
   render() {
     return (
       <Container flexDirection="column">
+        <Helmet>
+          <title>VOD - הבקשות שלי</title>
+        </Helmet>
         <TitleBox>
           <CategoryHeader>הבקשות שלי</CategoryHeader>
           <Pivot linkSize={PivotLinkSize.large} headersOnly onLinkClick={this.onLinkClick}>

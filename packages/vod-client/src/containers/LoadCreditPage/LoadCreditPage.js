@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Box, Flex } from 'grid-styled';
 import styled, { css } from 'styled-components';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 import { SpinButton } from 'office-ui-fabric-react/lib/SpinButton';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
@@ -151,6 +152,9 @@ class LoadCreditPage extends Component {
 
     return (
       <Box width={0.95} mx="auto">
+        <Helmet>
+          <title>VOD - טעינת קרדיטּ</title>
+        </Helmet>
         <Header>טעינת קרדיט</Header>
         <CenterLabel>
           הטעינה תתבצע רק לאחר תהליך אישורים המוודא כי מזהה אישור ההעברה תואם לסכום שהוזן.

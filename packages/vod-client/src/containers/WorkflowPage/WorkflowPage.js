@@ -4,6 +4,7 @@ import { Box, Flex } from 'grid-styled';
 import { Link } from 'react-router-dom';
 import { transparentize } from 'polished';
 import { createStructuredSelector } from 'reselect';
+import { Helmet } from 'react-helmet';
 
 import createReduxContainer from 'utils/createReduxContainer';
 
@@ -316,6 +317,9 @@ class WorkflowPage extends Component {
 
     return (
       <Flex justifyContent="center">
+        <Helmet>
+          <title>VOD - בקשות לאישור</title>
+        </Helmet>
         <Box mb={4} width={0.9}>
           {loading && !workflow ? (
             <LoadingSpinner label="טוען..." size={SpinnerSize.large} />

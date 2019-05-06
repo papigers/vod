@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Box, Flex } from 'grid-styled';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react/lib/MessageBar';
 import { ActivityItem } from 'office-ui-fabric-react/lib/ActivityItem';
@@ -175,6 +176,9 @@ class CreditBalancePage extends Component {
     const { error, currentAmount, unverifiedAmount } = this.state;
     return (
       <Box width={0.7} mx="auto">
+        <Helmet>
+          <title>VOD - עו"ש</title>
+        </Helmet>
         <Flex flexDirection="column" alignItems="center">
           <h1>עו"ש</h1>
           <Box mx="auto" mb={2}>

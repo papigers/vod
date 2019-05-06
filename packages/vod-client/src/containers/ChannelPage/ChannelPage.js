@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
+import { Helmet } from 'react-helmet';
 
 import Channel from 'components/Channel';
 import axios from 'utils/axios';
@@ -67,7 +68,12 @@ class ChannelPage extends Component {
   render() {
     const { channel, loading } = this.state;
 
-    return <Channel {...this.props} channel={channel} loading={loading} />;
+    return (
+      <React.Fragment>
+        <Helmet>{!!channel ? <title>VOD - {channel.name}</title> : null}</Helmet>
+        <Channel {...this.props} channel={channel} loading={loading} />
+      </React.Fragment>
+    );
   }
 }
 

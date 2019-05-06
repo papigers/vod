@@ -4,6 +4,7 @@ import { createStructuredSelector } from 'reselect';
 import { Box, Flex } from 'grid-styled';
 import qs from 'query-string';
 import io from 'socket.io-client';
+import { Helmet } from 'react-helmet';
 
 import createReduxContainer from 'utils/createReduxContainer';
 import axios from 'utils/axios';
@@ -442,6 +443,9 @@ class UploadEdit extends Component {
 
     return (
       <Container>
+        <Helmet>
+          <title>{`VOD - העלאת סרטון${name ? `:  ${name}` : ''}`}</title>
+        </Helmet>
         {errors.form ? (
           <ErrorBox
             messageBarType={MessageBarType.error}

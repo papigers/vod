@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { createStructuredSelector } from 'reselect';
+import { Helmet } from 'react-helmet';
 
 import { makeSelectUser } from 'containers/Root/selectors';
 import { makeSelectSidebar } from 'containers/App/selectors';
@@ -38,6 +39,9 @@ class ManagementApp extends Component {
 
     return (
       <Fragment>
+        <Helmet>
+          <title>VOD - ניהול</title>
+        </Helmet>
         <Header user={user} />
         <Container>
           <MgmtSidebar isSidebarOpen={isSidebarOpen} isSidebarTrapped={isSidebarTrapped} />

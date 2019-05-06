@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { createStructuredSelector } from 'reselect';
 import { Box, Flex } from 'grid-styled';
 import styled from 'styled-components';
-
+import { Helmet } from 'react-helmet';
 import createReduxContainer from 'utils/createReduxContainer';
 
 import { makeSelectUser } from 'containers/Root/selectors';
@@ -71,6 +71,9 @@ class StudioPage extends Component {
   render() {
     return (
       <StudioContainer flexDirection="column">
+        <Helmet>
+          <title>VOD - סטודיו</title>
+        </Helmet>
         <Flex flexDirection="column" style={{ position: 'relative', height: '100%' }}>
           <TitleBox>
             <CategoryHeader>{'סטודיו'}</CategoryHeader>

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Helmet } from 'react-helmet';
 import { Provider } from 'react-redux';
 import { Route } from 'react-router-dom';
 import createHistory from 'history/createBrowserHistory';
@@ -28,6 +29,9 @@ function render(Root) {
         <ScrollContext>
           <ThemeProvider>
             <Fabric>
+              <Helmet>
+                <title>VOD</title>
+              </Helmet>
               <Route component={Root} />
             </Fabric>
           </ThemeProvider>
