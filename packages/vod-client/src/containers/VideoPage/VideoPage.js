@@ -5,7 +5,6 @@ import { Flex, Box } from 'grid-styled';
 import qs from 'query-string';
 
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import {
   Shimmer,
   ShimmerElementType as ElemType,
@@ -13,6 +12,7 @@ import {
 } from 'office-ui-fabric-react/lib/Shimmer';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
+import { DefaultButton, IconButton } from 'office-ui-fabric-react/lib/Button';
 
 import createReduxContainer from 'utils/createReduxContainer';
 import { makeSelectUser } from 'containers/Root/selectors';
@@ -22,6 +22,7 @@ import CommentSection from 'components/CommentSection';
 import VideoList, { VIDEO_LIST_TYPE } from 'components/VideoList';
 import ChannelRow from 'containers/ChannelRow';
 import PlaylistPanel from 'components/PlaylistPanel';
+import TimerAction from 'components/TimerAction';
 import SaveToPlaylistsCallout from 'components/SaveToPlaylistsCallout';
 
 import axios from 'utils/axios';
@@ -30,6 +31,7 @@ const VideoContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  position: relative;
 `;
 
 const VideoSection = styled(Box).attrs(() => ({
@@ -93,6 +95,56 @@ const VideoTag = styled.span`
   }
 `;
 
+const NextVideoPreview = styled(Flex)`
+  position: absolute;
+  background-image: ${({ nextVideoId }) =>
+    `url('${process.env.REACT_APP_STREAMER_HOSTNAME}/${nextVideoId}/poster.png')`};
+  background-size: cover;
+  background-position: center;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  color: #cacaca;
+  font-size: 1.3em;
+  opacity: ${({ show }) => (show ? 1 : 0)};
+  z-index: ${({ show }) => (show ? 200 : -1)};
+
+  & * {
+    position: relative;
+  }
+`;
+
+const NextVideoBackground = styled.div`
+  background-color: rgba(0, 0, 0, 0.45);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+`;
+
+const NextVideoName = styled.div`
+  color: #fff;
+  margin-top: 10px;
+  font-size: 1.45em;
+  font-weight: bold;
+`;
+
+const NextVideoChannel = styled.div`
+  color: #fff;
+  margin: 5px auto;
+`;
+
+const NextVideoButton = styled(IconButton)`
+  z-index: 200;
+
+  i {
+    font-weight: bold;
+    font-size: 2.2em;
+  }
+`;
+
 class VideoPage extends Component {
   constructor() {
     super();
@@ -110,6 +162,7 @@ class VideoPage extends Component {
       prevVideoId: null,
       nextVideoId: null,
       isCalloutVisible: false,
+      nextVideoPreview: false,
     };
     this.addToPlaylistsRef = React.createRef();
   }
@@ -134,6 +187,7 @@ class VideoPage extends Component {
         loadingRelated: true,
         loadingPlaylist: true,
         errorRelated: null,
+        nextVideoPreview: false,
       };
     }
     if (!state.playlistId || state.playlistId !== playlistId) {
@@ -163,6 +217,9 @@ class VideoPage extends Component {
     }
     if (prevState.playlistId !== this.state.playlistId) {
       this.fetchVideoPlaylist();
+    }
+    if (prevState.nextVideoId !== this.state.nextVideoId && this.state.nextVideoId) {
+      this.fetchNextVideo();
     }
   }
 
@@ -249,6 +306,15 @@ class VideoPage extends Component {
     }
   }
 
+  fetchNextVideo = () => {
+    axios.get(`/videos/video/${this.state.nextVideoId}`).then(({ data }) => {
+      console.log(data, this);
+      this.setState({
+        nextVideo: data,
+      });
+    });
+  };
+
   onAddToPlaylistsClicked = () => {
     this.setState({
       isCalloutVisible: !this.state.isCalloutVisible,
@@ -321,6 +387,17 @@ class VideoPage extends Component {
     }
   };
 
+  onEnd = () => {
+    this.setState({ nextVideoPreview: !!this.state.nextVideoId });
+  };
+
+  onTimerEnd = () => {
+    this.cancelNextPreview();
+    this.renderRedirect('Next');
+  };
+
+  cancelNextPreview = () => this.setState({ nextVideoPreview: false });
+
   renderRedirect = buttonClicked => {
     const { nextVideoId, prevVideoId, playlist } = this.state;
 
@@ -341,8 +418,10 @@ class VideoPage extends Component {
 
   render() {
     const {
+      nextVideoPreview,
       nextVideoId,
       prevVideoId,
+      nextVideo,
       playlist,
       video,
       error,
@@ -369,11 +448,34 @@ class VideoPage extends Component {
                     videoId={video && video.id}
                     error={error}
                     onTimeUpdate={this.onTimeUpdate}
+                    onEnd={this.onEnd}
                     nextVideoId={nextVideoId}
                     prevVideoId={prevVideoId}
                     playlistId={playlist && playlist.id}
                     renderRedirect={this.renderRedirect}
-                  />
+                  >
+                    {!!nextVideo ? (
+                      <NextVideoPreview
+                        flexDirection="column"
+                        alignItems="center"
+                        justifyContent="center"
+                        nextVideoId={nextVideo.id}
+                        show={!!nextVideoPreview}
+                      >
+                        <NextVideoBackground />
+                        <div>הסרטון הבא</div>
+                        <NextVideoName>{nextVideo.name}</NextVideoName>
+                        <NextVideoChannel>{nextVideo.channel.name}</NextVideoChannel>
+                        <TimerAction time={nextVideoPreview ? 5 : 0} onTimeEnd={this.onTimerEnd}>
+                          <NextVideoButton
+                            iconProps={{ iconName: 'Next' }}
+                            onClick={this.onTimerEnd}
+                          />
+                        </TimerAction>
+                        <DefaultButton text="בטל" onClick={this.cancelNextPreview} />
+                      </NextVideoPreview>
+                    ) : null}
+                  </Player>
                   <Box mt={20}>
                     <Shimmer
                       shimmerElements={[{ type: ElemType.line, height: 32 }]}

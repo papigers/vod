@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
 import { darken, rgba, lighten } from 'polished';
+import { Flex } from 'grid-styled';
 import videojs from 'video.js';
 
 import { withPreload } from 'containers/VideoPreloader';
 
 const StyledVideoContainer = styled.div`
+  position: relative;
   --fg-color: #fff;
   --bg-color: ${({ theme }) => theme.palette.themePrimary};
 
@@ -367,7 +369,10 @@ class ThemedPlayer extends Component {
       this.player.on('timeupdate', () => {
         this.props.onTimeUpdate(this.player.currentTime(), this.player.duration());
       });
-      this.player.on('ended', () => this.player.hasStarted(false));
+      this.player.on('ended', () => {
+        this.player.hasStarted(false);
+        this.props.onEnd();
+      });
       this.player.qualityPickerPlugin();
     }
   }
@@ -421,8 +426,7 @@ class ThemedPlayer extends Component {
   };
 
   render() {
-    const { playlistId, nextVideoId, prevVideoId } = this.props;
-
+    const { playlistId, nextVideoId, prevVideoId, children } = this.props;
     return (
       <StyledVideoContainer
         playlistId={playlistId}
@@ -436,6 +440,7 @@ class ThemedPlayer extends Component {
             this.videoNode = node;
           }}
         />
+        {children}
       </StyledVideoContainer>
     );
   }

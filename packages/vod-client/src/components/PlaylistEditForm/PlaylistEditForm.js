@@ -37,6 +37,15 @@ const ThumbnailContainer = styled.div`
 const PlaylistContainer = styled.div`
   position: relative;
   width: 60em;
+
+  .ms-DetailsRow {
+    cursor: move;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
 `;
 
 const PlaylistPropsContainer = styled(Flex)`

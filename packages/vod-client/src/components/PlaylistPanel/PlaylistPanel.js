@@ -10,21 +10,32 @@ import { ScrollablePane, ScrollbarVisibility } from 'office-ui-fabric-react/lib/
 import PlaylistVideoCard from 'components/PlaylistVideoCard';
 
 const PanelContainer = styled.div`
-  height: 36%;
+  height: 0;
+  width: 100%;
+  padding-top: 104.25%;
+  position: relative;
+  margin-bottom: 20px;
+
+  & > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+  }
 `;
 
 const PlaylistContainer = styled.div`
   position: relative;
   background: ${({ theme }) => theme.palette.neutralLight};
-  padding-bottom: 5px;
-  width: 100%;
 `;
 
 const VideosContainer = styled.div`
   background: ${({ theme }) => theme.palette.neutralLighter};
-  position: sticky;
-  width: 100%;
-  height: 24.5em;
+  position: relative;
+  flex: 1 1 0;
 `;
 
 const PlaylistName = styled(Label)`
@@ -92,42 +103,44 @@ class PlaylistPanel extends Component {
 
     return (
       <PanelContainer>
-        <PlaylistContainer>
-          <PlaylistDescription>
-            <PlaylistName>
-              <Link to={`/playlist?list=${playlist.id}`}>{playlist.name}</Link>
-            </PlaylistName>
-            <PlaylistDetails>
-              <PlaylistState>{this.renderPlaylistState()}</PlaylistState>
-              <Link to={`/channel/${playlist.channel.id}`}>{playlist.channel.name}</Link>
-              <div style={{ marginRight: '.5em' }}>
-                <Label>
-                  סרטון {currVideoIndex + 1} מתוך {playlist && playlist.videos.length}
-                </Label>
-              </div>
-            </PlaylistDetails>
-          </PlaylistDescription>
-        </PlaylistContainer>
-        <VideosContainer>
-          {playlist.videos.length ? (
-            <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
-              <List
-                items={playlist.videos}
-                data-is-scrollable="true"
-                scrollToIndex={currVideoIndex}
-                onRenderCell={(item, index) => (
-                  <PlaylistVideoCard
-                    item={item}
-                    index={index}
-                    currindex={currVideoIndex}
-                    playlistId={playlist.id}
-                    compact={true}
-                  />
-                )}
-              />
-            </ScrollablePane>
-          ) : null}
-        </VideosContainer>
+        <div>
+          <PlaylistContainer>
+            <PlaylistDescription>
+              <PlaylistName>
+                <Link to={`/playlist?list=${playlist.id}`}>{playlist.name}</Link>
+              </PlaylistName>
+              <PlaylistDetails>
+                <PlaylistState>{this.renderPlaylistState()}</PlaylistState>
+                <Link to={`/channel/${playlist.channel.id}`}>{playlist.channel.name}</Link>
+                <div style={{ marginRight: '.5em' }}>
+                  <Label>
+                    סרטון {currVideoIndex + 1} מתוך {playlist && playlist.videos.length}
+                  </Label>
+                </div>
+              </PlaylistDetails>
+            </PlaylistDescription>
+          </PlaylistContainer>
+          <VideosContainer>
+            {playlist.videos.length ? (
+              <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
+                <List
+                  items={playlist.videos}
+                  data-is-scrollable="true"
+                  scrollToIndex={currVideoIndex}
+                  onRenderCell={(item, index) => (
+                    <PlaylistVideoCard
+                      item={item}
+                      index={index}
+                      currindex={currVideoIndex}
+                      playlistId={playlist.id}
+                      compact={true}
+                    />
+                  )}
+                />
+              </ScrollablePane>
+            ) : null}
+          </VideosContainer>
+        </div>
       </PanelContainer>
     );
   }

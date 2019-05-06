@@ -8,7 +8,6 @@ import { transparentize } from 'polished';
 import {
   DocumentCard,
   DocumentCardPreview,
-  DocumentCardDetails,
   DocumentCardActivity,
   DocumentCardTitle,
   DocumentCardType,
@@ -36,7 +35,8 @@ const CardContainer = styled.div`
         `}
 
   .ms-DocumentCardPreview {
-    max-width: fit-content;
+    width: 208px;
+    height: 118px;
   }
 `;
 
@@ -45,19 +45,14 @@ const StyledVideoCard = styled(DocumentCard)`
     min-width: ${({ type }) => (type === DocumentCardType.compact ? '360px' : 'inherit')};
   }
 
-  .ms-DocumentCardDetails {
-    height: fit-content;
-
-    .ms-DocumentCardTitle {
-      margin: 5px 0;
-      padding: 0 8px 0 24px;
-    }
+  .ms-DocumentCardTitle {
+    box-sizing: content-box;
+    flex-grow: 1;
   }
 
   .ms-DocumentCardActivity {
     transition: background-color 200ms ease-in-out, border 200ms ease-in-out;
     border-top: 2px solid transparent;
-    padding-bottom: 5px;
 
     &:hover {
       background-color: ${({ theme }) => theme.palette.neutralLighterAlt};
@@ -70,7 +65,16 @@ const StyledVideoCard = styled(DocumentCard)`
   }
 
   &.ms-DocumentCard--compact {
-    height: fit-content;
+    height: 120px;
+
+    .ms-DocumentCardPreview {
+      max-width: none;
+      max-height: 118px;
+    }
+
+    .ms-DocumentCardTitle {
+      height: 46px;
+    }
   }
 `;
 
@@ -112,9 +116,9 @@ const PlaylistLogo = styled(Icon)`
 
 function LoadingCardContent(compact) {
   return (
-    <Flex style={{ height: compact ? 95 : 86 }}>
+    <Flex style={{ height: compact ? 118 : 86 }}>
       <ShimmerElementsGroup
-        shimmerElements={[{ type: ElemType.gap, height: compact ? 95 : 86, width: 16 }]}
+        shimmerElements={[{ type: ElemType.gap, height: compact ? 118 : 86, width: 16 }]}
       />
       <Box width={1}>
         <Flex flexWrap="wrap">
@@ -123,7 +127,7 @@ function LoadingCardContent(compact) {
             width="100%"
             shimmerElements={[
               { type: ElemType.gap, width: '100%', height: 0 },
-              { type: ElemType.line, width: '100%', height: 0, verticalAlign: 'top' },
+              { type: ElemType.line, width: '100%', height: 14, verticalAlign: 'top' },
               compact
                 ? { type: ElemType.line, width: '90%', height: 14, verticalAlign: 'bottom' }
                 : null,
@@ -160,7 +164,7 @@ function LoadingCardContent(compact) {
         </Flex>
       </Box>
       <ShimmerElementsGroup
-        shimmerElements={[{ type: ElemType.gap, height: compact ? 95 : 86, width: 16 }]}
+        shimmerElements={[{ type: ElemType.gap, height: compact ? 118 : 86, width: 16 }]}
       />
     </Flex>
   );
@@ -204,7 +208,7 @@ class VideoCard extends Component {
             type={compact ? DocumentCardType.compact : DocumentCardType.normal}
           >
             <Shimmer
-              shimmerElements={[{ type: ElemType.line, width: 210, height: 95 }]}
+              shimmerElements={[{ type: ElemType.line, width: 210, height: 118 }]}
               width="100%"
               isDataLoaded={!showShimmer}
             >
@@ -216,8 +220,8 @@ class VideoCard extends Component {
                       `${process.env.REACT_APP_STREAMER_HOSTNAME}/${
                         Object.keys(item).includes('videos') ? item.videos[0].id : item.id
                       }/thumbnail.png`,
-                    width: compact ? null : 210,
-                    height: compact ? 95 : null,
+                    width: compact ? null : 208,
+                    height: compact ? 118 : null,
                   },
                 ]}
               />
@@ -236,7 +240,7 @@ class VideoCard extends Component {
                 </LikeBox>
               )}
             </Shimmer>
-            <DocumentCardDetails>
+            <div className="ms-DocumentCard-details">
               <Shimmer
                 customElementsGroup={LoadingCardContent(compact)}
                 width="100%"
@@ -259,7 +263,7 @@ class VideoCard extends Component {
                   )}
                 </LinkOnLoad>
               </Shimmer>
-            </DocumentCardDetails>
+            </div>
           </StyledVideoCard>
         </LinkOnLoad>
       </CardContainer>

@@ -43,13 +43,12 @@ const CompactVideoName = styled.h4`
   font-weight: unset;
   text-overflow: ellipsis;
   margin: 0;
-  padding: 8px 0;
+  padding: 12px 0 2px 0;
 `;
 
-const SubTitle = styled.p`
+const SubTitle = styled.div`
   font-size: small;
   color: ${({ theme }) => theme.palette.neutralTertiary};
-  padding: 8px 0;
   margin: 0;
 `;
 

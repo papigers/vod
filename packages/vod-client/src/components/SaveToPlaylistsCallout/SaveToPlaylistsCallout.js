@@ -11,7 +11,7 @@ import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 
 import createReduxContainer from 'utils/createReduxContainer';
-import { makeSelectUser } from 'containers/ChannelPage/selectors';
+import { makeSelectUser } from 'containers/Root/selectors';
 import VideoStateDropdown from 'components/VideoStateDropdown';
 
 import axios from 'utils/axios';
@@ -133,7 +133,7 @@ class SaveToPlaylistsCallout extends Component {
 
   onAddToPlaylistsChecked = (playlistId, checked) => {
     const { video } = this.props;
-
+    console.log(playlistId, checked);
     checked
       ? axios.put(`playlists/${playlistId}/add/${video && video.id}`)
       : axios.put(`playlists/${playlistId}/remove/${video && video.id}`);
@@ -191,12 +191,12 @@ class SaveToPlaylistsCallout extends Component {
                 onRenderCell={item => {
                   return (
                     <Checkbox
-                      disabled={false}
                       label={`${item.name} (${item.channel.name})`}
                       defaultChecked={!!selectedPlaylists.find(option => option.id === item.id)}
-                      onChange={({ target }) =>
-                        this.onAddToPlaylistsChecked(item.id, target.checked)
-                      }
+                      onChange={(e, checked) => {
+                        console.log(item, checked);
+                        this.onAddToPlaylistsChecked(item.id, checked);
+                      }}
                     />
                   );
                 }}

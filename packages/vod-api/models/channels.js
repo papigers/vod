@@ -498,12 +498,13 @@ module.exports = function(db) {
       db.knex
         .countDistinct(`${db.channelFollowers.table}.followerId as followerCount`)
         .countDistinct(`${db.videos.table}.id as videoCount`)
+        .countDistinct(`${db.playlists.table}.id as playlistCount`)
         .countDistinct(`${db.comments.table}.id as commentCount`)
         .countDistinct(`${db.videoLikes.table}.createdAt as likeCount`)
         .countDistinct(`${db.videoViews.table}.createdAt as viewCount`)
-        .select(db.knex.raw('? as ??', [5, 'playlistCount']))
         .from(channels.table)
         .leftJoin(db.videos.table, `${db.videos.table}.channelId`, `${channels.table}.id`)
+        .leftJoin(db.playlists.table, `${db.playlists.table}.channelId`, `${channels.table}.id`)
         .leftJoin(
           db.channelFollowers.table,
           `${channels.table}.id`,

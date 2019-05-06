@@ -13,6 +13,7 @@
     "office-ui-fabric-react": "^6.117.1",
     "polished": "^1.9.3",
     "query-string": "^6.2.0",
+    "rc-progress": "^2.3.0",
     "react": "^16.4.1",
     "react-avatar-editor": "^11.0.6",
     "react-dom": "^16.4.1",
