@@ -97,7 +97,7 @@ export default class Sidebar extends Component {
 
     return (
       <Fragment>
-        <PanelHost id="panelHost" />
+        <PanelHost id="panelMgmtHost" />
         {isSidebarOpen ? (
           <ThemeContext.Consumer>
             {() => (
@@ -111,7 +111,7 @@ export default class Sidebar extends Component {
                 layerProps={
                   isSidebarTrapped
                     ? {
-                        hostId: 'panelHost',
+                        hostId: 'panelMgmtHost',
                       }
                     : null
                 }

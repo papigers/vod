@@ -82,6 +82,7 @@ class Sidebar extends Component {
     const activeLink = navLinks
       .filter(link => matchPath(link.to, { path: window.location.pathname, exact: true }))
       .map(link => link.key);
+
     return (
       <Fragment>
         <PanelHost id="panelHost" />
