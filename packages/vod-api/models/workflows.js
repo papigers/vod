@@ -87,6 +87,7 @@ module.exports = function(db) {
     var groups = (user && user.groups) || [];
     var isKeter =
       groups.findIndex(function(group) {
+        // TODO set keter group DN
         return group === 'CN=Keter,OU=org1,OU=orgs,DC=example,DC=com';
       }) !== -1;
     return {

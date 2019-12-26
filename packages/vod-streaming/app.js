@@ -63,26 +63,6 @@ app.get(
         console.error(err);
         return res.status(500).send('Server Error');
       });
-    // authCache.getAsync(cacheKey)
-    //   .then(function(authorized) {
-    //     if (authorized) {
-    //       return Promise.resolve({ data: { authorized, cache: true } });
-    //     }
-    //     return axios.get(`${config.api}/videos/${req.params.videoId}/auth-check/${getUser(req)}`);
-    //   })
-    //   .then(function({ data }) {
-    //     if (!data.cache) {
-    //       authCache.setAsync(cacheKey, data.authorized, 'EX', 24 * 60 * 60);
-    //     }
-    //     if (data.authorized) {
-    //       return next();
-    //     }
-    //     return res.status(403).send('Unauthorized');
-    //   })
-    //   .catch(function(err) {
-    //     console.error(err);
-    //     return res.status(500).send('Server Error');
-    //   });
   },
   function serveRequest(req, res, next) {
     OSClient.proxyGetObject(OSClient.getVideoObject(req), req, res, next);

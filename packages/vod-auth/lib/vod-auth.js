@@ -2,10 +2,18 @@
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 require('./Jwt');
-require('./KerberosHeader');
+// require('./OAuth');
+
+const PRODUCTION = process.env.NODE_ENV === 'production';
+
+let authProviders = ['jwt'];
+if (!PRODUCTION) {
+  require('./KerberosHeader');
+  authProviders = ['jwt', 'trusted-header'];
+}
 
 var authMiddlewares = [
-  passport.authenticate(['jwt', 'trusted-header'], { session: false }),
+  passport.authenticate(authProviders, { session: false }),
   function(req, res, next) {
     // don't override existing cookie
     if (!req.cookies.jwt) {

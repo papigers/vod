@@ -64,6 +64,10 @@ const StyledVideoCard = styled(DocumentCard)`
     width: 210px;
   }
 
+  & .ms-DocumentCard-details {
+    flex: 1 1 0;
+  }
+
   &.ms-DocumentCard--compact {
     height: 120px;
 

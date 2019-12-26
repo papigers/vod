@@ -1,5 +1,4 @@
 import videojs from 'video.js';
-
 /**
  * hls
  */
