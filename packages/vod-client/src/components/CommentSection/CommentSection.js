@@ -16,7 +16,7 @@ const CommentButton = styled(DefaultButton)`
   padding-left: 9px;
   padding-right: 9px;
   &:disabled {
-    color: black;
+    color: ${ ({ theme }) => theme.palette.black};
     opacity: 0.5;
   }
 `;
