@@ -13,6 +13,12 @@ import Comment from 'components/VideoComment';
 const CommentButton = styled(DefaultButton)`
   margin-right: 15px;
   margin-top: 13px;
+  padding-left: 9px;
+  padding-right: 9px;
+  &:disabled {
+    color: black;
+    opacity: 0.5;
+  }
 `;
 
 const CommentPersona = styled(Persona)`
