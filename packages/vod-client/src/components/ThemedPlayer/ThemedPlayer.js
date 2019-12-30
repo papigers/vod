@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
 import { darken, rgba, lighten } from 'polished';
 import videojs from 'video.js';
+import hotkeys from 'videojs-hotkeys'
 
 import { withPreload } from 'containers/VideoPreloader';
 
@@ -334,6 +335,14 @@ class ThemedPlayer extends Component {
     if (this.props.videoId) {
       this.loadVideoSources();
     }
+
+    // videojs-hotkeys plugin configuration
+    this.player.hotkeys({
+      alwaysCaptureHotkeys : true,
+      volumeStep: 0.1,
+      seekStep: 5,
+      enableVolumeScroll: false
+    });
   }
 
   componentWillUnmount() {

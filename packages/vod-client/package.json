@@ -35,7 +35,8 @@
     "styled-components": "^4.1.3",
     "styled-sanitize": "^1.0.2",
     "tus-js-client": "^1.5.2",
-    "video.js": "^7.5.4"
+    "video.js": "^7.5.4",
+    "videojs-hotkeys": "^0.2.25"
   },
   "scripts": {
     "start": "react-scripts build",
