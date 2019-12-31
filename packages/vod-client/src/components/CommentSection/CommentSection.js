@@ -135,7 +135,7 @@ class CommentSection extends Component {
               iconProps={{ iconName: 'CommentAdd' }}
               primary={true}
               onClick={this.onCommentSubmit}
-              disabled={!comment.length}
+              disabled={!comment.length || !comment.trim().length}
             />
             <CommentButton
               text="בטל"
