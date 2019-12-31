@@ -19,9 +19,9 @@ import ChannelProfileImage from 'components/ChannelProfileImage';
 import { makeSelectUser } from 'containers/Root/selectors';
 import * as actions from './actions';
 
-const FlexGrow = styled(Box)`
-  flex-grow: 1;
-`;
+// const FlexGrow = styled(Box)`
+//   flex-grow: 1;
+// `;
 
 const LinkPersona = styled(Persona)`
   cursor: pointer;
