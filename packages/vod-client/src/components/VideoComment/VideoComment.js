@@ -17,18 +17,22 @@ class VideoComment extends Component {
 
     var daysDiff = Math.floor(milisecDiff / 1000 / 60 / (60 * 24));
 
-    switch (daysDiff) {
-      case daysDiff > 730:
-        return `פורסם לפני ${Math.floor(daysDiff / 365)} שנים`;
-      case daysDiff >= 365:
-        return `פורסם לפני שנה`;
-      case daysDiff > 60:
-        return `פורסם לפני ${Math.floor(daysDiff / 30)} חודשים`;
-      case !daysDiff:
-        return `פורסם היום`;
-      default:
-        return `פורסם לפני ${daysDiff} ימים`;
-    }
+    if (daysDiff > 730) return `פורסם לפני ${Math.floor(daysDiff / 365)} שנים`;
+    else if (daysDiff >= 365) return `פורסם לפני שנה`;
+    else if (daysDiff > 60) return `פורסם לפני ${Math.floor(daysDiff / 30)} חודשים`;
+    else if (daysDiff == 1) return `פורסם לפני יום`;
+    else if (daysDiff == 0) {
+      var hoursDiff = Math.floor(milisecDiff / 1000 / 60 / (60));
+      if(hoursDiff == 0)
+      {
+        var minutesDiff = Math.floor(milisecDiff / 1000 / 60);
+        if(minutesDiff == 0)
+          return `פורסם עכשיו`
+          if(minutesDiff == 1) return `פורסם לפני דקה`; else return `פורסם לפני ${minutesDiff} דקות`;
+      }
+      if(hoursDiff == 1) return `פורסם לפני שעה`; else return `פורסם לפני ${hoursDiff} שעות`;
+    } 
+    else return `פורסם לפני ${daysDiff} ימים`;
   };
 
   render() {
