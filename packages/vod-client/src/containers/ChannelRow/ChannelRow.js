@@ -105,7 +105,7 @@ class ChannelRow extends Component {
       >
         {channel && (
           <Flex alignItems="center" justifyContent="space-between">
-            <FlexGrow>
+            {/* <FlexGrow> */}
               <LinkPersona
                 imageUrl={`/profile/${channel.id}/profile.png`}
                 primaryText={channel.name}
@@ -114,7 +114,7 @@ class ChannelRow extends Component {
                 onRenderCoin={this.onRenderCoin}
                 onClick={() => this.props.history.push(`/channel/${channel.id}`)}
               />
-            </FlexGrow>
+            {/* </FlexGrow> */}
             <Box ml={16}>
               {!displayOnly && channel && user.id !== channel.id ? (
                 <PrimaryButton
