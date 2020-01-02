@@ -381,6 +381,7 @@ module.exports = function(db) {
                 name: user.name,
                 description: user.description,
                 personal: true,
+                verified: true
               })
               .then(function() {
                 return trx
