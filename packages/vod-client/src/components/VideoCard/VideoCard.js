@@ -183,6 +183,7 @@ class VideoCard extends Component {
   onHover() {
     const { preload, item } = this.props;
     if (item && item.id) {
+      console.log(item)
       preload(Object.keys(item).includes('videos') ? item.videos[0].id : item.id);
     }
   }
@@ -208,7 +209,6 @@ class VideoCard extends Component {
           }
         >
           <StyledVideoCard
-            onClick={() => null}
             type={compact ? DocumentCardType.compact : DocumentCardType.normal}
           >
             <Shimmer
