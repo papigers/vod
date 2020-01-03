@@ -319,7 +319,7 @@ class ThemedPlayer extends Component {
     }
   }
 
-  componentDidMount() {
+  componentDidMount() { 
     const options = {
       autoplay: true,
       controls: true,
@@ -332,20 +332,30 @@ class ThemedPlayer extends Component {
           setXHRWithCredentialsForType: [null, true],
         },
       },
-    };
+      plugins: {
+        hotkeys: {
+          alwaysCaptureHotkeys : true,
+          volumeStep: 0.1,
+          seekStep: 5,
+          enableVolumeScroll: false
+        }
+      }
+    }
+  
     this.player = videojs(this.videoNode, options, this.onPlayerReady);
     if (this.props.videoId) {
       this.loadVideoSources();
     }
+  }
 
     // videojs-hotkeys plugin configuration
-    this.player.hotkeys({
-      alwaysCaptureHotkeys : true,
-      volumeStep: 0.1,
-      seekStep: 5,
-      enableVolumeScroll: false
-    });
-  }
+  //   this.player.hotkeys({
+  //     alwaysCaptureHotkeys : true,
+  //     volumeStep: 0.1,
+  //     seekStep: 5,
+  //     enableVolumeScroll: false
+  //   });
+  // }
 
   componentWillUnmount() {
     clearTimeout(this.playTimeout);
