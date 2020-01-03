@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
 import { darken, rgba, lighten } from 'polished';
 import videojs from 'video.js';
-
-// eslint-disable-next-line
-import hotkeys from 'videojs-hotkeys'
+import './hebrewPlayer'
+import 'videojs-hotkeys'
 
 import { withPreload } from 'containers/VideoPreloader';
 
@@ -324,6 +323,7 @@ class ThemedPlayer extends Component {
       autoplay: true,
       controls: true,
       preload: 'auto',
+      language: 'he',
       playbackRates: [0.5, 1, 1.5, 2],
       volume: +localStorage.getItem('player-volume'),
       muted: localStorage.getItem('player-muted') === 'true',
