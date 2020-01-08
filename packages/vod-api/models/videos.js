@@ -176,7 +176,7 @@ module.exports = function(db) {
         `${db.channels.table}.id as _channel_id`,
         `${db.channels.table}.name as _channel_name`,
       )
-      .count(`${db.videoViews.table}.channelId as _viewCount`)
+      .countDistinct(`${db.videoViews.table} as _viewCount`)
       .countDistinct(`${db.videoLikes.table}.channelId as _likeCount`)
       .from(videos.table)
       .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
@@ -546,7 +546,7 @@ module.exports = function(db) {
           `${db.channels.table}.name as channel_name`,
           `${db.tags.table}.tag as tags__tag`,
         )
-        .count(`${db.videoViews.table}.channelId as viewCount`)
+        .countDistinct(`${db.videoViews.table} as viewCount`)
         .countDistinct(`${db.videoLikes.table}.channelId as likeCount`)
         .select(
           db.knex.raw('EXISTS(?) as ??', [
