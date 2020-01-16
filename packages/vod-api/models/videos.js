@@ -714,6 +714,7 @@ module.exports = function(db) {
   };
 
   videos.getManagedVideos = function(user) {
+    console.log('got here')
     return db.knexnest(
       db.knex
         .select(
@@ -731,19 +732,33 @@ module.exports = function(db) {
           `${db.videoAcls.table}.type as _acls__type`,
           `${db.videoAcls.table}.videoId as _acls__videoId`,
         )
-        .select(db.knex.raw('COUNT(??) as ??', [`${db.videoViews.table}.channelId`, '_viewsCount']))
-        .select(
-          db.knex.raw('COUNT(DISTINCT ?? ) as ??', [
-            `${db.videoLikes.table}.channelId`,
-            '_likesCount',
-          ]),
-        )
-        .select(db.knex.raw('COUNT(??) as ??', [`${db.comments.table}.id`, '_commentsCount']))
+        .select(db.knex.raw('(??)  as ??', [
+          db.countDistinct(`${db.videoViews.table}.createdAt`).from(`${db.videoViews.table}`).where(`${db.videoViews.table}.videoId`, db.ref(`${videos.table}.id`)),
+          '_viewsCount'
+        ]))
+        
+        .select(db.knex.raw('(??)  as ??', [
+          db.countDistinct(`${db.videoLikes.table}.channelId`).from(`${db.videoLikes.table}`).where(`${db.videoLikes.table}.videoId`, db.ref(`${videos.table}.id`)),
+          '_likesCount'
+        ]))
+        
+        .select(db.knex.raw('(??)  as ??', [
+          db.countDistinct(`${db.comments.table}.id`).from(`${db.comments.table}`).where(`${db.comments.table}.videoId`, db.ref(`${videos.table}.id`)),
+          '_commentsCount'
+        ]))
+        // .select(db.knex.raw('COUNT(DISTINCT ?? ) as ??', [`${db.videoViews.table}`, '_viewsCount']))
+        // .select(
+        //   db.knex.raw('COUNT(DISTINCT ?? ) as ??', [
+        //     `${db.videoLikes.table}.channelId`,
+        //     '_likesCount',
+        //   ]),
+        // )
+        // .select(db.knex.raw('COUNT(DISTINCT ?? ) as ??', [`${db.comments.table}.id`, '_commentsCount']))
         .from(videos.table)
         .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
-        .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
-        .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
-        .leftJoin(db.comments.table, `${videos.table}.id`, `${db.comments.table}.videoId`)
+        // .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
+        // .leftJoin(db.videoLikes.table, `${videos.table}.id`, `${db.videoLikes.table}.videoId`)
+        // .leftJoin(db.comments.table, `${videos.table}.id`, `${db.comments.table}.videoId`)
         .leftJoin(db.videoAcls.table, `${videos.table}.id`, `${db.videoAcls.table}.videoId`)
         .leftJoin(db.tags.table, `${videos.table}.id`, `${db.tags.table}.itemId`)
         .groupBy(
@@ -1129,9 +1144,9 @@ module.exports = function(db) {
         `${db.uploads.table}.uploaded as _upload_uploadedFiles`,
         `${db.uploads.table}.step as _upload_step`,
       )
-      .count(`${db.videoViews.table}.channelId as _viewsCount`)
+      .countDistinct(`${db.videoViews.table} as _viewsCount`)
       .countDistinct(`${db.videoLikes.table}.channelId as _likesCount`)
-      .count(`${db.comments.table}.id as _commentsCount`)
+      .countDistinct(`${db.comments.table}.id as _commentsCount`)
       .from(videos.table)
       .leftJoin(db.channels.table, `${videos.table}.channelId`, `${db.channels.table}.id`)
       .leftJoin(db.videoViews.table, `${videos.table}.id`, `${db.videoViews.table}.videoId`)
