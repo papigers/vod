@@ -9,7 +9,7 @@ function S3Client() {
     return new S3Client();
   }
   Client.call(this);
-  this.Bucket = 'bucketvod';
+  this.Bucket = 'bucket-vod';
   this.S3 = new AWS.S3({
     region: 'eu-central-1',
   });
