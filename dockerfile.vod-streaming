@@ -1,0 +1,11 @@
+#sudo docker build --tag vodstreaming --file dockerfile.vod-streaming .
+#sudo docker run -d -p 9091:9091 vodstreaming
+
+FROM vodbase
+
+RUN lerna bootstrap --scope=@vod/vod-streaming --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/vod-redis-client
+
+WORKDIR /app/packages/vod-streaming
+
+EXPOSE 9091
+CMD [ "npm", "start" ]

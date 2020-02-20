@@ -34,7 +34,7 @@
     "rimraf": "^2.6.2",
     "sharp": "^0.21.3",
     "socket.io": "^2.2.0",
-    "tus-node-server": "git+https://github.com/papigers/tus-node-server.git"
+    "@vod/tus-node-server": "^0.3.2"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",

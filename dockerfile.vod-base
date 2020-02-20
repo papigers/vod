@@ -1,0 +1,25 @@
+#sudo docker build --tag vodbase --file dockerfile.vod-base .
+FROM node:10.18.1-alpine3.9
+
+WORKDIR /app
+
+RUN npm i lerna -g --loglevel notice
+
+RUN apk add git
+
+COPY . .
+
+RUN npm install --ignore-scripts
+
+# ------------------------------------------------------POSTGRES----------------------------------------------
+#sudo docker run -d --rm --name postgres -e POSTGRES_PASSWORD="Aa123123" -e POSTGRES_DB="vod" -v postgres_storage:/var/lib/postgresql/data -p 5432:5432 postgres
+#sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres
+#sudo docker exec -it postgres psql -U postgres
+#CREATE DATABASE vod;
+
+# ------------------------------------------------------RabbitMQ----------------------------------------------
+# DONT NEED THE FIRST ONE ONLY SECONT ONE !!
+#sudo docker run -d --hostname vod-rabbit --name vod-rabbitmq rabbitmq:3
+
+#sudo docker run  --hostname vod-rabbit-mg --name vod-rabbitmq-mgmt -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+#NEED TO CONFIGURE ADMIN:Aa123123

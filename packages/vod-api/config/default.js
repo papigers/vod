@@ -3,12 +3,15 @@ module.exports = {
     port: process.env.PORT || 9090,
   },
   api: 'http://localhost:9090/api',
+  //api: 'http://vod-ubuntu.westeurope.cloudapp.azure.com:9090/api',
   db: {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'Aa123123',
     database: process.env.DB_DATABASE || 'vod',
-    host: process.env.DB_HOSTNAME || 'vod-db.westeurope.cloudapp.azure.com',
-    port: process.env.DB_PORT || 5433,
+    host: process.env.DB_HOSTNAME || 'vod-ubuntu.westeurope.cloudapp.azure.com',
+    port: process.env.DB_PORT || 5432,
+    // host: process.env.DB_HOSTNAME || 'vod-db.westeurope.cloudapp.azure.com',
+    //port: process.env.DB_PORT || 5433,
     config: {
       dialect: process.env.DB_TYPE || 'postgres',
       pool: {

@@ -10,5 +10,5 @@ module.exports = {
       tls: true,
     },
   },
-  api: 'http://localhost:9090/api',
+  api: 'http://172.17.0.2:9090/api',
 };

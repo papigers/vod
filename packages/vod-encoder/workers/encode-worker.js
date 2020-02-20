@@ -16,7 +16,7 @@ var ENCODE_QUEUE = 'encode_queue';
 var UPLOAD_QUEUE = 'upload_queue';
 
 function getOutputPath(videoId) {
-  return path.join(os.tmpdir(), videoId);
+  return path.join('/app/entrypoint', videoId);
 }
 
 function encodeVideo(videoId, inputPath) {
@@ -229,7 +229,7 @@ function encodeVideo(videoId, inputPath) {
   });
 }
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect(['amqp://admin:Aa123123@vod-ubuntu.westeurope.cloudapp.azure.com:5672']);
 
 var channelWrapper = connection.createChannel({
   json: true,

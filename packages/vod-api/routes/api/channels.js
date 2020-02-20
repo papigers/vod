@@ -14,7 +14,7 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var channelStorage = multer.diskStorage({
   destination: function(req, file, cb) {
-    var dest = path.join(os.tmpdir(), req.params.id);
+    var dest = path.join('/app/entrypoint', req.params.id);
     fs.stat(dest, function(err) {
       if (err == null) {
         return cb(null, dest);

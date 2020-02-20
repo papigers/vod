@@ -1,0 +1,20 @@
+# sudo docker build --tag vodweb --file dockerfile.vod-web .
+#sudo docker run -d -p 8080:8080 vodweb
+
+
+FROM vodbase
+
+RUN lerna bootstrap --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/vod-redis-client
+
+WORKDIR /app/packages/vod-client
+
+RUN npm run build
+
+RUN cp -r ./build ../vod-web/public
+
+WORKDIR /app/packages/vod-web
+
+ENV NODE_ENV=production
+
+EXPOSE 8080
+CMD [ "npm", "start" ]

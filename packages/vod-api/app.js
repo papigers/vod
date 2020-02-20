@@ -9,7 +9,8 @@ var app = express();
 app.use(
   cors({
     credentials: true,
-    origin: ['http://localhost:3000', 'http://localhost:8000'],
+    origin: ['http://localhost:3000', 'http://localhost:8000', 'http://localhost:8080',
+     'http://vod-ubuntu.westeurope.cloudapp.azure.com:8080', 'http://vod-ubuntu.westeurope.cloudapp.azure.com:8000']
   }),
 );
 app.use(logger('dev'));

@@ -24,7 +24,7 @@
     "react-router-dom": "^4.3.1",
     "react-router-redux": "^5.0.0-alpha.9",
     "react-router-scroll-4": "^1.0.0-beta.2",
-    "react-scripts": "1.1.4",
+    "react-scripts": "^2.1.8",
     "react-waypoint": "^8.1.0",
     "recharts": "^1.4.2",
     "redux": "^4.0.0",
@@ -48,7 +48,7 @@
     "lint:css": "stylelint \"./src/**/*.js\"",
     "lint": "yarn run lint:css && yarn run lint:js"
   },
-  "proxy": "http://localhost:8080",
+  "proxy": "http://vod-ubuntu.westeurope.cloudapp.azure.com:8080",
   "devDependencies": {
     "stylelint": "^9.9.0",
     "stylelint-config-standard": "^18.2.0",

@@ -1,0 +1,16 @@
+#sudo docker build --tag vodapi --file dockerfile.vod-api .
+#sudo docker run -d -v persistent-vod:/app/entrypoint -p 9090:9090 vodapi
+
+FROM vodbase
+
+RUN lerna bootstrap --scope=@vod/vod-api --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/tus-node-server
+
+WORKDIR /app/packages/vod-api
+
+RUN mkdir /app/entrypoint
+#RUN mkdir -p /app/packages/vod-api/app/entrypoint
+
+RUN chmod -R 777 /app/entrypoint
+
+EXPOSE 9090
+CMD [ "npm", "start" ]

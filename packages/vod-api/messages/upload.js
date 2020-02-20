@@ -3,7 +3,7 @@ var amqp = require('amqp-connection-manager');
 
 var VIDEO_UPLOAD_EXCHANGE = 'video_upload_exchange';
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect(['amqp://admin:Aa123123@vod-ubuntu.westeurope.cloudapp.azure.com:5672']);
 
 var channelWrapper = connection.createChannel({
   json: true,
