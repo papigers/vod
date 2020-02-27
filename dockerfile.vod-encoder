@@ -1,5 +1,5 @@
 # sudo docker build --tag vodencoder --file dockerfile.vod-encoder .
-#sudo docker run -v persistent-vod:/app/entrypoint -p 8081:8081 vodencoder
+#sudo docker run --name vod-encoder -v persistent-vod:/app/entrypoint -p 8082:8082 vodencoder
 
 FROM vodbase
 
@@ -11,6 +11,7 @@ WORKDIR /app
 RUN apk add ffmpeg
 
 #MP4BOX installation
+RUN apk add git
 RUN apk update && \
     apk add --no-cache \
         wget \
@@ -31,7 +32,10 @@ RUN ./configure --use-zlib=no && \
     mv ./install/lib/MP4* ./install/bin
 
 
+RUN cp -R ./install/lib/. /usr/lib
+RUN cp -R ./install/bin/. /usr/bin
+
 WORKDIR /app/packages/vod-encoder
 
-EXPOSE 8081
+EXPOSE 8082
 CMD [ "npm", "start" ]

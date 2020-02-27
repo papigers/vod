@@ -1,0 +1,11 @@
+# sudo docker build --tag voduploader --file dockerfile.vod-uploader .
+# sudo docker run -d --name vod-uploader -v persistent-vod:/app/entrypoint -p 8081:8081 voduploader
+
+FROM vodbase
+
+RUN lerna bootstrap --scope=@vod/vod-uploader --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client
+
+WORKDIR /app/packages/vod-uploader
+
+EXPOSE 8081
+CMD [ "npm", "start" ]

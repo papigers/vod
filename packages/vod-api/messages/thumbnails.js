@@ -5,6 +5,8 @@ var THUMBNAIL_QUEUE = 'thumbnail_queue';
 
 var connection = amqp.connect(['amqp://admin:Aa123123@vod-ubuntu.westeurope.cloudapp.azure.com:5672']);
 
+console.log("Inside thumbnailgen api");
+
 var channelWrapper = connection.createChannel({
   json: true,
   name: 'encodeMessager',
@@ -22,6 +24,8 @@ function generateThumbnail(videoId, timestamp, initial) {
             .consume(
               q.queue,
               function(msg) {
+                console.log(msg);
+                console.log(videoId);
                 if (msg.properties.correlationId == videoId) {
                   var data = JSON.parse(msg.content.toString());
                   channelWrapper.removeSetup(replySetup, function() {});

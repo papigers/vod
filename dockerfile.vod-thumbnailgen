@@ -1,0 +1,16 @@
+# sudo docker build --tag vodthumbnailgen --file dockerfile.vod-thumbnailgen .
+# sudo docker run -d --name vod-thumbnailgen -v persistent-vod:/app/entrypoint -p 8083:8083 vodthumbnailgen
+
+FROM vodbase
+
+RUN lerna bootstrap --scope=@vod/vod-thumbnailgen --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client
+
+WORKDIR /app
+
+#FFMPEG installation
+RUN apk add ffmpeg
+
+WORKDIR /app/packages/vod-thumbnailgen
+
+EXPOSE 8083
+CMD [ "npm", "start" ]

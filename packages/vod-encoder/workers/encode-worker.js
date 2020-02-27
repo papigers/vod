@@ -14,8 +14,10 @@ var publishStep = require('../messages/upload').publishStep;
 
 var ENCODE_QUEUE = 'encode_queue';
 var UPLOAD_QUEUE = 'upload_queue';
+console.log("Inside encode worker outside functions");
 
 function getOutputPath(videoId) {
+  console.log(path.join('/app/entrypoint', videoId));
   return path.join('/app/entrypoint', videoId);
 }
 
@@ -23,6 +25,7 @@ function encodeVideo(videoId, inputPath) {
   var outputPath = getOutputPath(videoId);
   var outputFile = path.join(outputPath, videoId);
 
+  console.log("Inside encode video function");
   return ensurePath(outputPath).then(function() {
     return new Promise(function(resolve, reject) {
       var encodedFiles = {
@@ -194,7 +197,7 @@ function encodeVideo(videoId, inputPath) {
                     var fullPath = encodedFiles[repId];
                     mp4boxInputs.push(`"${path.basename(fullPath)}":id=${repId}`);
                     mp4boxOutputs[repId] = {
-                      path: path.join(outputPath, `${repId}.mp4`),
+                      path: path.join(outputPath, `${videoId}-${repId}.mp4`),
                     };
                   });
 

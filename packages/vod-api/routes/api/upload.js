@@ -29,6 +29,7 @@ tusServer.datastore = new tus.FileStore({
 tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, event => {
   const videoId = event.file.id;
   const file = path.join('/app/entrypoint', 'uploads', event.file.id);
+  console.log("Inside tusnode server with videoid " + videoId);
   enqueueEncoding(videoId, file);
   generateThumbnail(videoId, '20%', true);
 });

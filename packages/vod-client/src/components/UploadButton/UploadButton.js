@@ -140,6 +140,7 @@ export default class UploadButton extends Component {
     localStorage.removeItem(upload._fingerprint);
     const idRegex = new RegExp(`${process.env.REACT_APP_API_HOSTNAME}/api/upload/video/(.*)`);
     const id = idRegex.exec(url);
+    console.log(url, id);
     if (id && id[1]) {
       this.props.history.push(`/upload/edit?v=${id[1]}`);
     }

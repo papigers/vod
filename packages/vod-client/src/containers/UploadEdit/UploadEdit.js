@@ -127,7 +127,11 @@ class UploadEdit extends Component {
   };
 
   static getDerivedStateFromProps(props, state) {
-    const propsId = qs.parse(props.location.search).v;
+    // const propsId = qs.parse(props.location.search).v;
+    var propsIdTemp = qs.parse(props.location.search).v;
+    var propsId = propsIdTemp.replace('app/entrypoint/uploads/', '')
+
+    console.log(propsId);
     if (!state.videoId || state.videoId !== propsId) {
       return {
         ...UploadEdit.initialState,
@@ -155,6 +159,7 @@ class UploadEdit extends Component {
   }
 
   subscribeAndLoadVideoData() {
+    console.log(this.state.videoId);
     if (this.uploadSocket) {
       this.uploadSocket.disconnect();
     }

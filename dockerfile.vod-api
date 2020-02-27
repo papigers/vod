@@ -1,5 +1,5 @@
 #sudo docker build --tag vodapi --file dockerfile.vod-api .
-#sudo docker run -d -v persistent-vod:/app/entrypoint -p 9090:9090 vodapi
+#sudo docker run -d --name vod-api -v persistent-vod:/app/entrypoint -p 9090:9090 vodapi
 
 FROM vodbase
 
