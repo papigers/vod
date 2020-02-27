@@ -2,7 +2,7 @@ module.exports = {
   server: {
     port: process.env.PORT || '9091',
   },
-  api: 'http://vod-ubuntu.westeurope.cloudapp.azure.com:9090/api',
+  api: process.env.API_URL,
   cookieSecret: 'secret',
   cache: {
     auth: {
