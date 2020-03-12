@@ -22,4 +22,4 @@ RUN npm install --ignore-scripts
 #sudo docker run -d --hostname vod-rabbit --name vod-rabbitmq rabbitmq:3
 
 #sudo docker run  --hostname vod-rabbit-mg --name vod-rabbitmq-mgmt -p 15672:15672 -p 5672:5672 rabbitmq:3-management
-#NEED TO CONFIGURE ADMIN:Aa123123
+#NEED TO CONFIGURE ADMIN:Aa123123 אפשר לעשות אתזה במשתנה env לבדוק איך!

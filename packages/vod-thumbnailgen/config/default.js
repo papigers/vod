@@ -2,5 +2,5 @@ module.exports = {
   server: {
     port: process.env.PORT || '8083',
   },
-  api: 'http://vod-ubuntu.westeurope.cloudapp.azure.com:9090/api',
+  api: process.env.API_URL || 'http://localhost:9090/api',
 };

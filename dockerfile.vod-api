@@ -8,8 +8,6 @@ RUN lerna bootstrap --scope=@vod/vod-api --scope=@vod/vod-auth --scope=@vod/vod-
 WORKDIR /app/packages/vod-api
 
 RUN mkdir /app/entrypoint
-#RUN mkdir -p /app/packages/vod-api/app/entrypoint
-
 RUN chmod -R 777 /app/entrypoint
 
 EXPOSE 9090

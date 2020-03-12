@@ -10,5 +10,5 @@ module.exports = {
       tls: true,
     },
   },
-  api: 'http://vod-ubuntu.westeurope.cloudapp.azure.com:9090/api'
+  api: process.env.API_URL || 'http://localhost:9090/api'
 };
