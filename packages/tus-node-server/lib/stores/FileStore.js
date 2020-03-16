@@ -24,7 +24,8 @@ class FileStore extends DataStore {
     constructor(options) {
         super(options);
 
-        this.directory = options.directory || options.path.replace(/^\//, '');
+        //this.directory = options.directory || options.path.replace(/^\//, '');
+        this.directory = options.directory || options.path;
 
         this.extensions = ['creation', 'creation-defer-length'];
         this.configstore = new Configstore(`${pkg.name}-${pkg.version}`);
