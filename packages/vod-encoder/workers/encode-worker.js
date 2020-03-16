@@ -1,6 +1,5 @@
 // var amqp = require('amqplib');
 var amqp = require('amqp-connection-manager');
-var config = require('config').RabbitMQ;
 var path = require('path');
 var os = require('os');
 var ffmpeg = require('fluent-ffmpeg');
@@ -233,7 +232,7 @@ function encodeVideo(videoId, inputPath) {
   });
 }
 
-var connection = amqp.connect([`amqp://${config.username}:${config.password}@${config.host}:${config.port}`]);
+var connection = amqp.connect([`amqp://${config.RabbitMQ.username}:${config.RabbitMQ.password}@${config.RabbitMQ.host}:${config.RabbitMQ.port}`]);
 
 var channelWrapper = connection.createChannel({
   json: true,
