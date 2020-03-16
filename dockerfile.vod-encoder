@@ -1,5 +1,5 @@
-# sudo docker build --tag vodencoder --file dockerfile.vod-encoder .
-#sudo docker run --name vod-encoder -v persistent-vod:/app/entrypoint -p 8082:8082 vodencoder
+#docker build --tag vodencoder --file dockerfile.vod-encoder .
+#docker run -d --rm --name vod-encoder -e API_URL=http://<IP or DNS of API server>:9090/api -e RABBITMQ_HOSTNAME=<IP or DNS of RabbitMQ server> -v persistent-vod:/app/entrypoint -p 8082:8082 vodencoder
 
 FROM vodbase
 

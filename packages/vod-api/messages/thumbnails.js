@@ -1,9 +1,10 @@
 // var amqp = require('amqplib');
 var amqp = require('amqp-connection-manager');
+var config = require('config').RabbitMQ;
 
 var THUMBNAIL_QUEUE = 'thumbnail_queue';
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-ubuntu.westeurope.cloudapp.azure.com:5672']);
+var connection = amqp.connect([`amqp://${config.username}:${config.password}@${config.host}:${config.port}`]);
 
 console.log("Inside thumbnailgen api");
 

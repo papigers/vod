@@ -1,5 +1,5 @@
-# sudo docker build --tag vodthumbnailgen --file dockerfile.vod-thumbnailgen .
-# sudo docker run -d --name vod-thumbnailgen -v persistent-vod:/app/entrypoint -p 8083:8083 vodthumbnailgen
+#docker build --tag vodthumbnailgen --file dockerfile.vod-thumbnailgen .
+#docker run -d --rm --name vod-thumbnailgen -e API_URL=http://<IP or DNS of API server>:9090/api -e RABBITMQ_HOSTNAME=<IP or DNS of RabbitMQ server> -v persistent-vod:/app/entrypoint -p 8083:8083 vodthumbnailgen
 
 FROM vodbase
 

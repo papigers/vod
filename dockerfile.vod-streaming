@@ -1,5 +1,5 @@
-#sudo docker build --tag vodstreaming --file dockerfile.vod-streaming .
-#sudo docker run -d -p 9091:9091 vodstreaming
+#docker build --tag vodstreaming --file dockerfile.vod-streaming .
+#docker run -d --rm -e API_URL=http://<IP or DNS of API server>:9090/api -p 9091:9091 vodstreaming
 
 FROM vodbase
 

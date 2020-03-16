@@ -1,5 +1,5 @@
-#sudo docker build --tag vodapi --file dockerfile.vod-api .
-#sudo docker run -d --name vod-api -e DB_HOSTNAME=<IP or dns>-v persistent-vod:/app/entrypoint -p 9090:9090 vodapi
+#docker build --tag vodapi --file dockerfile.vod-api .
+#docker run -d --rm --name vod-api -e DB_HOSTNAME=<IP or DNS of Postgres server> -e API_URL=http://<IP or DNS of API server>:9090/api -e RABBITMQ_HOSTNAME=<IP or DNS of RabbitMQ server> -v persistent-vod:/app/entrypoint -p 9090:9090 vodapi
 
 FROM vodbase
 

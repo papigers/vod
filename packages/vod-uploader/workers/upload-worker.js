@@ -1,5 +1,6 @@
 // var amqp = require('amqplib');
 var amqp = require('amqp-connection-manager');
+var config = require('config').RabbitMQ;
 var path = require('path');
 var fs = require('fs');
 var axios = require('axios');
@@ -39,7 +40,7 @@ function uploadFile(videoId, file) {
   });
 }
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-ubuntu.westeurope.cloudapp.azure.com:5672']);
+var connection = amqp.connect([`amqp://${config.username}:${config.password}@${config.host}:${config.port}`]);
 
 var channelWrapper = connection.createChannel({
   json: true,
