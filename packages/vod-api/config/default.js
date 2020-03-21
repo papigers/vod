@@ -30,9 +30,9 @@ module.exports = {
     id: 's7591665',
     type: 'USER',
     picture:
-      'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
+      'https://images.unsplash.com/photo-1566903451935-7e8835ed3e97?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=3300&q=80',
     cover:
-      'https://scontent.fhfa1-1.fna.fbcdn.net/v/t31.0-8/21994326_10210708722743309_2900923781613308026_o.jpg?_nc_cat=0&oh=add5e60e2256e184fe651f630f9f3a43&oe=5BD96A45',
+        'https://cdn.pixabay.com/photo/2018/09/26/19/42/raindrop-3705463_1280.jpg',
     personal: true,
     access: 'PUBLIC',
     name: 'גרשון ח פפיאשוילי',

@@ -1,5 +1,5 @@
-# sudo docker build --tag vodweb --file dockerfile.vod-web .
-#sudo docker run --rm -d -e API_URL=<API_dns_address or LOCAL_IP>-p 8080:8080 vodweb
+#docker build --tag vodweb --file dockerfile.vod-web .
+#docker run --rm -d -e API_URL=<API_dns_address or LOCAL_IP>-p 8080:8080 vodweb
 
 
 FROM vodbase

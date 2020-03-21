@@ -21,7 +21,7 @@ function translateMetadata(metadata) {
 var tusServer = new tus.Server();
 tusServer.datastore = new tus.FileStore({
   path: path.join('/app/entrypoint', 'uploads'),
-  // relativeLocation: true,
+  relativeLocation: true,
   namingFunction: function(req, res) {
     return res.locals.videoId;
   },
@@ -29,7 +29,6 @@ tusServer.datastore = new tus.FileStore({
 tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, event => {
   const videoId = event.file.id;
   const file = path.join('/app/entrypoint', 'uploads', event.file.id);
-  console.log("Inside tusnode server with videoid " + videoId);
   enqueueEncoding(videoId, file);
   generateThumbnail(videoId, '20%', true);
 });

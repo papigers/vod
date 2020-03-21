@@ -13,6 +13,5 @@ app.use(cookieParser('cookie-secret'));
 app.use(auth);
 
 require('./workers/encode-worker');
-console.log("Inside encode app");
 
 module.exports = app;
