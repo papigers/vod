@@ -214,6 +214,7 @@ function encodeVideo(videoId, inputPath) {
 
                   exec(mp4boxCommand, { cwd: outputPath }, function(err, stdout, stderr) {
                     if (err) {
+                      console.log(err);
                       return reject(err);
                     }
                     return axios
@@ -269,6 +270,7 @@ var channelWrapper = connection.createChannel({
             .catch(function(err) {
               console.log(err);
               ch.nack(msg);
+              //TODO
             });
         },
         { noAck: false },
