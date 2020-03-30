@@ -199,7 +199,8 @@ function encodeVideo(videoId, inputPath) {
                   });
                   
                   var mpdPath = path.join(outputPath, 'mpd.mpd');
-                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "$RepresentationID$$Init=$" -out "${path.basename(
+                  // In windows use it without \: "$RepresentationID$$Init=$" 
+                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "\\$RepresentationID\\$\\$Init=\\$" -out "${path.basename(
                     mpdPath,
                   )}" ${mp4boxInputs.join(' ')}`;
 

@@ -15,7 +15,6 @@ var channelWrapper = connection.createChannel({
 });
 
 function enqueueEncoding(videoId, path) {
-  console.log("Inside enquque encoding with video id " + videoId);
   return channelWrapper.sendToQueue(
     ENCODE_QUEUE,
     {

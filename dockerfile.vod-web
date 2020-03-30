@@ -1,5 +1,5 @@
 #docker build --tag vodweb --file dockerfile.vod-web .
-#docker run --rm -d -e API_URL=<API_dns_address or LOCAL_IP>-p 8080:8080 vodweb
+#docker run --rm -d -e API_URL=http://<IP or DNS of API server>:9090/api -p 8080:8080 vodweb
 
 
 FROM vodbase
@@ -8,9 +8,9 @@ RUN lerna bootstrap --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vo
 
 WORKDIR /app/packages/vod-client
 
-ENV REACT_APP_API_HOSTNAME=http://192.168.226.113:9090
-ENV REACT_APP_ENCODER_HOSTNAME=http://192.168.226.113:8081
-ENV REACT_APP_STREAMER_HOSTNAME=http://192.168.226.113:9091
+ENV REACT_APP_API_HOSTNAME=http://192.168.14.143:9090
+ENV REACT_APP_ENCODER_HOSTNAME=http://192.168.14.143:8081
+ENV REACT_APP_STREAMER_HOSTNAME=http://192.168.14.143:9091
 
 
 RUN npm run build

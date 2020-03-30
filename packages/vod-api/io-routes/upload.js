@@ -3,7 +3,10 @@ var unsubscribeUpload = require('../messages/upload').unsubscribeUpload;
 var db = require('../models');
 
 function ioUpload(io) {
+  console.log("Check lirons testttttttt")
   io.of('/upload').on('connection', function(socket) {
+  console.log("Check lirons testttttttt - connection exists")
+
     var subscriptions = [];
     var videoId = socket.handshake.query.id;
     var video = {};
@@ -112,6 +115,8 @@ function ioUpload(io) {
             progress: calculateProgress(),
             id: videoId,
           });
+
+          console.log("Lirons test: we have metadata" + metadata) + " We emitting it";
           socket.emit('metadata', {
             metadata,
             id: videoId,
