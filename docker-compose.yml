@@ -31,6 +31,7 @@ services:
         image: vod-api
         container_name: vod-api
         environment: 
+            NODE_ENV: "staging"
             PORT: "9090"
             API_URL: "http://vod-api:9090/api"
             DB_USERNAME: "postgres"
@@ -57,6 +58,7 @@ services:
         image: vod-streaming
         container_name: vod-streaming
         environment: 
+            NODE_ENV: "staging"
             PORT: "9091"
             API_URL: "http://vod-api:9090/api"
         depends_on: 
@@ -71,6 +73,7 @@ services:
         image: vod-web
         container_name: vod-web
         environment: 
+            NODE_ENV: "staging"
             PORT: "8080"
             API_URL: "http://vod-api:9090/api"
         depends_on: 
@@ -86,6 +89,7 @@ services:
         image: vod-encoder
         container_name: vod-encoder
         environment: 
+            NODE_ENV: "staging"
             PORT: "8082"
             API_URL: "http://vod-api:9090/api"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
@@ -107,6 +111,7 @@ services:
         image: vod-thumbnailgen
         container_name: vod-thumbnailgen
         environment: 
+            NODE_ENV: "staging"
             PORT: "8083"
             API_URL: "http://vod-api:9090/api"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
@@ -128,6 +133,7 @@ services:
         image: vod-uploader
         container_name: vod-uploader
         environment: 
+            NODE_ENV: "staging"
             PORT: "8081"
             API_URL: "http://vod-api:9090/api"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"

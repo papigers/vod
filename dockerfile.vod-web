@@ -19,7 +19,5 @@ RUN cp -r ./build ../vod-web/public
 
 WORKDIR /app/packages/vod-web
 
-ENV NODE_ENV=production
-
 EXPOSE 8080
 CMD [ "npm", "start" ]
