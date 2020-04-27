@@ -3,15 +3,12 @@ module.exports = {
     port: process.env.PORT || 9090,
   },
   api: process.env.API_URL || 'http://localhost:9090/api',
-  //api: 'http://vod-ubuntu.westeurope.cloudapp.azure.com:9090/api',
   db: {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'Aa123123',
     database: process.env.DB_DATABASE || 'vod',
     host: process.env.DB_HOSTNAME || 'localhost',
     port: process.env.DB_PORT || 5432,
-    // host: process.env.DB_HOSTNAME || 'vod-db.westeurope.cloudapp.azure.com',
-    //port: process.env.DB_PORT || 5433,
     config: {
       dialect: process.env.DB_TYPE || 'postgres',
       pool: {
@@ -40,10 +37,10 @@ module.exports = {
     isAdmin: true,
   },
   ad: {
-    url: 'ldap://vod-dc.westeurope.cloudapp.azure.com',
-    baseDN: 'ou=orgs,dc=example,dc=com',
-    username: 'vod@example.com',
-    password: 'Aa123123',
+    url: process.env.AD_DOMAIN_CONTROLLER_URL || 'ldap://vod-dc.westeurope.cloudapp.azure.com',
+    baseDN: process.env.AD_BASE_DN || 'ou=orgs,dc=example,dc=com',
+    username: process.env.AD_PROJECTAL_USER || 'vod@example.com',
+    password: process.env.AD_PROJECTAL_USER_PASSWORD || 'Aa123123',
     scope: 'sub',
     attributes: {
       user: ['sAMAccountName', 'displayName', 'objectClass', 'dn'],

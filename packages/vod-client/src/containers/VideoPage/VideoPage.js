@@ -309,7 +309,6 @@ class VideoPage extends Component {
 
   fetchNextVideo = () => {
     axios.get(`/videos/video/${this.state.nextVideoId}`).then(({ data }) => {
-      console.log(data, this);
       this.setState({
         nextVideo: data,
       });

@@ -204,14 +204,9 @@ function encodeVideo(videoId, inputPath) {
                     mpdPath,
                   )}" ${mp4boxInputs.join(' ')}`;
 
-                  console.log(mp4boxCommand);
-
                   mp4boxOutputs.mpd = {
                     path: mpdPath,
                   };
-
-
-                  console.log(mp4boxOutputs);
 
                   exec(mp4boxCommand, { cwd: outputPath }, function(err, stdout, stderr) {
                     if (err) {

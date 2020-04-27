@@ -43,6 +43,10 @@ services:
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
             RABBITMQ_PASSWORD: "Aa123123"
+            AD_DOMAIN_CONTROLLER_URL: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+            AD_BASE_DN: "ou=orgs,dc=example,dc=com"
+            AD_PROJECTAL_USER: "vod@example.com"
+            AD_PROJECTAL_USER_PASSWORD: "Aa123123"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 

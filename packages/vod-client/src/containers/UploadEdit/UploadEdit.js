@@ -155,7 +155,6 @@ class UploadEdit extends Component {
   }
 
   subscribeAndLoadVideoData() {
-    console.log(this.state.videoId);
     if (this.uploadSocket) {
       this.uploadSocket.disconnect();
     }

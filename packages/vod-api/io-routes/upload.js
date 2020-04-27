@@ -113,8 +113,7 @@ function ioUpload(io) {
             progress: calculateProgress(),
             id: videoId,
           });
-
-          console.log("Lirons test: we have metadata" + metadata) + " We emitting it";
+          
           socket.emit('metadata', {
             metadata,
             id: videoId,
