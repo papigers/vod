@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vod-postgres-service
+    labels:
+        app: vod-postgres
+spec:
+    type: LoadBalancer
+    ports:
+      - port: 5432
+    selector:
+        app: vod-postgres
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: vod-postgres-deployment
+spec:
+    replicas: 3
+    template:
+        metadata:
+            labels:
+                app: vod-postgres
+                service: vod-postgres-service
+        spec:
+            containers:
+              - name: postgres
+                image: postgres:latest
+                ports:
+                    - containerPort: 5432
+                env:
+                    - name: POSTGRES_USER
+                      value: postgres
+                    - name: POSTGRES_DB
+                      value: vod
+                    - name: POSTGRES_PASSWORD
+                      value: Aa123123
+                volumeMounts:
+                    - mountPath: /var/lib/postgresql/data
+                      name: vod-postgres
+            volumes:
+                - name: vod-postgres
