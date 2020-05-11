@@ -31,7 +31,7 @@ spec:
                     - containerPort: 9090
                 env:
                     - name: NODE_ENV
-                      value: staging
+                      value: development
                     - name: PORT
                       value: "9090"
                     - name: DB_USERNAME
@@ -59,7 +59,7 @@ spec:
                     - name: AD_PROJECTAL_USER
                       value: vod@example.com
                     - name: AD_PROJECTAL_USER_PASSWORD
-                      value: Aa123123                                                                                                                                                            
+                      value: Aa123123                                                                                                                                                                          
                 volumeMounts:
                     - mountPath: /app/entrypoint
                       name: persistent-vod

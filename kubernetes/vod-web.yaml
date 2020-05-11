@@ -1,39 +1,41 @@
 # kubectl create secret docker-registry acr-secret --docker-server=https://voidcontainerregistry.azurecr.io --docker-username=VodContainerRegistry --docker-password=1pnFWTVdr5TNfxz8S08J10DV2j8d/lfg
+#TODO: make it production, doesnt work beacause of the authentication
+
 ---
-    apiVersion: v1
-    kind: Service
-    metadata:
-        name: vod-web-service
-        labels:
-            app: vod-web
-    spec:
-        type: LoadBalancer
-        ports:
-          - port: 80
-        selector:
-            app: vod-web
-    ---
-    apiVersion: extensions/v1beta1
-    kind: Deployment
-    metadata:
-        name: vod-web-deployment
-    spec:
-        replicas: 2
-        template:
-            metadata:
-                labels:
-                    app: vod-web
-                    service: vod-web-service
-            spec:
-                containers:
-                  - name: vod-web
-                    image: postgres:latest
-                    ports:
-                        - containerPort: 80
-                    env:
-                        - name: NODE_ENV
-                          value: staging
-                        - name: PORT
-                          value: 8080
-                        - name: API_URL
-                          value: "http://vod-api:9090/api"
+apiVersion: v1
+kind: Service
+metadata:
+    name: vod-web-service
+    labels:
+        app: vod-web
+spec:
+    type: LoadBalancer
+    ports:
+      - port: 80
+    selector:
+        app: vod-web
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: vod-web-deployment
+spec:
+    replicas: 2
+    template:
+        metadata:
+            labels:
+                app: vod-web
+                service: vod-web-service
+        spec:
+            containers:
+              - name: web
+                image: vodcontainerregistry.azurecr.io/vod-web
+                ports:
+                    - containerPort: 80
+                env:
+                    - name: NODE_ENV
+                      value: staging
+                    - name: PORT
+                      value: "80"
+                    - name: API_URL
+                      value: http://20.50.150.183:9090/api
