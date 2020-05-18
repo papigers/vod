@@ -17,7 +17,7 @@ kind: Deployment
 metadata:
     name: vod-api-deployment
 spec:
-    replicas: 2
+    replicas: 1
     template:
         metadata:
             labels:

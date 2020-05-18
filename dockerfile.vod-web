@@ -6,13 +6,15 @@ FROM vodbase
 
 RUN lerna bootstrap --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/vod-redis-client
 
+WORKDIR /app/packages/vod-web
+COPY ./packages/vod-web/ .
+
 WORKDIR /app/packages/vod-client
 
-ENV REACT_APP_API_HOSTNAME=http://vod-api-service:9090
+ENV REACT_APP_API_HOSTNAME=http://vod-api:9090
 ENV REACT_APP_STREAMER_HOSTNAME=http://vod-streaming-service:9091
 
 RUN npm run build
-
 RUN cp -r ./build ../vod-web/public
 
 WORKDIR /app/packages/vod-web

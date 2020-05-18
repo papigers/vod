@@ -1,0 +1,100 @@
+events {}
+http {
+    auth_gss on;
+    auth_gss_realm EXAMPLE.COM;
+    auth_gss_keytab /etc/krb5.keytab;
+    auth_gss_service_name HTTP/vod.army.idf;
+
+    server {
+        server_name vod.army.idf;
+        listen 80;
+
+        location ~ {
+            proxy_pass         ${WEB_PATH};
+            proxy_redirect off;
+            proxy_set_header   Host             $http_host;
+            proxy_set_header   X-Real-IP        $remote_addr;
+            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-User $http_authorization; 
+            proxy_set_header   Authorization "";
+            proxy_set_header   X-Forwarded-User $remote_user;
+            proxy_set_header   remote_user $remote_user;
+            proxy_pass_header  remote_user;
+            proxy_max_temp_file_size 0;
+
+            #this is the maximum upload size
+            client_max_body_size       10m;
+            client_body_buffer_size    128k;
+
+            proxy_connect_timeout      90;
+            proxy_send_timeout         90;
+            proxy_read_timeout         90;             
+            proxy_buffer_size          4k;
+            proxy_buffers              4 32k;
+            proxy_busy_buffers_size    64k;
+            proxy_temp_file_write_size 64k;
+
+        }
+    }
+    server {
+        server_name vod-stream.army.idf;
+        listen 80;
+
+        location ~ {
+            proxy_pass         ${STREAM_PATH};
+            proxy_redirect off;
+            proxy_set_header   Host             $http_host;
+            proxy_set_header   X-Real-IP        $remote_addr;
+            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-User $http_authorization; 
+            proxy_set_header   Authorization "";
+            proxy_set_header   X-Forwarded-User $remote_user;
+            proxy_set_header   remote_user $remote_user;
+            proxy_pass_header  remote_user;
+            proxy_max_temp_file_size 0;
+
+            #this is the maximum upload size
+            client_max_body_size       10m;
+            client_body_buffer_size    128k;
+
+            proxy_connect_timeout      90;
+            proxy_send_timeout         90;
+            proxy_read_timeout         90;             
+            proxy_buffer_size          4k;
+            proxy_buffers              4 32k;
+            proxy_busy_buffers_size    64k;
+            proxy_temp_file_write_size 64k;
+
+        }
+    }
+    server {
+        server_name vod-api.army.idf;
+
+        location ~ {
+            proxy_pass         ${API_PATH};
+            proxy_redirect off;
+            proxy_set_header   Host             $http_host;
+            proxy_set_header   X-Real-IP        $remote_addr;
+            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-User $http_authorization; 
+            proxy_set_header   Authorization "";
+            proxy_set_header   X-Forwarded-User $remote_user;
+            proxy_set_header   remote_user $remote_user;
+            proxy_pass_header  remote_user;
+            proxy_max_temp_file_size 0;
+
+            #this is the maximum upload size
+            client_max_body_size       10m;
+            client_body_buffer_size    128k;
+
+            proxy_connect_timeout      90;
+            proxy_send_timeout         90;
+            proxy_read_timeout         90;             
+            proxy_buffer_size          4k;
+            proxy_buffers              4 32k;
+            proxy_busy_buffers_size    64k;
+            proxy_temp_file_write_size 64k;
+
+        }
+    }
+}
