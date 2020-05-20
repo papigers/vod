@@ -48,7 +48,6 @@ services:
         image: vod-api
         container_name: vod-api
         environment: 
-            NODE_ENV: "development"
             PORT: "9090"
             API_URL: "http://vod-api:9090/api"
             DB_USERNAME: "postgres"
@@ -79,7 +78,7 @@ services:
         image: vod-streaming
         container_name: vod-streaming
         environment: 
-            NODE_ENV: "development"
+            NODE_ENV: "production"
             PORT: "9091"
             API_URL: "http://vod-api:9090/api"
         depends_on: 
@@ -94,7 +93,7 @@ services:
         image: vod-web
         container_name: vod-web
         environment: 
-            NODE_ENV: "development"
+            NODE_ENV: "production"
             PORT: "8080"
             API_URL: "http://vod-api:9090/api"
         depends_on: 
@@ -110,9 +109,7 @@ services:
         image: vod-encoder
         container_name: vod-encoder
         environment: 
-            NODE_ENV: "development"
-            PORT: "8082"
-            API_URL: "http://vod-api:9090/api"
+            NODE_ENV: "production"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
@@ -122,8 +119,6 @@ services:
         depends_on: 
             - "vod-api"
             - "vod-rabbitmq"
-        ports: 
-            - "8082:8082"
 
     vod-thumbnailgen:
         build: 
@@ -132,9 +127,7 @@ services:
         image: vod-thumbnailgen
         container_name: vod-thumbnailgen
         environment: 
-            NODE_ENV: "development"
-            PORT: "8083"
-            API_URL: "http://vod-api:9090/api"
+            NODE_ENV: "production"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
@@ -144,8 +137,6 @@ services:
         depends_on: 
             - "vod-api"
             - "vod-rabbitmq"
-        ports: 
-            - "8083:8083"
 
     vod-uploader:
         build: 
@@ -154,9 +145,7 @@ services:
         image: vod-uploader
         container_name: vod-uploader
         environment: 
-            NODE_ENV: "development"
-            PORT: "8081"
-            API_URL: "http://vod-api:9090/api"
+            NODE_ENV: "production"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
@@ -166,10 +155,6 @@ services:
         depends_on: 
             - "vod-api"
             - "vod-rabbitmq"
-        ports: 
-            - "8081:8081"
-
-    
 
 volumes: 
     postgres:

@@ -3,6 +3,13 @@
 
 FROM vodbase
 
+WORKDIR /app/packages
+
+COPY packages/vod-api ./vod-api
+COPY packages/vod-auth ./vod-auth
+COPY packages/tus-node-server ./tus-node-server
+COPY packages/vod-object-storage-client ./vod-object-storage-client
+
 RUN lerna bootstrap --scope=@vod/vod-api --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/tus-node-server
 
 WORKDIR /app/packages/vod-api

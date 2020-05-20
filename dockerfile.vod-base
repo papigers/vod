@@ -5,9 +5,8 @@ WORKDIR /app
 
 RUN npm i lerna -g --loglevel notice
 
-RUN apk add git
-
-COPY . .
+COPY package.json .
+COPY lerna.json .
 
 RUN npm install --ignore-scripts
 

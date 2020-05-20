@@ -3,9 +3,15 @@
 
 FROM vodbase
 
-RUN lerna bootstrap --scope=@vod/vod-encoder --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client
+WORKDIR /app/packages
+
+COPY packages/vod-encoder ./vod-encoder
+
+RUN lerna bootstrap --scope=@vod/vod-encoder
 
 WORKDIR /app
+
+RUN apk add git
 
 #FFMPEG installation
 RUN apk add ffmpeg
@@ -47,5 +53,4 @@ RUN cp -p "/app/gpac/bin/gcc/MP4Box" "/usr/bin/"
 
 WORKDIR /app/packages/vod-encoder
 
-EXPOSE 8082
 CMD [ "npm", "start" ]

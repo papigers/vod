@@ -75,9 +75,9 @@ RUN adduser -c "Nginx user" nginx && \
 # ADD config/nginx-start.sh /opt/bin/nginx-start.sh
 # RUN chmod u=rwx /opt/bin/nginx-start.sh && \
 
-COPY krb5.keytab /etc
-COPY krb5.conf /etc
-COPY nginx.conf.template /etc/nginx/
+COPY deployment/reverseproxy/krb5.keytab /etc
+COPY deployment/reverseproxy/krb5.conf /etc
+COPY deployment/reverseproxy/nginx.conf.template /etc/nginx/
 
 RUN chown -R nginx:nginx /etc/nginx /var/log/nginx /usr/share/nginx && \
     chmod 440 /etc/krb5.keytab && \
