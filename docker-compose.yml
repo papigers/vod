@@ -40,6 +40,7 @@ services:
             - "vod-postgres"
         ports: 
             - "80:80"
+            - "443:443"
 
     vod-api:
         build: 
