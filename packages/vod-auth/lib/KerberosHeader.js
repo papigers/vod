@@ -5,10 +5,10 @@ var axios = require('axios');
 var config = require('config');
 
 var ad = new ActiveDirectory({
-  url: 'ldap://vod-dc.westeurope.cloudapp.azure.com',
-  baseDN: 'ou=orgs,dc=example,dc=com',
-  username: 'vod@example.com',
-  password: 'Aa123123',
+  url: process.env.AD_DOMAIN_CONTROLLER_URL,
+  baseDN: process.env.AD_BASE_DN,
+  username: process.env.AD_PROJECTAL_USER,
+  password: process.env.AD_PROJECTAL_USER_PASSWORD,
   scope: 'sub',
   attributes: {
     user: ['sAMAccountName', 'displayName', 'title', 'objectClass'], // TO DO: override to include full name, rank, etc...
