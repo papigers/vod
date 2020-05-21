@@ -40,6 +40,7 @@ services:
             - "vod-postgres"
         ports: 
             - "80:80"
+            - "443:443"
 
     vod-api:
         build: 
@@ -63,6 +64,10 @@ services:
             AD_BASE_DN: "ou=orgs,dc=example,dc=com"
             AD_PROJECTAL_USER: "vod@example.com"
             AD_PROJECTAL_USER_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
@@ -81,6 +86,14 @@ services:
             NODE_ENV: "production"
             PORT: "9091"
             API_URL: "http://vod-api:9090/api"
+            AD_DOMAIN_CONTROLLER_URL: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+            AD_BASE_DN: "ou=orgs,dc=example,dc=com"
+            AD_PROJECTAL_USER: "vod@example.com"
+            AD_PROJECTAL_USER_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
         depends_on: 
             - "vod-api"
         ports: 
@@ -96,6 +109,14 @@ services:
             NODE_ENV: "production"
             PORT: "8080"
             API_URL: "http://vod-api:9090/api"
+            AD_DOMAIN_CONTROLLER_URL: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+            AD_BASE_DN: "ou=orgs,dc=example,dc=com"
+            AD_PROJECTAL_USER: "vod@example.com"
+            AD_PROJECTAL_USER_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
         depends_on: 
             - "vod-api"
             - "vod-streaming"
@@ -132,6 +153,10 @@ services:
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
             RABBITMQ_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "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"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
@@ -150,6 +175,10 @@ services:
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
             RABBITMQ_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "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"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
