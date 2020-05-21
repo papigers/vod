@@ -33,7 +33,7 @@ services:
         container_name: vod-nginx
         environment: 
             API_PATH: "http://vod-api:9090"
-            STREAM_PATH: "http://vod-streaming:9091"
+            STREAMING_PATH: "http://vod-streaming:9091"
             WEB_PATH: "http://vod-web:8080"
         depends_on: 
             - "vod-rabbitmq"
