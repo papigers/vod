@@ -19,6 +19,11 @@ app.use(cookieParser('cookie-secret'));
 app.use(compression());
 app.use(auth);
 
+var config = {
+  apiEndpoint: config.apiEndpoint,
+  streamingEndpoint: config.streamingEndpoint
+}
+
 function getUser(req) {
   return req.user && req.user.id;
 }
@@ -74,6 +79,13 @@ app.get(
   },
 );
 
+app.get(
+  '/config',
+    function(req, res) {
+      res.json(config);
+    }
+);
+
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
   // Serve any static files
   app.use(express.static(path.join(__dirname, 'public/build')));
@@ -83,21 +95,6 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'developme
     res.sendFile(path.join(__dirname, './public/build', 'index.html'));
   });
 }
-
-app.get(
-  '/config',
-    function(req, res) {
-
-      var config = {
-        apiEndpoint: config.apiEndpoint,
-        streamingEndpoint: config.streamingEndpoint
-      }
-
-      res.json(config);
-    }
-);
-
-
 
 // app.use(express.static(path.join(__dirname, 'public/build')));
 
