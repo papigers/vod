@@ -93,7 +93,7 @@ const VideoTag = styled.span`
 const NextVideoPreview = styled(Flex)`
   position: absolute;
   background-image: ${({ nextVideoId }) =>
-    `url('${process.env.REACT_APP_STREAMER_HOSTNAME}/${nextVideoId}/poster.png')`};
+    `url('${window.streamingEndpoint}/${nextVideoId}/poster.png')`};
   background-size: cover;
   background-position: center;
   left: 0;

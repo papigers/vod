@@ -14,6 +14,16 @@ import { makeSelectUser } from './selectors';
 class Root extends Component {
   componentDidMount() {
     this.props.getManagedChannels();
+
+    fetch("/config")
+      .then(res => res.json())
+      .then(data => {
+          window.apiEndpoint = data.apiEndpoint;
+          window.streamingEndpoint = data.streamingEndpoint;
+      })
+      .catch(function() {
+          console.log("Cant reach server");
+      });
   }
 
   shouldComponentUpdate(nextProps) {

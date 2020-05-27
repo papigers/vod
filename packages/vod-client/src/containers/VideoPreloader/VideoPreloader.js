@@ -47,7 +47,7 @@ class VideoPreloader extends Component {
           .get(`/videos/video/${this.props.preloadId}`)
           .then(() => {
             this.player.src({
-              src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.preloadId}/mpd.mpd`,
+              src: `${window.streamingEndpoint}/${this.props.preloadId}/mpd.mpd`,
               type: 'application/dash+xml',
             });
             this.player.load();
@@ -69,7 +69,7 @@ class VideoPreloader extends Component {
         />
         {this.props.preloadId && (
           <img
-            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.preloadId}/poster.png`}
+            src={`${window.streamingEndpoint}/${this.props.preloadId}/poster.png`}
             alt="preload-poster"
           />
         )}

@@ -169,9 +169,9 @@ class Notification extends Component {
   getNotificationPreview = () => {
     switch (this.props.type) {
       case 'VIDEO_LIKE':
-        return `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.video.id}/thumbnail.png`;
+        return `${window.streamingEndpoint}/${this.props.video.id}/thumbnail.png`;
       case 'VIDEO_COMMENT':
-        return `${process.env.REACT_APP_STREAMER_HOSTNAME}/${
+        return `${window.streamingEndpoint}/${
           this.props.comment.video.id
         }/thumbnail.png`;
       case 'CHANNEL_FOLLOW':

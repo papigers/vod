@@ -129,7 +129,7 @@ class StudioVideos extends Component {
       return {
         thumbnail: (
           <VideoThumbnail
-            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${video.id}/thumbnail.png`}
+            src={`${window.streamingEndpoint}/${video.id}/thumbnail.png`}
             width={180}
             height={101}
           />

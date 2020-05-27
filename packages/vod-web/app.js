@@ -12,11 +12,6 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var app = express();
 
-
-console.log('got here')
-
-app.use((req, res, next) => console.log(req.url) || next());
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -88,6 +83,19 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'developme
     res.sendFile(path.join(__dirname, './public/build', 'index.html'));
   });
 }
+
+app.get(
+  '/config',
+    function(req, res) {
+
+      var config = {
+        apiEndpoint: config.apiEndpoint,
+        streamingEndpoint: config.streamingEndpoint
+      }
+
+      res.json(config);
+    }
+);
 
 
 

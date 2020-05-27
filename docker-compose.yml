@@ -117,6 +117,8 @@ services:
             AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
             AWS_BUCKET: "bucket-vod"
             AWS_REGION: "eu-central-1"
+            REACT_APP_API_HOSTNAME: "http://vod-api.army.idf"
+            REACT_APP_STREAMER_HOSTNAME: "http://vod-streaming.army.idf"
         depends_on: 
             - "vod-api"
             - "vod-streaming"

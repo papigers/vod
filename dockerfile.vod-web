@@ -15,8 +15,8 @@ RUN lerna bootstrap --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vo
 
 WORKDIR /app/packages/vod-client
 
-ENV REACT_APP_API_HOSTNAME=http://vod-api.army.idf
-ENV REACT_APP_STREAMER_HOSTNAME=http://vod-streaming.army.idf
+#ENV REACT_APP_API_HOSTNAME=http://vod-api.army.idf
+#ENV REACT_APP_STREAMER_HOSTNAME=http://vod-streaming.army.idf
 
 RUN npm run build
 RUN cp -r ./build ../vod-web/public

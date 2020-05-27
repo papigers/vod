@@ -64,7 +64,7 @@ class PlaylistVideoCard extends Component {
           </SubTitle>
         </div>
         <CardThumbnail
-          src={item && `${process.env.REACT_APP_STREAMER_HOSTNAME}/${item.id}/thumbnail.png`}
+          src={item && `${window.streamingEndpoint}/${item.id}/thumbnail.png`}
           width={compact ? 100 : 120}
         />
         <CardContent>
