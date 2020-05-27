@@ -20,9 +20,10 @@ class Root extends Component {
       .then(data => {
           window.apiEndpoint = data.apiEndpoint;
           window.streamingEndpoint = data.streamingEndpoint;
+          this.setState({loadedConfig: true});
       })
       .catch(function() {
-          console.log("Cant reach server");
+          console.log("Can't reach server");
       });
   }
 
@@ -30,15 +31,23 @@ class Root extends Component {
     return true;
   }
 
+  constructor(){
+    this.state = {loadedConfig: false};
+  }
+
   render() {
-    return (
-      <AuthRequired>
-        <Switch>
-          <Route path="/mgmt" component={ManagementApp} />
-          <Route component={App} />
-        </Switch>
-      </AuthRequired>
-    );
+    if(this.state.loadedConfig){
+      return (<p>Loading...</p>)
+    } else {
+      return (
+        <AuthRequired>
+          <Switch>
+            <Route path="/mgmt" component={ManagementApp} />
+            <Route component={App} />
+          </Switch>
+        </AuthRequired>
+      );
+    }
   }
 }
 
