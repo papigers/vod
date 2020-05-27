@@ -5,6 +5,8 @@ var db = require('../models');
 function ioUpload(io) {
   io.of('/upload').on('connection', function(socket) {
 
+    console.log("Liron test-  there is a connection!");
+
     var subscriptions = [];
     var videoId = socket.handshake.query.id;
     var video = {};

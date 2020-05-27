@@ -32,9 +32,9 @@ services:
         image: vod-nginx
         container_name: vod-nginx
         environment: 
-            API_PATH: "http://vod-api:9090"
-            STREAMING_PATH: "http://vod-streaming:9091"
-            WEB_PATH: "http://vod-web:8080"
+            API_PATH: "http://vod-api:9090/"
+            STREAMING_PATH: "http://vod-streaming:9091/"
+            WEB_PATH: "http://vod-web:8080/"
         depends_on: 
             - "vod-rabbitmq"
             - "vod-postgres"
@@ -131,6 +131,7 @@ services:
         container_name: vod-encoder
         environment: 
             NODE_ENV: "production"
+            API_URL: "http://vod-api:9090/api"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
@@ -149,6 +150,7 @@ services:
         container_name: vod-thumbnailgen
         environment: 
             NODE_ENV: "production"
+            API_URL: "http://vod-api:9090/api"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
@@ -171,6 +173,7 @@ services:
         container_name: vod-uploader
         environment: 
             NODE_ENV: "production"
+            API_URL: "http://vod-api:9090/api"
             RABBITMQ_HOSTNAME: "vod-rabbitmq"
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"

@@ -16,8 +16,8 @@ var app = express();
 app.use(
   cors({
     credentials: true,
-    origin: ['http://localhost:3000', 'http://localhost:8000', 'http://localhost:8080', 'http://localhost', 'http://vod-api:9090', 'http://vod-streaming:9091', 'http://vod.army.idf', 'http://vod-api.army.idf:9090', 'http://vod-api.army.idf:9090/api']
-  }),
+    origin: ['http://vod.army.idf', 'http://vod-api.army.idf', 'http://vod-streaming.army.idf']
+  })
 );
 app.use(logger('dev'));
 app.use(express.json());

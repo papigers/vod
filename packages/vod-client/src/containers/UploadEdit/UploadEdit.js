@@ -162,9 +162,12 @@ class UploadEdit extends Component {
       this.setState({ thumbnails });
     });
 
+    // TODO TFIRA
+    //let socketEndpoint = (process.env.REACT_APP_API_HOSTNAME).replace('/api', '');
     this.uploadSocket = io.connect(
       `${process.env.REACT_APP_API_HOSTNAME}/upload?id=${this.state.videoId}`,
     );
+    
     this.uploadSocket.on('step', this.setUploadStep);
     this.uploadSocket.on('init', this.initUploadData);
     this.uploadSocket.on('progress', this.setUploadProgress);

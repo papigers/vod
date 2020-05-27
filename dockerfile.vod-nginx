@@ -75,6 +75,12 @@ RUN adduser -c "Nginx user" nginx && \
 # ADD config/nginx-start.sh /opt/bin/nginx-start.sh
 # RUN chmod u=rwx /opt/bin/nginx-start.sh && \
 
+# COPY deployment/reverseproxy/host.keytab /etc
+# COPY deployment/reverseproxy/http.keytab /etc
+# RUN (echo -e "rkt /etc/host.keytab"; echo -e "rkt /etc/http.keytab"; echo -e "wkt /etc/krb5.keytab" ) | ktutil && \
+#     echo -e ""
+
+
 COPY deployment/reverseproxy/krb5.keytab /etc
 COPY deployment/reverseproxy/krb5.conf /etc
 COPY deployment/reverseproxy/nginx.conf.template /etc/nginx/
