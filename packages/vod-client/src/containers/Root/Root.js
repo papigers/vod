@@ -12,33 +12,24 @@ import { bindActionCreators } from 'redux';
 import { makeSelectUser } from './selectors';
 
 class Root extends Component {
+
+  // state = {
+  //   loadingConfig: true
+  // };
+
   componentDidMount() {
     this.props.getManagedChannels();
-
-    fetch("/config")
-      .then(res => res.json())
-      .then(data => {
-          window.apiEndpoint = data.apiEndpoint;
-          window.streamingEndpoint = data.streamingEndpoint;
-          this.setState({loadedConfig: true});
-      })
-      .catch(function() {
-          console.log("Can't reach server");
-      });
+    //this.setState({loadingConfig: false});
   }
 
   shouldComponentUpdate(nextProps) {
     return true;
   }
 
-  constructor(){
-    this.state = {loadedConfig: false};
-  }
-
   render() {
-    if(this.state.loadedConfig){
-      return (<p>Loading...</p>)
-    } else {
+    // if(this.state.loadingConfig){
+    //   return (<p>Loading...</p>);
+    // } else {
       return (
         <AuthRequired>
           <Switch>
@@ -47,7 +38,7 @@ class Root extends Component {
           </Switch>
         </AuthRequired>
       );
-    }
+    //}
   }
 }
 

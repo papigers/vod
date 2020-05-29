@@ -19,7 +19,7 @@ app.use(cookieParser('cookie-secret'));
 app.use(compression());
 app.use(auth);
 
-var config = {
+var endPointConfig = {
   apiEndpoint: config.apiEndpoint,
   streamingEndpoint: config.streamingEndpoint
 }
@@ -82,7 +82,7 @@ app.get(
 app.get(
   '/config',
     function(req, res) {
-      res.json(config);
+      res.json(endPointConfig);
     }
 );
 
