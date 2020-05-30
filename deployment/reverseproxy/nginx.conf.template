@@ -44,7 +44,7 @@ http {
             proxy_max_temp_file_size 0;
 
             #this is the maximum upload size
-            client_max_body_size       10m;
+            client_max_body_size       250m;
             client_body_buffer_size    128k;
 
             proxy_connect_timeout      90;
@@ -83,8 +83,6 @@ http {
             proxy_set_header   remote_user $remote_user;
 
 
-            add_header   'Access-Control-Allow-Origin' 'http://vod.army.idf' always;
-            add_header   'Access-Control-Allow-Credentials' true always;
             add_header 'Access-Control-Allow-Methods' 'GET, POST, PATCH, PUT, DELETE, OPTIONS' always;
             add_header 'Access-Control-Allow-Headers' 'Authorization,Location,Tus-Extension,Tus-Max-Size,Tus-Resumable,Tus-Version,Upload-Defer-Length,Upload-Metadata,Upload-Length,Upload-Offset,remote_user,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-HTTP-Method-Override' always;
 
@@ -159,6 +157,16 @@ http {
 
         location / {
 
+            if ($request_method = OPTIONS ) {
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                add_header   'Access-Control-Allow-Origin' 'http://vod.army.idf' always;
+                add_header   'Access-Control-Allow-Credentials' 'true' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PATCH, PUT, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Range,Authorization,Location,Tus-Extension,Tus-Max-Size,Tus-Resumable,Tus-Version,Upload-Defer-Length,Upload-Metadata,Upload-Length,Upload-Offset,remote_user,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-HTTP-Method-Override' always;
+                return 204;
+            }
             auth_gss on;
             auth_gss_realm EXAMPLE.COM;
             auth_gss_keytab /etc/krb5.keytab;
@@ -174,9 +182,9 @@ http {
             proxy_set_header   X-Forwarded-User $remote_user;
             proxy_set_header   remote_user $remote_user;
             add_header   'Access-Control-Allow-Origin' 'http://vod.army.idf' always;
-            add_header   'Access-Control-Allow-Credentials' true;
+            add_header   'Access-Control-Allow-Credentials' 'true' always;
             add_header 'Access-Control-Allow-Methods' 'GET, POST, PATCH, PUT, DELETE, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'Authorization,Location,Tus-Extension,Tus-Max-Size,Tus-Resumable,Tus-Version,Upload-Defer-Length,Upload-Metadata,Upload-Length,Upload-Offset,remote_user,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-HTTP-Method-Override' always;
+            add_header 'Access-Control-Allow-Headers' 'Range,Authorization,Location,Tus-Extension,Tus-Max-Size,Tus-Resumable,Tus-Version,Upload-Defer-Length,Upload-Metadata,Upload-Length,Upload-Offset,remote_user,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,X-HTTP-Method-Override' always;
             proxy_pass_header  remote_user;
             proxy_max_temp_file_size 0;
 
