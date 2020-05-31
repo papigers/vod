@@ -20,9 +20,9 @@ metadata:
     labels:
         app: vod-web
 spec:
-    type: LoadBalancer
+    type: IPCluster
     ports:
-      - port: 80
+      - port: 8080
     selector:
         app: vod-web
 ---
@@ -45,7 +45,7 @@ spec:
                     - containerPort: 8080
                 env:
                     - name: NODE_ENV
-                      value: staging
+                      value: development
                     - name: PORT
                       value: "80"
                     - name: API_URL

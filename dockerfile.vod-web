@@ -13,6 +13,9 @@ COPY packages/vod-redis-client ./vod-redis-client
 
 RUN lerna bootstrap --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/vod-redis-client
 
+# Create a directpry for the build
+WORKDIR /app/packages/vod-web/public
+
 WORKDIR /app/packages/vod-client
 
 #ENV REACT_APP_API_HOSTNAME=http://vod-api.army.idf
