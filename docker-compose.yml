@@ -50,6 +50,7 @@ services:
         image: vod-api
         container_name: vod-api
         environment: 
+            NODE_ENV: "production"
             PORT: "9090"
             API_URL: "http://vod-api:9090/api"
             DB_USERNAME: "postgres"

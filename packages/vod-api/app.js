@@ -1,19 +1,21 @@
 var express = require('express');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-//var cors = require('cors');
+var cors = require('cors');
 var compression = require('compression');
 
 var app = express();
-// TODO: enable in dev
-// app.use(
-//   cors({
-//     // credentials: true,
-//     origin: ['vod.army.idf', 'vod-api.army.idf']
-//   })
-// );
 
-//app.use(cors());
+if(process.env.NODE_ENV !== "production"){
+    app.use(
+      cors({
+        credentials: true,
+        origin: ['http://localhost:8080']
+      })
+    );
+    app.use(cors());
+}
+  
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

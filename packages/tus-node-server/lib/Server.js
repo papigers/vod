@@ -172,11 +172,13 @@ class TusServer extends EventEmitter {
         res.setHeader('Access-Control-Expose-Headers', EXPOSED_HEADERS);
 
         // Liron removed since we handle CORS only in the Nginx RP
-        // TODO: enable in dev
-        // if (req.headers.origin) {
-        //     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-        // }
-
+        
+        if(process.env.NODE_ENV !== "production"){
+            if (req.headers.origin) {
+                res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+            }
+        }
+ 
         // Invoke the handler for the method requested
         if (this.handlers[req.method]) {
             return this.handlers[req.method].send(req, res);

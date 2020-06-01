@@ -3,7 +3,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var config = require('config');
 var axios = require('axios');
-//var cors = require('cors');
+var cors = require('cors');
 var compression = require('compression');
 var auth = require('@vod/vod-auth');
 var cookie = require('node-cookie');
@@ -13,15 +13,16 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var app = express();
 
-// TODO: enable in dev
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin: ['http://vod.army.idf', 'http://vod-api.army.idf', 'http://vod-streaming.army.idf']
-//   })
-// );
+if(process.env.NODE_ENV !== "production"){
+  app.use(
+    cors({
+      credentials: true,
+      origin: ['http://localhost:8080']
+    })
+  );
+  app.use(cors());
+}
 
-//app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
