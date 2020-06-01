@@ -10,7 +10,5 @@ module.exports = {
       tls: true,
     },
   },
-  api: process.env.API_URL || 'http://localhost:9090/api',
-  apiEndpoint: process.env.REACT_APP_API_HOSTNAME || 'http://localhost:9090',
-  streamingEndpoint: process.env.REACT_APP_STREAMER_HOSTNAME || 'http://localhost:9091'
+  api: process.env.API_URL || 'http://localhost:9090/api'
 };

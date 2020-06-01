@@ -19,11 +19,6 @@ app.use(cookieParser('cookie-secret'));
 app.use(compression());
 app.use(auth);
 
-var endPointConfig = {
-  apiEndpoint: config.apiEndpoint,
-  streamingEndpoint: config.streamingEndpoint
-}
-
 function getUser(req) {
   return req.user && req.user.id;
 }
@@ -77,13 +72,6 @@ app.get(
   function serveRequest(req, res, next) {
     OSClient.proxyGetObject(OSClient.getChannelObject(req), req, res, next);
   },
-);
-
-app.get(
-  '/config',
-    function(req, res) {
-      res.json(endPointConfig);
-    }
 );
 
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
