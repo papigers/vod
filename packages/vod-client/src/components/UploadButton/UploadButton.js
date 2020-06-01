@@ -116,7 +116,7 @@ export default class UploadButton extends Component {
     this.setUploadError(null);
     const file = acceptedFiles[0];
     const upload = new tus.Upload(file, {
-      endpoint: `${window.apiEndpoint}/api/upload/video/`,
+      endpoint: `${window._env_.REACT_APP_API_HOSTNAME}/api/upload/video/`,
       metadata: {
         name: file.name,
         type: file.type,
@@ -138,7 +138,7 @@ export default class UploadButton extends Component {
   onUploadComplete = upload => {
     const url = localStorage.getItem(upload._fingerprint);
     localStorage.removeItem(upload._fingerprint);
-    const idRegex = new RegExp(`${window.apiEndpoint}/api/upload/video/(.*)`);
+    const idRegex = new RegExp(`${window._env_.REACT_APP_API_HOSTNAME}/api/upload/video/(.*)`);
     const id = idRegex.exec(url);
     console.log(url, id);
     if (id && id[1]) {

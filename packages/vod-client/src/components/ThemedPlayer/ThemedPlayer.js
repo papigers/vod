@@ -371,10 +371,10 @@ class ThemedPlayer extends Component {
       this.player.volume(+localStorage.getItem('player-volume'));
       this.player.muted(localStorage.getItem('player-muted') === 'true');
       this.player.poster(
-        `${window.streamingEndpoint}/${this.props.videoId}/poster.png`,
+        `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/poster.png`,
       );
       this.player.src({
-        src: `${window.streamingEndpoint}/${this.props.videoId}/mpd.mpd`,
+        src: `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/mpd.mpd`,
         type: 'application/dash+xml',
       });
       videojs.log.level('all');

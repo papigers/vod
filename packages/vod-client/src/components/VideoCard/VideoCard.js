@@ -221,7 +221,7 @@ class VideoCard extends Component {
                   {
                     previewImageSrc:
                       item &&
-                      `${window.streamingEndpoint}/${
+                      `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${
                         Object.keys(item).includes('videos') ? item.videos[0].id : item.id
                       }/thumbnail.png`,
                     width: compact ? null : 208,

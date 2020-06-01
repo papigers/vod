@@ -13,13 +13,8 @@ import { makeSelectUser } from './selectors';
 
 class Root extends Component {
 
-  // state = {
-  //   loadingConfig: true
-  // };
-
   componentDidMount() {
     this.props.getManagedChannels();
-    //this.setState({loadingConfig: false});
   }
 
   shouldComponentUpdate(nextProps) {
@@ -27,9 +22,6 @@ class Root extends Component {
   }
 
   render() {
-    // if(this.state.loadingConfig){
-    //   return (<p>Loading...</p>);
-    // } else {
       return (
         <AuthRequired>
           <Switch>
@@ -38,7 +30,6 @@ class Root extends Component {
           </Switch>
         </AuthRequired>
       );
-    //}
   }
 }
 

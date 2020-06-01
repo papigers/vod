@@ -18,13 +18,20 @@ WORKDIR /app/packages/vod-web/public
 
 WORKDIR /app/packages/vod-client
 
-#ENV REACT_APP_API_HOSTNAME=http://vod-api.army.idf
-#ENV REACT_APP_STREAMER_HOSTNAME=http://vod-streaming.army.idf
-
 RUN npm run build
 RUN cp -r ./build ../vod-web/public
 
 WORKDIR /app/packages/vod-web
 
+# Copy .env file and shell script to container
+COPY deployment/RuntimeEnvCRASolution/env.sh .
+COPY deployment/RuntimeEnvCRASolution/.env .
+
+# Add bash
+RUN apk add --no-cache bash
+
+# Make our shell script executable
+RUN chmod +x env.sh
+
 EXPOSE 8080
-CMD [ "npm", "start" ]
+CMD [ "/bin/bash", "-c", "/app/packages/vod-web/env.sh && npm start" ]

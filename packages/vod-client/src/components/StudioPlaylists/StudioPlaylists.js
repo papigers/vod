@@ -131,7 +131,7 @@ class StudioPlaylists extends Component {
       return {
         thumbnail: (
           <VideoThumbnail
-            src={`${window.streamingEndpoint}/${item.videos &&
+            src={`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${item.videos &&
               item.videos[0] &&
               item.videos[0].id}/thumbnail.png`}
             width={200}

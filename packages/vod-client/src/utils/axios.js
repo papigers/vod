@@ -1,14 +1,12 @@
 import axios from 'axios';
 
 export const apiAxios = axios.create({
-  baseURL: `${window.apiEndpoint}/api`,
-  //baseURL: `http://vod-api.army.idf/api`,
+  baseURL: `${window._env_.REACT_APP_API_HOSTNAME}/api`,
   withCredentials: true,
 });
 
 export const ldapAxios = axios.create({
-  baseURL: `${window.apiEndpoint}/ldap`,
-  //baseURL: `http://vod-api.army.idf/ldap`,
+  baseURL: `${window._env_.REACT_APP_API_HOSTNAME}/ldap`,
   withCredentials: true,
 });
 

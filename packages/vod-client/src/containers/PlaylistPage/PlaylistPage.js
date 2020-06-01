@@ -147,7 +147,7 @@ class PlaylistPage extends Component {
             <PlaylistDetails>
               <PlaylistThumbnail onClick={this.onLinkClick}>
                 <Image
-                  src={`${window.streamingEndpoint}/${
+                  src={`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${
                     playlist.videos[0].id
                   }/thumbnail.png`}
                   height={200}
