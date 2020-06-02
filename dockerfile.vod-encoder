@@ -49,7 +49,10 @@ WORKDIR /app/packages
 
 COPY packages/vod-encoder ./vod-encoder
 
-RUN lerna bootstrap --scope=@vod/vod-encoder
+RUN lerna bootstrap -- --production --no-optional  --scope=@vod/vod-encoder
+
+#Cleanup
+RUN apk del git
 
 WORKDIR /app/packages/vod-encoder
 
