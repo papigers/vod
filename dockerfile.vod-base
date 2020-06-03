@@ -3,12 +3,15 @@ FROM node:10.18.1-alpine3.9
 
 WORKDIR /app
 
-RUN npm i lerna -g --loglevel notice
+#RUN npm i lerna -g 
 
 COPY package.json .
 COPY lerna.json .
 
-RUN npm install --ignore-scripts
+#RUN npm install --ignore-scripts --production
+
+
+
 
 # ------------------------------------------------------POSTGRES----------------------------------------------
 #docker run -d --rm --name postgres -e POSTGRES_PASSWORD="Aa123123" -e POSTGRES_DB="vod" -v postgres_storage:/var/lib/postgresql/data -p 5432:5432 postgres

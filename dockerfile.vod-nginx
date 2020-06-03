@@ -55,15 +55,8 @@ RUN ./configure \
 
 
 # Cleanup after Nginx build
-# RUN yum remove -y \
-#         wget \
-#         tar \
-#         gcc \
-#         gcc-c++ \
-#         make \
-#         git && \
-#     yum autoremove -y && \
-#     rm -rf /tmp/*
+RUN rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp
 
 # Configure filesystem to support running Nginx
 RUN adduser -c "Nginx user" nginx && \

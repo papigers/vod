@@ -10,7 +10,6 @@
   "dependencies": {
     "@vod/vod-auth": "^0.0.0",
     "@vod/vod-object-storage-client": "^0.0.0",
-    "@vod/vod-redis-client": "^0.0.0",
     "axios": "^0.18.0",
     "compression": "^1.7.3",
     "config": "^2.0.1",

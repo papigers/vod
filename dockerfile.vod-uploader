@@ -8,7 +8,10 @@ WORKDIR /app/packages
 COPY packages/vod-uploader ./vod-uploader
 COPY packages/vod-object-storage-client ./vod-object-storage-client
 
-RUN lerna bootstrap --scope=@vod/vod-uploader --scope=@vod/vod-object-storage-client
+
+RUN npm i lerna -g \
+    && lerna bootstrap -- --production --scope=@vod/vod-uploader --scope=@vod/vod-object-storage-client \
+    && npm uninstall -g lerna
 
 WORKDIR /app/packages/vod-uploader
 
