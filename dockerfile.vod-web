@@ -9,9 +9,10 @@ COPY packages/vod-web ./vod-web
 COPY packages/vod-client ./vod-client
 COPY packages/vod-auth ./vod-auth
 COPY packages/vod-object-storage-client ./vod-object-storage-client
-COPY packages/vod-redis-client ./vod-redis-client
 
-RUN lerna bootstrap --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client --scope=@vod/vod-redis-client
+RUN npm i lerna -g \
+    && lerna bootstrap -- --production --scope=@vod/vod-web --scope=@vod/vod-client --scope=@vod/vod-auth --scope=@vod/vod-object-storage-client \
+    && npm uninstall -g lerna
 
 # Create a directpry for the build
 WORKDIR /app/packages/vod-web/public
@@ -19,7 +20,8 @@ WORKDIR /app/packages/vod-web/public
 WORKDIR /app/packages/vod-client
 
 RUN npm run build
-RUN cp -r ./build ../vod-web/public
+RUN cp -r ./build ../vod-web/public \
+    && rm -rf /app/packages/vod-client
 
 WORKDIR /app/packages/vod-web
 
@@ -28,7 +30,7 @@ COPY deployment/RuntimeEnvCRASolution/env.sh .
 COPY deployment/RuntimeEnvCRASolution/.env .
 
 # Add bash
-RUN apk add --no-cache bash
+RUN apk add bash && rm -rf /var/lib/apt/lists/*
 
 # Make our shell script executable
 RUN chmod +x env.sh
