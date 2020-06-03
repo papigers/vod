@@ -5,19 +5,20 @@ FROM vodbase
 
 WORKDIR /app
 
-RUN apk add git
+RUN apk add git && rm -rf /var/lib/apt/lists/*
 
 #FFMPEG installation
-RUN apk add ffmpeg
+RUN apk add ffmpeg && rm -rf /var/lib/apt/lists/*
 
 #MP4BOX installation
-RUN git clone https://github.com/gpac/gpac.git
+RUN git clone https://github.com/gpac/gpac.git 
 WORKDIR gpac
 RUN ./configure --static-mp4box --use-zlib=no
-RUN apk add --update make
-RUN apk add build-base
+RUN apk add --update make && rm -rf /var/lib/apt/lists/*
+RUN apk add build-base && rm -rf /var/lib/apt/lists/*
 RUN make -j4
-RUN cp -p "/app/gpac/bin/gcc/MP4Box" "/usr/bin/"
+RUN cp -p "/app/gpac/bin/gcc/MP4Box" "/usr/bin/" \
+    && rm -rf /app/gpac 
 
 
 
@@ -49,9 +50,10 @@ WORKDIR /app/packages
 
 COPY packages/vod-encoder ./vod-encoder
 
-RUN lerna bootstrap -- --production --no-optional  --scope=@vod/vod-encoder
+RUN npm i lerna -g \
+    && lerna bootstrap -- --production --scope=@vod/vod-encoder \
+    && npm uninstall -g lerna
 
-#Cleanup
 RUN apk del git
 
 WORKDIR /app/packages/vod-encoder
