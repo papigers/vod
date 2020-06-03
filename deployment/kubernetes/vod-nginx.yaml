@@ -31,14 +31,12 @@ spec:
                     - containerPort: 80
                 env:
                     - name: API_PATH
-                      value: "http://vod-api:9090/"
+                      value: "http://vod-api-service:9090/"
                     - name: STREAMING_PATH
-                      value: "http://vod-streaming:9091/"
+                      value: "http://vod-streaming-service:9091/"
                     - name: WEB_PATH
-                      value: "http://vod-web:8080/"
+                      value: "http://vod-web-service:8080/"
                     - name: SOCKET_PATH                                                                                                                                                               
-                      value: "http://vod-api:9090/socket.io/"
-            volumes:
-                - name: persistent-vod
+                      value: "http://vod-api-service:9090/socket.io/"
             imagePullSecrets:
                 - name: acr-secret

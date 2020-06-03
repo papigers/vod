@@ -6,7 +6,7 @@ metadata:
     labels:
         app: vod-rabbitmq
 spec:
-    type: LoadBalancer
+    type: ClusterIP
     ports:
       - name: rabbitmq
         port: 5672
@@ -22,7 +22,7 @@ kind: Deployment
 metadata:
     name: vod-rabbitmq-deployment
 spec:
-    replicas: 2
+    replicas: 1
     template:
         metadata:
             labels:

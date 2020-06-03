@@ -6,7 +6,7 @@ metadata:
     labels:
         app: vod-streaming
 spec:
-    type: LoadBalancer
+    type: ClusterIP
     ports:
       - port: 9091
     selector:
@@ -17,7 +17,7 @@ kind: Deployment
 metadata:
     name: vod-streaming-deployment
 spec:
-    replicas: 2
+    replicas: 1
     template:
         metadata:
             labels:
@@ -31,8 +31,24 @@ spec:
                     - containerPort: 9091
                 env:
                     - name: NODE_ENV
-                      value: development
+                      value: production
                     - name: PORT
                       value: "9091"  
                     - name: API_URL
-                      value: http://vod-api-service:9090/api                                                                                                                            
+                      value: http://vod-api-service:9090/api
+                    - name: AD_DOMAIN_CONTROLLER_URL
+                      value: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+                    - name: AD_BASE_DN
+                      value: ou=orgs,dc=example,dc=com
+                    - name: AD_PROJECTAL_USER
+                      value: vod@example.com
+                    - name: AD_PROJECTAL_USER_PASSWORD
+                      value: Aa123123     
+                    - name: AWS_ACCESS_KEY_ID
+                      value: AKIAJKIJG4M23KDBM22Q     
+                    - name: AWS_SECRET_ACCESS_KEY
+                      value: 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     
+                    - name: AWS_BUCKET
+                      value: bucket-vod     
+                    - name: AWS_REGION
+                      value: eu-central-1                                                                                                                           

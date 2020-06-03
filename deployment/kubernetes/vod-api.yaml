@@ -6,7 +6,7 @@ metadata:
     labels:
         app: vod-api
 spec:
-    type: LoadBalancer
+    type: ClusterIP
     ports:
       - port: 9090
     selector:
@@ -31,9 +31,11 @@ spec:
                     - containerPort: 9090
                 env:
                     - name: NODE_ENV
-                      value: development
+                      value: production
                     - name: PORT
                       value: "9090"
+                    - name: API_URL
+                      value: http://vod-api-service:9090/api
                     - name: DB_USERNAME
                       value: postgres
                     - name: DB_PASSWORD
@@ -59,7 +61,15 @@ spec:
                     - name: AD_PROJECTAL_USER
                       value: vod@example.com
                     - name: AD_PROJECTAL_USER_PASSWORD
-                      value: Aa123123                                                                                                                                                                          
+                      value: Aa123123
+                    - name: AWS_ACCESS_KEY_ID
+                      value: AKIAJKIJG4M23KDBM22Q     
+                    - name: AWS_SECRET_ACCESS_KEY
+                      value: 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     
+                    - name: AWS_BUCKET
+                      value: bucket-vod     
+                    - name: AWS_REGION
+                      value: eu-central-1                                                                                                                                                                   
                 volumeMounts:
                     - mountPath: /app/entrypoint
                       name: persistent-vod
