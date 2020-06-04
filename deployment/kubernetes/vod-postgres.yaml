@@ -32,8 +32,6 @@ spec:
                 env:
                     - name: POSTGRES_USER
                       value: postgres
-                    - name: POSTGRES_DB
-                      value: vod
                     - name: POSTGRES_PASSWORD
                       value: Aa123123
                     - name: POSTGRES_DB

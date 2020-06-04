@@ -57,7 +57,7 @@ spec:
                     - name: AD_DOMAIN_CONTROLLER_URL
                       value: "ldap://vod-dc.westeurope.cloudapp.azure.com"
                     - name: AD_BASE_DN
-                      value: ou=orgs,dc=example,dc=com
+                      value: "ou=orgs,dc=example,dc=com"
                     - name: AD_PROJECTAL_USER
                       value: vod@example.com
                     - name: AD_PROJECTAL_USER_PASSWORD

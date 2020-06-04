@@ -5,7 +5,8 @@ require('./Jwt');
 require('./KerberosHeader');
   // require('./OAuth');
 
-let authProviders = ['jwt', 'trusted-header'];
+//let authProviders = ['jwt', 'trusted-header'];
+let authProviders = ['jwt'];
 
 var authMiddlewares = [
   passport.authenticate(authProviders, { session: false }),
