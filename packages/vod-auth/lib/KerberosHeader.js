@@ -25,7 +25,6 @@ passport.use(
     function(headers, done) {
       var channel = null;
       var id = headers.remote_user;
-      console.log(id, headers)
       ad.findUser(id, function(err, user) {
         if (err || !user) {
           return done(err || 'User not found');

@@ -2,11 +2,12 @@
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 require('./Jwt');
+
 require('./KerberosHeader');
   // require('./OAuth');
 
-//let authProviders = ['jwt', 'trusted-header'];
-let authProviders = ['jwt'];
+let authProviders = ['jwt', 'trusted-header'];
+//let authProviders = ['jwt'];
 
 var authMiddlewares = [
   passport.authenticate(authProviders, { session: false }),
