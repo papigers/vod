@@ -95,7 +95,7 @@ EXPOSE 443
 
 USER nginx
 CMD /bin/bash -c \
- "envsubst '\$API_PATH \$SOCKET_PATH \$STREAMING_PATH \$WEB_PATH'" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
+ "envsubst '\$API_PATH \$SOCKET_PATH \$STREAMING_PATH \$WEB_PATH \$RABBIT_MQ_PATH'" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
   nginx -g "daemon off;"
 
 

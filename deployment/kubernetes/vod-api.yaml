@@ -75,5 +75,7 @@ spec:
                       name: persistent-vod
             volumes:
                 - name: persistent-vod
+                  persistentVolumeClaim:
+                    claimName: 'persistent-vod'
             imagePullSecrets:
                 - name: acr-secret

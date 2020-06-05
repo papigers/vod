@@ -36,6 +36,7 @@ services:
             STREAMING_PATH: "http://vod-streaming:9091/"
             WEB_PATH: "http://vod-web:8080/"
             SOCKET_PATH: "http://vod-api:9090/socket.io/"
+            RABBIT_MQ_PATH: "http://vod-rabbitmq:15672/"
         depends_on: 
             - "vod-rabbitmq"
             - "vod-postgres"

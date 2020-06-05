@@ -38,5 +38,7 @@ spec:
                       value: "http://vod-web-service:8080/"
                     - name: SOCKET_PATH                                                                                                                                                               
                       value: "http://vod-api-service:9090/socket.io/"
+                    - name: RABBIT_MQ_PATH                                                                                                                                                               
+                      value: "http://vod-rabbitmq-service:15672/"
             imagePullSecrets:
                 - name: acr-secret
