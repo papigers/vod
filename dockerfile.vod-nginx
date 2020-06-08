@@ -1,4 +1,4 @@
-FROM vod-nginx-base
+FROM vodnginxbase
 
 COPY deployment/reverseproxy/krb5.keytab /etc
 COPY deployment/reverseproxy/krb5.conf /etc
