@@ -6,14 +6,15 @@ var compression = require('compression');
 
 var app = express();
 
-if(process.env.NODE_ENV !== "production"){
-    app.use(
-      cors({
-        credentials: true,
-        origin: ['http://localhost:8080']
-      })
-    );
-    app.use(cors());
+console.log(process.env.NODE_ENV)
+if(process.env.NODE_ENV !== "production")
+{
+  app.use(
+    cors({
+      credentials: true,
+      origin: ['http://localhost:3000', 'http://localhost:8000'],
+    }),
+  );
 }
   
 app.use(logger('dev'));

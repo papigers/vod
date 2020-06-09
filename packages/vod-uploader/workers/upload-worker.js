@@ -1,4 +1,5 @@
 // var amqp = require('amqplib');
+require('dotenv').config();
 var amqp = require('amqp-connection-manager');
 var path = require('path');
 var fs = require('fs');
@@ -15,6 +16,7 @@ function uploadFile(videoId, file) {
   return new Promise(function(resolve, reject) {
     var stream = fs.createReadStream(file);
     var filename = path.basename(file);
+
     OSClient.uploadVideo(
       videoId,
       filename,

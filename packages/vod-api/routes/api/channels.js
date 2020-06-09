@@ -6,6 +6,7 @@ var express = require('express');
 var multer = require('multer');
 var sharp = require('sharp');
 var config = require('config');
+var config = require('config');
 var db = require('../../models');
 var ldap = require('../ldap');
 var router = express.Router();
@@ -14,7 +15,7 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var channelStorage = multer.diskStorage({
   destination: function(req, file, cb) {
-    var dest = path.join('/app/entrypoint', req.params.id);
+    var dest = path.join(config.TempStorage.path, req.params.id);
     fs.stat(dest, function(err) {
       if (err == null) {
         return cb(null, dest);

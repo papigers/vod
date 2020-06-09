@@ -1,10 +1,10 @@
 {
   "name": "@vod/vod-uploader",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
     "start": "node ./workers/upload-worker.js",
-    "dev": "cross-env DEBUG=vod:encoder nodemon ./bin/www --env=development",
+    "dev": "cross-env DEBUG=vod:encoder nodemon ./workers/upload-worker.js",
     "lint": "eslint . --ext .js"
   },
   "dependencies": {

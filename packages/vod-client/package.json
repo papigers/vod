@@ -40,7 +40,7 @@
   },
   "scripts": {
     "start": "react-scripts build",
-    "dev": "react-scripts start --env=development",
+    "dev": "chmod +x ./env-dev.sh && ./env-dev.sh && react-scripts start --env=development",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",

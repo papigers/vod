@@ -3,6 +3,7 @@ var multer = require('multer');
 var path = require('path');
 var os = require('os');
 var fs = require('fs');
+var config = require('config');
 var tus = require('@vod/tus-node-server');
 
 var enqueueEncoding = require('../../messages/encode');
@@ -20,7 +21,7 @@ function translateMetadata(metadata) {
 
 var tusServer = new tus.Server();
 tusServer.datastore = new tus.FileStore({
-  path: path.join('/app/entrypoint', 'uploads'),
+  path: path.join(config.TempStorage.path, 'uploads'),
   relativeLocation: true,
   namingFunction: function(req, res) {
     return res.locals.videoId;
@@ -28,7 +29,7 @@ tusServer.datastore = new tus.FileStore({
 });
 tusServer.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, event => {
   const videoId = event.file.id;
-  const file = path.join('/app/entrypoint', 'uploads', event.file.id);
+  const file = path.join(config.TempStorage.path, 'uploads', event.file.id);
   enqueueEncoding(videoId, file);
   generateThumbnail(videoId, '20%', true);
 });

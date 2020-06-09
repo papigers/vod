@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./workers/encode-worker.js",
-    "dev": "cross-env DEBUG=vod:encoder nodemon ./bin/www",
+    "dev": "cross-env DEBUG=vod:encoder nodemon ./workers/encode-worker.js",
     "lint": "eslint . --ext .js"
   },
   "dependencies": {

@@ -16,7 +16,7 @@ var ENCODE_QUEUE = 'encode_queue';
 var UPLOAD_QUEUE = 'upload_queue';
 
 function getOutputPath(videoId) {
-  return path.join('/app/entrypoint', videoId);
+  return path.join(config.TempStorage.path, videoId);
 }
 
 function encodeVideo(videoId, inputPath) {
@@ -200,7 +200,14 @@ function encodeVideo(videoId, inputPath) {
                   
                   var mpdPath = path.join(outputPath, 'mpd.mpd');
                   // In windows use it without \: "$RepresentationID$$Init=$" 
-                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "\\$RepresentationID\\$\\$Init=\\$" -out "${path.basename(
+
+                  // Need to find solution to integrate windows linux command together
+
+                  // var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "\\$RepresentationID\\$\\$Init=\\$" -out "${path.basename(
+                  //   mpdPath,
+                  // )}" ${mp4boxInputs.join(' ')}`;
+
+                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "$RepresentationID$$Init=$" -out "${path.basename(
                     mpdPath,
                   )}" ${mp4boxInputs.join(' ')}`;
 
