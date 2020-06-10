@@ -199,15 +199,16 @@ function encodeVideo(videoId, inputPath) {
                   });
                   
                   var mpdPath = path.join(outputPath, 'mpd.mpd');
-                  // In windows use it without \: "$RepresentationID$$Init=$" 
 
-                  // Need to find solution to integrate windows linux command together
+                  var segmentName = "\\$RepresentationID\\$\\$Init=\\$";
+                  console.log(os.type());
 
-                  // var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "\\$RepresentationID\\$\\$Init=\\$" -out "${path.basename(
-                  //   mpdPath,
-                  // )}" ${mp4boxInputs.join(' ')}`;
+                  // Check if the os is windows
+                  if(os.type() === "Windows_NT"){
+                    segmentName = "$RepresentationID$$Init=$";
+                  }
 
-                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "$RepresentationID$$Init=$" -out "${path.basename(
+                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "${segmentName}" -out "${path.basename(
                     mpdPath,
                   )}" ${mp4boxInputs.join(' ')}`;
 

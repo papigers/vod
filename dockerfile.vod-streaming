@@ -16,5 +16,7 @@ RUN npm i lerna -g \
 
 WORKDIR /app/packages/vod-streaming
 
+RUN rm -rf .env
+
 EXPOSE 9091
 CMD [ "npm", "start" ]

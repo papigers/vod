@@ -16,6 +16,8 @@ RUN npm i lerna -g \
 
 WORKDIR /app/packages/vod-api
 
+RUN rm -rf .env
+
 RUN mkdir /app/entrypoint
 RUN chmod -R 777 /app/entrypoint
 

@@ -15,4 +15,6 @@ RUN npm i lerna -g \
 
 WORKDIR /app/packages/vod-uploader
 
+RUN rm -rf .env
+
 CMD [ "npm", "start" ]

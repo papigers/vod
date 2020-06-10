@@ -25,6 +25,8 @@ RUN cp -r ./build ../vod-web/public \
 
 WORKDIR /app/packages/vod-web
 
+RUN rm -rf .env
+
 # Copy .env file and shell script to container
 COPY deployment/RuntimeEnvCRASolution/env.sh .
 COPY deployment/RuntimeEnvCRASolution/.env .
