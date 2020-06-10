@@ -91,6 +91,7 @@ function encodeVideo(videoId, inputPath) {
             .then(function() {
               publishMetadata(videoId, metadata);
 
+              console.log("Starting encoding...")
               var encoding = ffmpeg(inputPath)
                 /* ffmpeg -i <filename> -c:a aac -ac 2 -ab 128k -vn <output-audio> */
                 .output(`${outputFile}-audio.mp4`)

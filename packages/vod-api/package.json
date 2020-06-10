@@ -5,7 +5,7 @@
   "scripts": {
     "prestart": "knex migrate:latest",
     "start": "node ./bin/www",
-    "dev": "cross-env NODE_ENV=development DEBUG=vod:api nodemon ./bin/www",
+    "dev": "npm run prestart && cross-env NODE_ENV=development DEBUG=vod:api nodemon ./bin/www",
     "lint": "eslint . --ext .js"
   },
   "dependencies": {
