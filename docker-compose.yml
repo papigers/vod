@@ -40,6 +40,10 @@ services:
         depends_on: 
             - "vod-rabbitmq"
             - "vod-postgres"
+            - "vod-api"
+            - "vod-web"
+            - "vod-streaming"
+
         ports: 
             - "80:80"
             - "443:443"
@@ -142,6 +146,7 @@ services:
             RABBITMQ_PORT: "5672"
             RABBITMQ_USERNAME: "admin"
             RABBITMQ_PASSWORD: "Aa123123"
+            TEMP_STORAGE: "/app/entrypoint"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
