@@ -1,7 +1,7 @@
 # vod
 VIdeo On-Demand (YouTube)
 
-Pre Requisists to use the application locally:
+Prerequisites to use the application locally:
 
 Create C:\temp folder
 
