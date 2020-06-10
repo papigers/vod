@@ -24,7 +24,9 @@ spec:
                     - name: RABBITMQ_USERNAME
                       value: admin
                     - name: RABBITMQ_PASSWORD
-                      value: Aa123123                                                                                                                                  
+                      value: Aa123123
+                    - name: TEMP_STORAGE
+                      value: /app/entrypoint                                                                                                                                 
                 volumeMounts:
                     - mountPath: /app/entrypoint
                       name: persistent-vod
