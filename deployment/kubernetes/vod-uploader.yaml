@@ -34,7 +34,7 @@ spec:
                     - name: AWS_REGION
                       value: eu-central-1
                     - name: TEMP_STORAGE
-                      value: \app\entrypoint                                                                                                                    
+                      value: /app/entrypoint                                                                                                                    
                 volumeMounts:
                     - mountPath: /app/entrypoint
                       name: persistent-vod

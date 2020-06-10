@@ -71,7 +71,7 @@ services:
             AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
             AWS_BUCKET: "bucket-vod"
             AWS_REGION: "eu-central-1"
-            TEMP_STORAGE: "\app\entrypoint"
+            TEMP_STORAGE: "/app/entrypoint"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
@@ -165,7 +165,7 @@ services:
             AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
             AWS_BUCKET: "bucket-vod"
             AWS_REGION: "eu-central-1"
-            TEMP_STORAGE: "\app\entrypoint"
+            TEMP_STORAGE: "/app/entrypoint"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
@@ -189,7 +189,7 @@ services:
             AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
             AWS_BUCKET: "bucket-vod"
             AWS_REGION: "eu-central-1"
-            TEMP_STORAGE: "\app\entrypoint"
+            TEMP_STORAGE: "/app/entrypoint"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
