@@ -49,5 +49,8 @@ module.exports = {
   },
   TempStorage: {
     path: process.env.TEMP_STORAGE || 'C:\\temp\\'
+  },
+  Workflow:{
+    keter_dn: process.env.KETER_DN || "CN=Keter,OU=org1,OU=orgs,DC=example,DC=com"
   }
 };

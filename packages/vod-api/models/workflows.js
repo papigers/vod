@@ -87,8 +87,7 @@ module.exports = function(db) {
     var groups = (user && user.groups) || [];
     var isKeter =
       groups.findIndex(function(group) {
-        // TODO set keter group DN
-        return group === 'CN=Keter,OU=org1,OU=orgs,DC=example,DC=com';
+        return group === config.Workflow.keter_dn;
       }) !== -1;
     return {
       scope: 'KETER',

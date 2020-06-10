@@ -71,7 +71,9 @@ spec:
                     - name: AWS_REGION
                       value: eu-central-1         
                     - name: TEMP_STORAGE
-                      value: /app/entrypoint                                                                                                                                                        
+                      value: /app/entrypoint
+                    - name: KETER_DN
+                      value: "CN=Keter,OU=org1,OU=orgs,DC=example,DC=com"                                                                                                                                                  
                 volumeMounts:
                     - mountPath: /app/entrypoint
                       name: persistent-vod

@@ -76,6 +76,7 @@ services:
             AWS_BUCKET: "bucket-vod"
             AWS_REGION: "eu-central-1"
             TEMP_STORAGE: "/app/entrypoint"
+            KETER_DN: "CN=Keter,OU=org1,OU=orgs,DC=example,DC=com"
         volumes: 
             - persistent-vod:/app/entrypoint
         depends_on: 
