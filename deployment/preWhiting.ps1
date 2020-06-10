@@ -51,5 +51,6 @@ Dir *.yaml | %{
 #Copy nginx docker file and nginx.conf file
 cd ..
 Copy-Item -Path .\reverseproxy\nginx.conf.template -Destination $path
+Copy-Item -Path .\reverseproxy\krb5.conf -Destination $path
 cd ..
 Copy-Item -Path .\dockerfile.vod-nginx -Destination $path
