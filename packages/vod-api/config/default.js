@@ -47,10 +47,6 @@ module.exports = {
       group: ['dn', 'cn', 'displayName', 'objectClass'],
     },
   },
-  S3:{
-    AWS_REGION: process.env.AWS_REGION || "eu-central-1",
-    AWS_BUCKET: process.env.AWS_BUCKET || "bucket-vod"
-  },
   TempStorage: {
     path: process.env.TEMP_STORAGE || 'C:\\temp\\'
   }

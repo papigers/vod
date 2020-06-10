@@ -201,7 +201,6 @@ function encodeVideo(videoId, inputPath) {
                   var mpdPath = path.join(outputPath, 'mpd.mpd');
 
                   var segmentName = "\\$RepresentationID\\$\\$Init=\\$";
-                  console.log(os.type());
 
                   // Check if the os is windows
                   if(os.type() === "Windows_NT"){

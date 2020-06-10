@@ -34,9 +34,5 @@ module.exports = {
       user: ['sAMAccountName', 'displayName', 'objectClass', 'dn'],
       group: ['dn', 'cn', 'displayName', 'objectClass'],
     },
-  },
-  S3:{
-    AWS_REGION: process.env.AWS_REGION || "eu-central-1",
-    AWS_BUCKET: process.env.AWS_BUCKET || "bucket-vod"
   }
 };
