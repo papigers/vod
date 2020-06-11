@@ -84,7 +84,7 @@ module.exports = function(db) {
   };
 
   workflows.getWorkflowKeterScope = function getWorkflowKeterScope(user) {
-    var groups = (user && user.groups) || [];
+    var groups = (user && user.groups) || [];  
     var isKeter =
       groups.findIndex(function(group) {
         return group === config.Workflow.keter_dn;

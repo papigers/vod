@@ -117,6 +117,21 @@ module.exports = function(db) {
               activity,
             };
           });
+        } else if(activity.name === 'KETER'){
+            
+            var scope = db.workflows.getWorkflowKeterScope(user);
+            console.log(scope);
+            if (scope.users !== '*' && scope.users.indexOf(activity.requester) === -1) {
+              return {
+                can: false,
+                reason: 'Not authorized to approve this workflow',
+                activity,
+              };
+            }
+            return {
+              can: true,
+              activity,
+            };
         }
       }
       return {
@@ -219,7 +234,7 @@ module.exports = function(db) {
             };
           });
         } else if (activity.name === 'KETER') {
-          return db.workflows.getWorkflowKeterScope(user).then(function(scope) {
+            var scope = db.workflows.getWorkflowKeterScope(user);
             if (scope.users !== '*' && scope.users.indexOf(activity.requester) === -1) {
               return {
                 can: false,
@@ -231,7 +246,6 @@ module.exports = function(db) {
               can: true,
               activity,
             };
-          });
         }
       }
       return {
@@ -363,8 +377,7 @@ module.exports = function(db) {
     var canDoAction = workflowActivities['can' + actionPascal + 'Workflow'];
     var doAction = workflowActivities[action + 'Workflow'];
     return canDoAction(user, workflowId).then(function(result) {
-      // TODO: remove hardcoded auth
-      if (result.can || user.id === 's7591665' || user.id === 's7654321') {
+      if (result.can) {      
         return doAction(user, workflowId, message, result.activity);
       }
       throw new Error(result.reason);

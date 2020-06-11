@@ -6,7 +6,6 @@ var compression = require('compression');
 
 var app = express();
 
-console.log(process.env.NODE_ENV)
 if(process.env.NODE_ENV !== "production")
 {
   app.use(
