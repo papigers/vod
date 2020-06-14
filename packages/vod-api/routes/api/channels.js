@@ -318,9 +318,27 @@ router.post('/', channelImagesUpload, function(req, res) {
           error: 'לא מוגדר קב"ם ליחידתך',
         });
       }
-      return db.channels.createChannel(req.body, req.user).then(function(result) {
-        return res.json(result);
-      });
+      return db.channels.createChannel(req.body, req.user)
+                        .then(function(result) {
+                          return res.json(result);
+                        })
+                        .catch(function(err){
+                          var error = "לא ניתן ליצור ערוץ זה, נסה מאוחר יותר";
+
+                          // Check if the error is duplicate key violation
+                          if(err.code == 23505){
+                            if(err.constraint == 'channels_pkey'){
+                              error = "מזהה ערוץ בשם זה כבר קיים, נסה שם אחר"
+                            } else if(err.constraint == 'channels_name_unique'){
+                              error = "ערוץ בשם זה כבר קיים, נסה שם אחר"
+                            }
+                          }
+
+                          return res.status(500).json({
+                            error
+                          })
+                          
+                        });
     })
     .catch(function(err) {
       console.error(err);

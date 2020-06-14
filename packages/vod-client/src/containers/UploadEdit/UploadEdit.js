@@ -351,6 +351,11 @@ class UploadEdit extends Component {
       });
   };
 
+  onCancelUpload = e => {
+    // TODO: plan what this button should do
+    console.log("caceling upload...")
+  }
+
   onChangeThumbnail = selectedThumbnail => this.setState({ selectedThumbnail });
   onChangeVideoAttribute = ({ target }) =>
     this.setState({
@@ -596,7 +601,7 @@ class UploadEdit extends Component {
                 <Flex justifyContent="flex-start" alignItems="center">
                   <PrimaryButton text="שמור" disabled={!name || !privacy} onClick={this.onSubmit} />
                   <Box mx={3} />
-                  <DefaultButton text="בטל" />
+                  <DefaultButton text="בטל" onClick={this.onCancelUpload}/>
                 </Flex>
               </Box>
             </Form>
