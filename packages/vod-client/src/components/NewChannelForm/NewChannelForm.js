@@ -129,7 +129,11 @@ class NewChannelForm extends Component {
   };
 
   onChangeName = ({ target }) => this.setState({ name: target.value });
-  onChangeId = ({ target }) => this.setState({ id: target.value });
+  onChangeId = ({ target }) => {
+    let value = target.value;
+    value = value.replace(/[^A-Za-z0-9]/ig, '');
+    this.setState({ id: value });
+  };
   onChangeDescription = ({ target }) => this.setState({ description: target.value });
   onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
   onChangeProfile = profile => this.setState({ profile });
