@@ -46,11 +46,13 @@ class VideoPreloader extends Component {
         axios
           .get(`/videos/video/${this.props.preloadId}`)
           .then(() => {
+            if (this.props.preloadId) {
             this.player.src({
               src: `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${this.props.preloadId}/mpd.mpd`,
               type: 'application/dash+xml',
             });
             this.player.load();
+          }
           })
           .catch(err => {
             // just don't preload
