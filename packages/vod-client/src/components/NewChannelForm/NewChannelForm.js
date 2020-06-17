@@ -119,21 +119,15 @@ class NewChannelForm extends Component {
   };
 
   formatACL = (acls, type) => {
-    const withoutSelf = acls.filter(
-      acl => !!acl && (acl.type === 'USER' && acl.id !== this.props.user.id),
-    );
+    const withoutSelf = acls.filter(acl => !!acl && acl.id !== this.props.user.id);
     if (type === 'view') {
       return withoutSelf;
     }
-    return withoutSelf.concat([this.getCurrentUser()]);
+    return [this.getCurrentUser()].concat(withoutSelf);
   };
 
   onChangeName = ({ target }) => this.setState({ name: target.value });
-  onChangeId = ({ target }) => {
-    let value = target.value;
-    value = value.replace(/[^A-Za-z0-9]/ig, '');
-    this.setState({ id: value });
-  };
+  onChangeId = ({ target }) => this.setState({ id: target.value });
   onChangeDescription = ({ target }) => this.setState({ description: target.value });
   onChangePrivacy = (e, { key: privacy }) => this.setState({ privacy });
   onChangeProfile = profile => this.setState({ profile });
