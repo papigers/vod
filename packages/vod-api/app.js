@@ -3,11 +3,11 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
 var compression = require('compression');
+require('./clearPersistentStorage.js')
 
 var app = express();
 
-if(process.env.NODE_ENV !== "production")
-{
+if (process.env.NODE_ENV !== "production") {
   app.use(
     cors({
       credentials: true,
@@ -15,7 +15,7 @@ if(process.env.NODE_ENV !== "production")
     }),
   );
 }
-  
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
