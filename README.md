@@ -3,6 +3,7 @@ Video On-Demand (YouTube)
 
 Prerequisites to run the application locally:
 
+* Node version: V11.10.1
 * Create C:\temp folder
 * Run a local server (or container) of RabbitMQ that listens in port 5672 and 15672.
 * Run a local server (or container) of PostgreSQL that listens in port 5432.
