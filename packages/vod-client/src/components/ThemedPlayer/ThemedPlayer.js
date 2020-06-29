@@ -295,6 +295,7 @@ const StyledVideoContainer = styled.div`
 
 class ThemedPlayer extends Component {
   constructor() {
+    console.log("test")
     super();
     this.state = { playerReady: false, videoId: null };
   }
@@ -368,7 +369,9 @@ class ThemedPlayer extends Component {
     this.props.preload(null);
     if (this.player) {
       this.player.reset();
-      this.player.volume(localStorage.getItem('player-volume'));
+      if(localStorage.getItem('player-volume')) {
+        this.player.volume(localStorage.getItem('player-volume'));
+      }
       this.player.muted(localStorage.getItem('player-muted') === 'true');
       this.player.poster(
         `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/poster.png`,
