@@ -97,10 +97,10 @@ Client.prototype.getVideoObject = function(req, callback) {
   return this.getObject(opts, req, callback);
 };
 
-Client.prototype.deleteVideo = function(req, callback) {
+Client.prototype.deleteVideo = function(videoId, callback) {
   var params = {
     Bucket: process.env.AWS_BUCKET,
-    Prefix: `video/${req.params.videoId}`,
+    Prefix: `video/${videoId}`,
   };
 
   return this.deleteS3.listObjects(params).promise()
