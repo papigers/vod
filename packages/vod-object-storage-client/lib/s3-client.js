@@ -16,6 +16,7 @@ function S3Client() {
   });
   this.downloadS3 = this.S3;
   this.uploadS3 = this.S3;
+  this.deleteS3 = this.S3;
 }
 
 S3Client.prototype = new Client();

@@ -73,4 +73,48 @@ app.get(
   },
 );
 
+app.delete(
+  '/:videoId',
+  function checkAuthorized(req, res, next) {
+    // var cacheKey = `video/${req.params.videoId}/${getUser(req)}`;
+    var hasAuth = +cookie.get(req, `auth-${req.params.videoId}`, config.cookieSecret);
+    if (hasAuth === 1) {
+      return next();
+    }
+    return axios
+      .get(`${config.api}/private/authz/view-video/${req.params.videoId}`, {
+        headers: {
+          Authorization: `bearer ${req.cookies.jwt}`,
+        },
+      })
+      .then(function({ data }) {
+        if (data.authorized) {
+          var expire = new Date();
+          expire.setSeconds(expire.getSeconds() + 30);
+          cookie.create(
+            res,
+            `auth-${req.params.videoId}`,
+            1,
+            { maxAge: 30, httpOnly: true, expires: expire },
+            config.cookieSecret,
+          );
+          return next();
+        }
+        return res.status(403).send('Unauthorized');
+      })
+      .catch(function(err) {
+        console.error(err);
+        return res.status(500).send('Server Error');
+      });
+  },
+  function serveRequest(req, res, next) {
+    OSClient.deleteVideo(req)
+          .then(() => {return next()})
+          .catch(err => {res.status(500).send(err);});
+  },
+  function isDeleted(req, res){
+    return res.sendStatus(200); 
+  }
+)
+
 module.exports = app;

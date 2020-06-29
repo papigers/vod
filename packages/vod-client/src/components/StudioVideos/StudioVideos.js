@@ -62,14 +62,27 @@ class StudioVideos extends Component {
   };
 
   onVideoDelete = videos => {
-    return Promise.all(
-      videos.map(video => {
-        return axios
+    var params = [];
+
+    videos.forEach(video => {
+      params.push(
+        axios
           .delete(`/videos/${video.id}`)
           .then(result => Promise.resolve({ id: video.id, status: 'success', result }))
-          .catch(error => Promise.resolve({ id: video.id, status: 'error', error }));
-      }),
-    ).finally(this.fetchVideos);
+          .catch(error => Promise.resolve({ id: video.id, status: 'error', error })),
+      );
+
+      params.push(
+        fetch(`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${video.id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+          .then(result => Promise.resolve({ id: video.id, status: 'success', result }))
+          .catch(error => Promise.resolve({ id: video.id, status: 'error', error })),
+      );
+    });
+
+    return Promise.all(params).finally(this.fetchVideos);
   };
 
   onVideoShare = videos => {

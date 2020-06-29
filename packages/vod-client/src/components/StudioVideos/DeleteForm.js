@@ -46,6 +46,7 @@ class DeleteForm extends Component {
       error: null,
     });
     onSubmit(videos).then(results => {
+      console.log(results);
       const errors = results.filter(res => res.status === 'error');
       if (errors.length) {
         return this.setState({

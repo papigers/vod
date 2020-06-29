@@ -7,12 +7,9 @@ WORKDIR /app
 
 COPY package.json .
 COPY lerna.json .
+
 RUN apk add curl && rm -rf /var/lib/apt/lists/*
-
 #RUN npm install --ignore-scripts --production
-
-
-
 
 # ------------------------------------------------------POSTGRES----------------------------------------------
 #docker run -d --rm --name postgres -e POSTGRES_PASSWORD="Aa123123" -e POSTGRES_DB="vod" -v postgres_storage:/var/lib/postgresql/data -p 5432:5432 postgres

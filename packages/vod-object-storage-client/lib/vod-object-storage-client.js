@@ -97,6 +97,32 @@ Client.prototype.getVideoObject = function(req, callback) {
   return this.getObject(opts, req, callback);
 };
 
+Client.prototype.deleteVideo = function(req, callback) {
+  var params = {
+    Bucket: process.env.AWS_BUCKET,
+    Prefix: `video/${req.params.videoId}`,
+  };
+
+  return this.deleteS3.listObjects(params).promise()
+      .then(data => {
+        if (data.Contents.length === 0) {
+          throw new Error('List of objects empty.');
+        }
+
+        var currentData = data;
+
+        var params = {Bucket: process.env.AWS_BUCKET};
+        params.Delete = {Objects:[]};
+
+        currentData.Contents.forEach(content => {
+            params.Delete.Objects.push({Key: content.Key});
+        });
+
+        return this.deleteS3.deleteObjects(params).promise();
+      })
+      .catch(err => {return err;});
+};
+
 Client.prototype.getChannelObject = function(req, callback) {
   var opts = {
     Key: `channel/${req.params.channelId}/${req.params.img}`,
