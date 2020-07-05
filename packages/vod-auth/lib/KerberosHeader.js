@@ -4,17 +4,7 @@ var Strategy = require('passport-trusted-header').Strategy;
 var axios = require('axios');
 var config = require('config');
 
-var ad = new ActiveDirectory({
-  url: 'ldap://vod-dc.westeurope.cloudapp.azure.com',
-  baseDN: 'ou=orgs,dc=example,dc=com',
-  username: 'vod@example.com',
-  password: 'Aa123123',
-  scope: 'sub',
-  attributes: {
-    user: ['sAMAccountName', 'displayName', 'title', 'objectClass'], // TO DO: override to include full name, rank, etc...
-    group: ['dn'],
-  },
-});
+var ad = new ActiveDirectory(config.ad);
 
 // make sure to write lowercase headers.
 passport.use(

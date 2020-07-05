@@ -163,8 +163,9 @@ class UploadEdit extends Component {
     });
 
     this.uploadSocket = io.connect(
-      `${process.env.REACT_APP_API_HOSTNAME}/upload?id=${this.state.videoId}`,
+      `${window._env_.REACT_APP_API_HOSTNAME}/upload?id=${this.state.videoId}`,
     );
+    
     this.uploadSocket.on('step', this.setUploadStep);
     this.uploadSocket.on('init', this.initUploadData);
     this.uploadSocket.on('progress', this.setUploadProgress);
@@ -349,6 +350,11 @@ class UploadEdit extends Component {
         this.setUploadError('לא ניתן היה לשמור את הסרטון');
       });
   };
+
+  onCancelUpload = e => {
+    // TODO: plan what this button should do
+    console.log("caceling upload...")
+  }
 
   onChangeThumbnail = selectedThumbnail => this.setState({ selectedThumbnail });
   onChangeVideoAttribute = ({ target }) =>
@@ -595,7 +601,7 @@ class UploadEdit extends Component {
                 <Flex justifyContent="flex-start" alignItems="center">
                   <PrimaryButton text="שמור" disabled={!name || !privacy} onClick={this.onSubmit} />
                   <Box mx={3} />
-                  <DefaultButton text="בטל" />
+                  <DefaultButton text="בטל" onClick={this.onCancelUpload}/>
                 </Flex>
               </Box>
             </Form>

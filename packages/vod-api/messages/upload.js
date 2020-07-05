@@ -1,9 +1,10 @@
 // var amqp = require('amqplib');
 var amqp = require('amqp-connection-manager');
+var config = require('config');
 
 var VIDEO_UPLOAD_EXCHANGE = 'video_upload_exchange';
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect([`amqp://${config.RabbitMQ.username}:${config.RabbitMQ.password}@${config.RabbitMQ.host}:${config.RabbitMQ.port}`]);
 
 var channelWrapper = connection.createChannel({
   json: true,

@@ -1,0 +1,18 @@
+FROM vodnginxbase
+
+COPY deployment/reverseproxy/krb5.keytab /etc
+COPY deployment/reverseproxy/krb5.conf /etc
+COPY deployment/reverseproxy/nginx.conf.template /etc/nginx/
+
+RUN chown -R nginx:nginx /etc/nginx /var/log/nginx /usr/share/nginx && \
+    chmod 440 /etc/krb5.keytab && \
+    chown root:nginx /etc/krb5.keytab
+
+# PORTS
+EXPOSE 80
+EXPOSE 443
+
+USER nginx
+CMD /bin/bash -c \
+ "envsubst '\$API_PATH \$SOCKET_PATH \$STREAMING_PATH \$WEB_PATH \$RABBIT_MQ_PATH'" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
+  nginx -g "daemon off;"

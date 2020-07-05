@@ -1,4 +1,5 @@
 // var amqp = require('amqplib');
+require('dotenv').config();
 var amqp = require('amqp-connection-manager');
 var path = require('path');
 var fs = require('fs');
@@ -15,6 +16,7 @@ function uploadFile(videoId, file) {
   return new Promise(function(resolve, reject) {
     var stream = fs.createReadStream(file);
     var filename = path.basename(file);
+
     OSClient.uploadVideo(
       videoId,
       filename,
@@ -39,7 +41,7 @@ function uploadFile(videoId, file) {
   });
 }
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect([`amqp://${config.RabbitMQ.username}:${config.RabbitMQ.password}@${config.RabbitMQ.host}:${config.RabbitMQ.port}`]);
 
 var channelWrapper = connection.createChannel({
   json: true,

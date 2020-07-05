@@ -95,7 +95,7 @@ class VideoSelector extends Component {
           <Flex>
             {item.map(option => (
               <Persona
-                imageUrl={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${option.key}/thumbnail.png`}
+                imageUrl={`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${option.key}/thumbnail.png`}
                 text={option.text}
                 size={PersonaSize.size24}
                 secondaryText={option.key}
@@ -113,7 +113,7 @@ class VideoSelector extends Component {
             'כל הסרטונים'
           ) : (
             <Persona
-              imageUrl={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${option.key}/thumbnail.png`}
+              imageUrl={`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${option.key}/thumbnail.png`}
               text={option.text}
               size={type === 'title' ? PersonaSize.size24 : PersonaSize.size40}
               secondaryText={option.key === 'all' ? null : option.key}

@@ -13,12 +13,16 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var app = express();
 
-app.use(
-  cors({
-    credentials: true,
-    origin: ['http://localhost:3000', 'http://localhost:8000'],
-  }),
-);
+if(process.env.NODE_ENV !== "production")
+{
+  app.use(
+    cors({
+      credentials: true,
+      origin: ['http://localhost:3000', 'http://localhost:8000'],
+    }),
+  );
+}
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

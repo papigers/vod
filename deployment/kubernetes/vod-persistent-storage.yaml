@@ -1,0 +1,11 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+    name: persistent-vod
+spec:
+    accessModes:
+      - ReadWriteMany
+    storageClassName: azurefile
+    resources:
+        requests:
+            storage: 0.25Gi

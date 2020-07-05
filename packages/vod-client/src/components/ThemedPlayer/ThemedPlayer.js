@@ -295,6 +295,7 @@ const StyledVideoContainer = styled.div`
 
 class ThemedPlayer extends Component {
   constructor() {
+    console.log("test")
     super();
     this.state = { playerReady: false, videoId: null };
   }
@@ -325,7 +326,7 @@ class ThemedPlayer extends Component {
       preload: 'auto',
       language: 'he',
       playbackRates: [0.5, 1, 1.5, 2],
-      volume: +localStorage.getItem('player-volume'),
+      volume: localStorage.getItem('player-volume'),
       muted: localStorage.getItem('player-muted') === 'true',
       html5: {
         dash: {
@@ -368,13 +369,15 @@ class ThemedPlayer extends Component {
     this.props.preload(null);
     if (this.player) {
       this.player.reset();
-      this.player.volume(+localStorage.getItem('player-volume'));
+      if(localStorage.getItem('player-volume')) {
+        this.player.volume(localStorage.getItem('player-volume'));
+      }
       this.player.muted(localStorage.getItem('player-muted') === 'true');
       this.player.poster(
-        `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/poster.png`,
+        `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/poster.png`,
       );
       this.player.src({
-        src: `${process.env.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/mpd.mpd`,
+        src: `${window._env_.REACT_APP_STREAMER_HOSTNAME}/${this.props.videoId}/mpd.mpd`,
         type: 'application/dash+xml',
       });
       videojs.log.level('all');
@@ -382,7 +385,7 @@ class ThemedPlayer extends Component {
       this.player.play();
       this.player.on('waiting', () => {
         this.player.addClass('vjs-custom-waiting');
-        this.player.pause();
+        // this.player.pause();
         clearTimeout(this.playTimeout);
         this.playTimeout = setTimeout(() => {
           if (this.player) {

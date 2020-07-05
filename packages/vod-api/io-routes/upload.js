@@ -4,6 +4,7 @@ var db = require('../models');
 
 function ioUpload(io) {
   io.of('/upload').on('connection', function(socket) {
+
     var subscriptions = [];
     var videoId = socket.handshake.query.id;
     var video = {};
@@ -112,6 +113,7 @@ function ioUpload(io) {
             progress: calculateProgress(),
             id: videoId,
           });
+          
           socket.emit('metadata', {
             metadata,
             id: videoId,

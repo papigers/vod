@@ -74,14 +74,21 @@ app.get(
   },
 );
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
   // Serve any static files
-  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.use(express.static(path.join(__dirname, 'public/build')));
 
   // Handle React routing, return all requests to React app
   app.get('*', function(req, res) {
-    res.sendFile(path.join(__dirname, '../vod-client/build', 'index.html'));
+    res.sendFile(path.join(__dirname, './public/build', 'index.html'));
   });
 }
+
+// app.use(express.static(path.join(__dirname, 'public/build')));
+
+// // Handle React routing, return all requests to React app
+// app.get('/', function(req, res) {
+//   res.sendFile(path.join(__dirname, 'public/build', 'index.html'));
+// });
 
 module.exports = app;

@@ -62,3 +62,5 @@ typings/
 
 # ignore mp4 files
 *.mp4
+
+.DS_Store

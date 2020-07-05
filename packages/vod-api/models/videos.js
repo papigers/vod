@@ -714,7 +714,6 @@ module.exports = function(db) {
   };
 
   videos.getManagedVideos = function(user) {
-    console.log('got here')
     return db.knexnest(
       db.knex
         .select(

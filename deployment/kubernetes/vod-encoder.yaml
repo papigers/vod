@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: vod-encoder-deployment
+spec:
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: vod-encoder
+        spec:
+            containers:
+              - name: encoder
+                image: vodcontainerregistry.azurecr.io/vod-encoder
+                env:
+                    - name: NODE_ENV
+                      value: production
+                    - name: API_URL
+                      value: http://vod-api-service:9090/api
+                    - name: RABBITMQ_HOSTNAME
+                      value: vod-rabbitmq-service
+                    - name: RABBITMQ_PORT
+                      value: "5672"
+                    - name: RABBITMQ_USERNAME
+                      value: admin
+                    - name: RABBITMQ_PASSWORD
+                      value: Aa123123
+                    - name: TEMP_STORAGE
+                      value: /app/entrypoint                                                                                                                                 
+                volumeMounts:
+                    - mountPath: /app/entrypoint
+                      name: persistent-vod
+            volumes:
+                - name: persistent-vod
+                  persistentVolumeClaim:
+                    claimName: 'persistent-vod'
+            imagePullSecrets:
+                - name: acr-secret

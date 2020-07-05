@@ -170,7 +170,7 @@ class PlaylistEditForm extends Component {
         id: video.id,
         thumbnail: (
           <VideoThumbnail
-            src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${video && video.id}/thumbnail.png`}
+            src={`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${video && video.id}/thumbnail.png`}
             width={100}
             height={60}
           />
@@ -262,7 +262,7 @@ class PlaylistEditForm extends Component {
           <PlaylistPropsContainer>
             <ThumbnailContainer>
               <VideoThumbnail
-                src={`${process.env.REACT_APP_STREAMER_HOSTNAME}/${videos &&
+                src={`${window._env_.REACT_APP_STREAMER_HOSTNAME}/${videos &&
                   videos[0] &&
                   videos[0].id}/thumbnail.png`}
                 width={318}

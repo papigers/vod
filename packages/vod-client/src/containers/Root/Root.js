@@ -12,6 +12,7 @@ import { bindActionCreators } from 'redux';
 import { makeSelectUser } from './selectors';
 
 class Root extends Component {
+
   componentDidMount() {
     this.props.getManagedChannels();
   }
@@ -21,14 +22,14 @@ class Root extends Component {
   }
 
   render() {
-    return (
-      <AuthRequired>
-        <Switch>
-          <Route path="/mgmt" component={ManagementApp} />
-          <Route component={App} />
-        </Switch>
-      </AuthRequired>
-    );
+      return (
+        <AuthRequired>
+          <Switch>
+            <Route path="/mgmt" component={ManagementApp} />
+            <Route component={App} />
+          </Switch>
+        </AuthRequired>
+      );
   }
 }
 

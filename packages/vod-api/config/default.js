@@ -2,13 +2,13 @@ module.exports = {
   server: {
     port: process.env.PORT || 9090,
   },
-  api: 'http://localhost:9090/api',
+  api: process.env.API_URL || 'http://localhost:9090/api',
   db: {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'Aa123123',
     database: process.env.DB_DATABASE || 'vod',
-    host: process.env.DB_HOSTNAME || 'vod-db.westeurope.cloudapp.azure.com',
-    port: process.env.DB_PORT || 5433,
+    host: process.env.DB_HOSTNAME || 'localhost',
+    port: process.env.DB_PORT || 5432,
     config: {
       dialect: process.env.DB_TYPE || 'postgres',
       pool: {
@@ -17,13 +17,19 @@ module.exports = {
       },
     },
   },
+  RabbitMQ: {
+    port: process.env.RABBITMQ_PORT || "5672",
+    host: process.env.RABBITMQ_HOSTNAME || "localhost",
+    username: process.env.RABBITMQ_USERNAME || "admin",
+    password: process.env.RABBITMQ_PASSWORD || "Aa123123"
+  },
   admin: {
     id: 's7591665',
     type: 'USER',
     picture:
-      'https://scontent.fhfa1-1.fna.fbcdn.net/v/t1.0-1/p480x480/36404826_10212689636864924_812286978346188800_n.jpg?_nc_cat=0&oh=f7b5d42c81a822f2a2e642abb2fafe4c&oe=5C0E4A2A',
+      'https://images.unsplash.com/photo-1566903451935-7e8835ed3e97?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=3300&q=80',
     cover:
-      'https://scontent.fhfa1-1.fna.fbcdn.net/v/t31.0-8/21994326_10210708722743309_2900923781613308026_o.jpg?_nc_cat=0&oh=add5e60e2256e184fe651f630f9f3a43&oe=5BD96A45',
+        'https://cdn.pixabay.com/photo/2018/09/26/19/42/raindrop-3705463_1280.jpg',
     personal: true,
     access: 'PUBLIC',
     name: 'גרשון ח פפיאשוילי',
@@ -31,14 +37,20 @@ module.exports = {
     isAdmin: true,
   },
   ad: {
-    url: 'ldap://vod-dc.westeurope.cloudapp.azure.com',
-    baseDN: 'ou=orgs,dc=example,dc=com',
-    username: 'vod@example.com',
-    password: 'Aa123123',
+    url: process.env.AD_DOMAIN_CONTROLLER_URL || 'ldap://vod-dc.westeurope.cloudapp.azure.com',
+    baseDN: process.env.AD_BASE_DN || 'ou=orgs,dc=example,dc=com',
+    username: process.env.AD_PROJECTAL_USER || 'vod@example.com',
+    password: process.env.AD_PROJECTAL_USER_PASSWORD || 'Aa123123',
     scope: 'sub',
     attributes: {
       user: ['sAMAccountName', 'displayName', 'objectClass', 'dn'],
       group: ['dn', 'cn', 'displayName', 'objectClass'],
     },
   },
+  TempStorage: {
+    path: process.env.TEMP_STORAGE || 'C:\\temp\\'
+  },
+  Workflow:{
+    keter_dn: process.env.KETER_DN || "CN=Keter,OU=org1,OU=orgs,DC=example,DC=com"
+  }
 };

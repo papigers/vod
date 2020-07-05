@@ -37,5 +37,11 @@ module.exports = {
       sizeQuota: 10240,
       price: 3499,
     },
+    {
+      id: 'test',
+      name: 'בדיקה',
+      sizeQuota: 10240,
+      price: 0,
+    },
   ],
 };

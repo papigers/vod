@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vod-api-service
+    labels:
+        app: vod-api
+spec:
+    type: ClusterIP
+    ports:
+      - port: 9090
+    selector:
+        app: vod-api
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: vod-api-deployment
+spec:
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: vod-api
+                service: vod-api-service
+        spec:
+            containers:
+              - name: api
+                image: vodcontainerregistry.azurecr.io/vod-api
+                ports:
+                    - containerPort: 9090
+                env:
+                    - name: NODE_ENV
+                      value: production
+                    - name: PORT
+                      value: "9090"
+                    - name: API_URL
+                      value: http://vod-api-service:9090/api
+                    - name: DB_USERNAME
+                      value: postgres
+                    - name: DB_PASSWORD
+                      value: Aa123123
+                    - name: DB_DATABASE
+                      value: vod
+                    - name: DB_HOSTNAME
+                      value: vod-postgres-service
+                    - name: DB_PORT
+                      value: "5432"
+                    - name: RABBITMQ_HOSTNAME
+                      value: vod-rabbitmq-service
+                    - name: RABBITMQ_PORT
+                      value: "5672"
+                    - name: RABBITMQ_USERNAME
+                      value: admin
+                    - name: RABBITMQ_PASSWORD
+                      value: Aa123123
+                    - name: AD_DOMAIN_CONTROLLER_URL
+                      value: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+                    - name: AD_BASE_DN
+                      value: "ou=orgs,dc=example,dc=com"
+                    - name: AD_PROJECTAL_USER
+                      value: vod@example.com
+                    - name: AD_PROJECTAL_USER_PASSWORD
+                      value: Aa123123
+                    - name: AWS_ACCESS_KEY_ID
+                      value: AKIAJKIJG4M23KDBM22Q     
+                    - name: AWS_SECRET_ACCESS_KEY
+                      value: 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     
+                    - name: AWS_BUCKET
+                      value: bucket-vod     
+                    - name: AWS_REGION
+                      value: eu-central-1         
+                    - name: TEMP_STORAGE
+                      value: /app/entrypoint
+                    - name: KETER_DN
+                      value: "CN=Keter,OU=org1,OU=orgs,DC=example,DC=com"                                                                                                                                                  
+                volumeMounts:
+                    - mountPath: /app/entrypoint
+                      name: persistent-vod
+            volumes:
+                - name: persistent-vod
+                  persistentVolumeClaim:
+                    claimName: 'persistent-vod'
+            imagePullSecrets:
+                - name: acr-secret

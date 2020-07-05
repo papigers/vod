@@ -1,5 +1,7 @@
 // var amqp = require('amqplib');
+require('dotenv').config();
 var amqp = require('amqp-connection-manager');
+var config = require('config');
 var ffmpeg = require('fluent-ffmpeg');
 var path = require('path');
 var os = require('os');
@@ -13,7 +15,7 @@ var ensurePath = require('../utils/ensurePath');
 var THUMBNAIL_QUEUE = 'thumbnail_queue';
 var UPLOAD_QUEUE = 'upload_queue';
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect([`amqp://${config.RabbitMQ.username}:${config.RabbitMQ.password}@${config.RabbitMQ.host}:${config.RabbitMQ.port}`]);
 
 function previewThumbnails(file, output, count) {
   return new Promise(function(resolve, reject) {
@@ -110,7 +112,7 @@ function generateThumbnail(id, file, output, timestamp, thumbnail, poster) {
 }
 
 function downloadVideo(id) {
-  var file = path.join(os.tmpdir(), 'vod-cache', id);
+  var file = path.join(config.TempStorage.path, 'vod-cache', id);
   return new Promise(function(resolve, reject) {
     var cacheFileStream = fs.createWriteStream(file);
     cacheFileStream.on('finish', function() {
@@ -124,12 +126,12 @@ function downloadVideo(id) {
 
 function ensureVideoPath(videoId) {
   return new Promise(function(resolve, reject) {
-    var uploadFile = path.join(os.tmpdir(), 'uploads', videoId);
+    var uploadFile = path.join(config.TempStorage.path, 'uploads', videoId);
     fs.exists(uploadFile, function(exists) {
       if (exists) {
         resolve(uploadFile);
       }
-      var cacheFile = path.join(os.tmpdir(), 'vod-cache', videoId);
+      var cacheFile = path.join(config.TempStorage.path, 'vod-cache', videoId);
       fs.exists(cacheFile, function(exists) {
         if (exists) {
           resolve(cacheFile);
@@ -144,8 +146,8 @@ function ensureVideoPath(videoId) {
 
 function handleThumbnailMessage(type, body) {
   return new Promise(function(resolve, reject) {
-    var outputFolder = path.join(os.tmpdir(), body.id);
-    var cacheFolder = path.join(os.tmpdir(), 'vod-cache');
+    var outputFolder = path.join(config.TempStorage.path, body.id);
+    var cacheFolder = path.join(config.TempStorage.path, 'vod-cache');
     return Promise.all([ensurePath(cacheFolder), ensurePath(outputFolder)]).then(function() {
       switch (type) {
         case 'PREVIEW_THUMBNAILS':

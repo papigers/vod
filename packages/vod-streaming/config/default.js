@@ -2,7 +2,7 @@ module.exports = {
   server: {
     port: process.env.PORT || '9091',
   },
-  api: 'http://localhost:9090/api',
+  api: process.env.API_URL || 'http://localhost:9090/api',
   cookieSecret: 'secret',
   cache: {
     auth: {
@@ -24,4 +24,15 @@ module.exports = {
       tls: true,
     },
   },
+  ad: {
+    url: process.env.AD_DOMAIN_CONTROLLER_URL || 'ldap://vod-dc.westeurope.cloudapp.azure.com',
+    baseDN: process.env.AD_BASE_DN || 'ou=orgs,dc=example,dc=com',
+    username: process.env.AD_PROJECTAL_USER || 'vod@example.com',
+    password: process.env.AD_PROJECTAL_USER_PASSWORD || 'Aa123123',
+    scope: 'sub',
+    attributes: {
+      user: ['sAMAccountName', 'displayName', 'objectClass', 'dn'],
+      group: ['dn', 'cn', 'displayName', 'objectClass'],
+    },
+  }
 };

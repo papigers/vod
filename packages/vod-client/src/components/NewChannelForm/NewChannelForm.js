@@ -119,13 +119,11 @@ class NewChannelForm extends Component {
   };
 
   formatACL = (acls, type) => {
-    const withoutSelf = acls.filter(
-      acl => !!acl && (acl.type === 'USER' && acl.id !== this.props.user.id),
-    );
+    const withoutSelf = acls.filter(acl => !!acl && acl.id !== this.props.user.id);
     if (type === 'view') {
       return withoutSelf;
     }
-    return withoutSelf.concat([this.getCurrentUser()]);
+    return [this.getCurrentUser()].concat(withoutSelf);
   };
 
   onChangeName = ({ target }) => this.setState({ name: target.value });

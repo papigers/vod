@@ -1,0 +1,80 @@
+# az login
+# az acr login --name vodcontainerregistry  (Every 3 hours)
+# az aks get-credentials --resource-group VOD --name VOD-Kube   (Connect to aks cluster)
+
+# PUSH to ACR
+# docker tag vod-nginx vodcontainerregistry.azurecr.io/vod-nginx:latest
+# docker push vodcontainerregistry.azurecr.io/vod-nginx:latest
+# kubectl create secret docker-registry acr-secret --docker-server=https://voidcontainerregistry.azurecr.io --docker-username=VodContainerRegistry --docker-password=1pnFWTVdr5TNfxz8S08J10DV2j8d/lfg
+
+#TODO: make it production, doesnt work beacause of the authentication
+
+# ---10.0.58.152
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#     name: vod-web-ingress
+#     labels:
+#         app: vod-web
+# spec:
+#     backend:
+#         serviceName: vod-web-service
+#         servicePort: 80
+# ---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vod-web-service
+    labels:
+        app: vod-web
+spec:
+    type: ClusterIP
+    ports:
+      - port: 8080
+    selector:
+        app: vod-web
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: vod-web-deployment
+spec:
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: vod-web
+                service: vod-web-service
+        spec:
+            containers:
+              - name: web
+                image: vodcontainerregistry.azurecr.io/vod-web
+                ports:
+                    - containerPort: 8080
+                env:
+                    - name: NODE_ENV
+                      value: production
+                    - name: PORT
+                      value: "8080"
+                    - name: API_URL
+                      value: http://vod-api-service:9090/api
+                    - name: AD_DOMAIN_CONTROLLER_URL
+                      value: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+                    - name: AD_BASE_DN
+                      value: "ou=orgs,dc=example,dc=com"
+                    - name: AD_PROJECTAL_USER
+                      value: vod@example.com
+                    - name: AD_PROJECTAL_USER_PASSWORD
+                      value: Aa123123     
+                    - name: AWS_ACCESS_KEY_ID
+                      value: AKIAJKIJG4M23KDBM22Q     
+                    - name: AWS_SECRET_ACCESS_KEY
+                      value: 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     
+                    - name: AWS_BUCKET
+                      value: bucket-vod     
+                    - name: AWS_REGION
+                      value: eu-central-1  
+                    - name: REACT_APP_API_HOSTNAME
+                      value: http://vod-api.army.idf     
+                    - name: REACT_APP_STREAMER_HOSTNAME
+                      value: http://vod-streaming.army.idf

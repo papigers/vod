@@ -6,6 +6,7 @@ var express = require('express');
 var multer = require('multer');
 var sharp = require('sharp');
 var config = require('config');
+var config = require('config');
 var db = require('../../models');
 var ldap = require('../ldap');
 var router = express.Router();
@@ -14,7 +15,7 @@ var OSClient = require('@vod/vod-object-storage-client').S3Client();
 
 var channelStorage = multer.diskStorage({
   destination: function(req, file, cb) {
-    var dest = path.join(os.tmpdir(), req.params.id);
+    var dest = path.join(config.TempStorage.path, req.params.id);
     fs.stat(dest, function(err) {
       if (err == null) {
         return cb(null, dest);
@@ -317,9 +318,27 @@ router.post('/', channelImagesUpload, function(req, res) {
           error: 'לא מוגדר קב"ם ליחידתך',
         });
       }
-      return db.channels.createChannel(req.body, req.user).then(function(result) {
-        return res.json(result);
-      });
+      return db.channels.createChannel(req.body, req.user)
+              .then(function(result) {
+                return res.json(result);
+              })
+              .catch(function(err){
+                var error = "לא ניתן ליצור ערוץ זה, נסה מאוחר יותר";
+
+                // Check if the error is duplicate key violation
+                if(err.code == 23505){
+                  if(err.constraint == 'channels_pkey'){
+                    error = "מזהה ערוץ בשם זה כבר קיים, נסה שם אחר"
+                  } else if(err.constraint == 'channels_name_unique'){
+                    error = "ערוץ בשם זה כבר קיים, נסה שם אחר"
+                  }
+                }
+
+                return res.status(500).json({
+                  error
+                })
+                
+              });
     })
     .catch(function(err) {
       console.error(err);

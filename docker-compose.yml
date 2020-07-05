@@ -1,0 +1,207 @@
+version: '3.3'
+
+services: 
+
+    vod-postgres:
+        image: postgres
+        container_name: vod-postgres
+        environment:
+            POSTGRES_USER: "postgres"
+            POSTGRES_PASSWORD: "Aa123123"
+            POSTGRES_DB: "vod"
+        volumes:
+            - postgres:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+    vod-rabbitmq:
+        image: rabbitmq:3-management
+        container_name: vod-rabbitmq
+        environment: 
+            RABBITMQ_DEFAULT_USER: "admin"
+            RABBITMQ_DEFAULT_PASS: "Aa123123"
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+     
+            
+    vod-nginx:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-nginx
+        image: vod-nginx
+        container_name: vod-nginx
+        environment: 
+            API_PATH: "http://vod-api:9090/"
+            STREAMING_PATH: "http://vod-streaming:9091/"
+            WEB_PATH: "http://vod-web:8080/"
+            SOCKET_PATH: "http://vod-api:9090/socket.io/"
+            RABBIT_MQ_PATH: "http://vod-rabbitmq:15672/"
+        depends_on: 
+            - "vod-rabbitmq"
+            - "vod-postgres"
+            - "vod-api"
+            - "vod-web"
+            - "vod-streaming"
+
+        ports: 
+            - "80:80"
+            - "443:443"
+
+    vod-api:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-api
+        image: vod-api
+        container_name: vod-api
+        environment: 
+            NODE_ENV: "production"
+            PORT: "9090"
+            API_URL: "http://vod-api:9090/api"
+            DB_USERNAME: "postgres"
+            DB_PASSWORD: "Aa123123"
+            DB_DATABASE: "vod"
+            DB_HOSTNAME: "vod-postgres"
+            DB_PORT: "5432"
+            RABBITMQ_HOSTNAME: "vod-rabbitmq"
+            RABBITMQ_PORT: "5672"
+            RABBITMQ_USERNAME: "admin"
+            RABBITMQ_PASSWORD: "Aa123123"
+            AD_DOMAIN_CONTROLLER_URL: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+            AD_BASE_DN: "ou=orgs,dc=example,dc=com"
+            AD_PROJECTAL_USER: "vod@example.com"
+            AD_PROJECTAL_USER_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
+            TEMP_STORAGE: "/app/entrypoint"
+            KETER_DN: "CN=Keter,OU=org1,OU=orgs,DC=example,DC=com"
+        volumes: 
+            - persistent-vod:/app/entrypoint
+        depends_on: 
+            - "vod-rabbitmq"
+            - "vod-postgres"
+        ports: 
+            - "9090:9090"
+
+    vod-streaming:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-streaming
+        image: vod-streaming
+        container_name: vod-streaming
+        environment: 
+            NODE_ENV: "production"
+            PORT: "9091"
+            API_URL: "http://vod-api:9090/api"
+            AD_DOMAIN_CONTROLLER_URL: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+            AD_BASE_DN: "ou=orgs,dc=example,dc=com"
+            AD_PROJECTAL_USER: "vod@example.com"
+            AD_PROJECTAL_USER_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
+        depends_on: 
+            - "vod-api"
+        ports: 
+            - "9091:9091"
+    
+    vod-web:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-web
+        image: vod-web
+        container_name: vod-web
+        environment: 
+            NODE_ENV: "production"
+            PORT: "8080"
+            API_URL: "http://vod-api:9090/api"
+            AD_DOMAIN_CONTROLLER_URL: "ldap://vod-dc.westeurope.cloudapp.azure.com"
+            AD_BASE_DN: "ou=orgs,dc=example,dc=com"
+            AD_PROJECTAL_USER: "vod@example.com"
+            AD_PROJECTAL_USER_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "0ftd9HzyXQChTiZDV4RGrKXrazBYW6LCpdWulj0l"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
+            REACT_APP_API_HOSTNAME: "http://vod-api.army.idf"
+            REACT_APP_STREAMER_HOSTNAME: "http://vod-streaming.army.idf"
+        depends_on: 
+            - "vod-api"
+            - "vod-streaming"
+        ports: 
+            - "8080:8080"
+
+    vod-encoder:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-encoder
+        image: vod-encoder
+        container_name: vod-encoder
+        environment: 
+            NODE_ENV: "production"
+            API_URL: "http://vod-api:9090/api"
+            RABBITMQ_HOSTNAME: "vod-rabbitmq"
+            RABBITMQ_PORT: "5672"
+            RABBITMQ_USERNAME: "admin"
+            RABBITMQ_PASSWORD: "Aa123123"
+            TEMP_STORAGE: "/app/entrypoint"
+        volumes: 
+            - persistent-vod:/app/entrypoint
+        depends_on: 
+            - "vod-api"
+            - "vod-rabbitmq"
+
+    vod-thumbnailgen:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-thumbnailgen
+        image: vod-thumbnailgen
+        container_name: vod-thumbnailgen
+        environment: 
+            NODE_ENV: "production"
+            API_URL: "http://vod-api:9090/api"
+            RABBITMQ_HOSTNAME: "vod-rabbitmq"
+            RABBITMQ_PORT: "5672"
+            RABBITMQ_USERNAME: "admin"
+            RABBITMQ_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "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"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
+            TEMP_STORAGE: "/app/entrypoint"
+        volumes: 
+            - persistent-vod:/app/entrypoint
+        depends_on: 
+            - "vod-api"
+            - "vod-rabbitmq"
+
+    vod-uploader:
+        build: 
+            context: .
+            dockerfile: dockerfile.vod-uploader
+        image: vod-uploader
+        container_name: vod-uploader
+        environment: 
+            NODE_ENV: "production"
+            API_URL: "http://vod-api:9090/api"
+            RABBITMQ_HOSTNAME: "vod-rabbitmq"
+            RABBITMQ_PORT: "5672"
+            RABBITMQ_USERNAME: "admin"
+            RABBITMQ_PASSWORD: "Aa123123"
+            AWS_ACCESS_KEY_ID: "AKIAJKIJG4M23KDBM22Q"
+            AWS_SECRET_ACCESS_KEY: "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"
+            AWS_BUCKET: "bucket-vod"
+            AWS_REGION: "eu-central-1"
+            TEMP_STORAGE: "/app/entrypoint"
+        volumes: 
+            - persistent-vod:/app/entrypoint
+        depends_on: 
+            - "vod-api"
+            - "vod-rabbitmq"
+
+volumes: 
+    postgres:
+    persistent-vod:

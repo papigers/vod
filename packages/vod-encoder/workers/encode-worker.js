@@ -16,7 +16,7 @@ var ENCODE_QUEUE = 'encode_queue';
 var UPLOAD_QUEUE = 'upload_queue';
 
 function getOutputPath(videoId) {
-  return path.join(os.tmpdir(), videoId);
+  return path.join(config.TempStorage.path, videoId);
 }
 
 function encodeVideo(videoId, inputPath) {
@@ -91,6 +91,7 @@ function encodeVideo(videoId, inputPath) {
             .then(function() {
               publishMetadata(videoId, metadata);
 
+              console.log("Starting encoding...")
               var encoding = ffmpeg(inputPath)
                 /* ffmpeg -i <filename> -c:a aac -ac 2 -ab 128k -vn <output-audio> */
                 .output(`${outputFile}-audio.mp4`)
@@ -194,20 +195,30 @@ function encodeVideo(videoId, inputPath) {
                     var fullPath = encodedFiles[repId];
                     mp4boxInputs.push(`"${path.basename(fullPath)}":id=${repId}`);
                     mp4boxOutputs[repId] = {
-                      path: path.join(outputPath, `${repId}.mp4`),
+                      path: path.join(outputPath, `${repId}.mp4`)
                     };
                   });
-
+                  
                   var mpdPath = path.join(outputPath, 'mpd.mpd');
-                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "$RepresentationID$$Init=$" -out "${path.basename(
+
+                  var segmentName = "\\$RepresentationID\\$\\$Init=\\$";
+
+                  // Check if the os is windows
+                  if(os.type() === "Windows_NT"){
+                    segmentName = "$RepresentationID$$Init=$";
+                  }
+
+                  var mp4boxCommand = `MP4Box -dash 1000 -rap -frag-rap -profile onDemand -segment-name "${segmentName}" -out "${path.basename(
                     mpdPath,
                   )}" ${mp4boxInputs.join(' ')}`;
+
                   mp4boxOutputs.mpd = {
                     path: mpdPath,
                   };
 
                   exec(mp4boxCommand, { cwd: outputPath }, function(err, stdout, stderr) {
                     if (err) {
+                      console.log(err);
                       return reject(err);
                     }
                     return axios
@@ -229,7 +240,7 @@ function encodeVideo(videoId, inputPath) {
   });
 }
 
-var connection = amqp.connect(['amqp://admin:Aa123123@vod-rabbitmq.westeurope.cloudapp.azure.com']);
+var connection = amqp.connect([`amqp://${config.RabbitMQ.username}:${config.RabbitMQ.password}@${config.RabbitMQ.host}:${config.RabbitMQ.port}`]);
 
 var channelWrapper = connection.createChannel({
   json: true,
@@ -263,6 +274,7 @@ var channelWrapper = connection.createChannel({
             .catch(function(err) {
               console.log(err);
               ch.nack(msg);
+              //TODO
             });
         },
         { noAck: false },

@@ -3,6 +3,7 @@ var qs = require('querystring');
 var db = require('../../models');
 var generateThumbnail = require('../../messages/thumbnails').generateThumbnail;
 var previewThumbnails = require('../../messages/thumbnails').previewThumbnails;
+var OSClient = require('@vod/vod-object-storage-client').S3Client();
 var router = express.Router();
 
 // default redirect to random
@@ -318,9 +319,12 @@ router.delete('/:id', function(req, res) {
     .delete(req.user, req.params.id)
     .then(function(deleted) {
       if (deleted) {
-        return res.json({});
+        return Promise.resolve(OSClient.deleteVideo(req.params.id));
       }
       return res.sendStatus(404);
+    })
+    .then(function(){
+      res.json({});
     })
     .catch(function(err) {
       console.error(err);

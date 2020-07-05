@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Helmet } from 'react-helmet';
 import { Provider } from 'react-redux';
 import { Route } from 'react-router-dom';
-import createHistory from 'history/createBrowserHistory';
+import { createBrowserHistory as createHistory } from 'history'
 import { ConnectedRouter } from 'react-router-redux';
 import { ScrollContext } from 'react-router-scroll-4';
 

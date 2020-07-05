@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: vod-nginx-service
+    labels:
+        app: vod-nginx
+spec:
+    type: LoadBalancer
+    ports:
+      - port: 80
+    selector:
+        app: vod-nginx
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: vod-nginx-deployment
+spec:
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: vod-nginx
+                service: vod-nginx-service
+        spec:
+            containers:
+              - name: nginx
+                image: vodcontainerregistry.azurecr.io/vod-nginx
+                ports:
+                    - containerPort: 80
+                env:
+                    - name: API_PATH
+                      value: "http://vod-api-service:9090/"
+                    - name: STREAMING_PATH
+                      value: "http://vod-streaming-service:9091/"
+                    - name: WEB_PATH
+                      value: "http://vod-web-service:8080/"
+                    - name: SOCKET_PATH                                                                                                                                                               
+                      value: "http://vod-api-service:9090/socket.io/"
+                    - name: RABBIT_MQ_PATH                                                                                                                                                               
+                      value: "http://vod-rabbitmq-service:15672/"
+            imagePullSecrets:
+                - name: acr-secret
