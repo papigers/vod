@@ -10,7 +10,7 @@
   "dependencies": {
     "amqp-connection-manager": "^2.3.0",
     "amqplib": "^0.5.2",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "base64-img": "^1.0.4",
     "config": "^2.0.1",
     "cookie": "^0.3.1",
